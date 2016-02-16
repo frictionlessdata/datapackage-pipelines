@@ -1,0 +1,6 @@
+include Makefile
+include oki/VERSION
+include LICENSE.md
+include README.md
+include tox.ini
+include pylintrc
