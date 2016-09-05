@@ -5,9 +5,13 @@ from .manager.specs import pipelines
 
 def main():
     if len(sys.argv) > 1:
-        for pipeline_id, pipeline_details in pipelines():
-            if pipeline_id == sys.argv[1]:
-                execute_pipeline(pipeline_id, pipeline_details['pipeline'])
+        if sys.argv[1] == 'serve':
+            from .web import app
+            app.run(host='0.0.0.0', debug=True, port=5000)
+        else:
+            for pipeline_id, pipeline_details in pipelines():
+                if pipeline_id == sys.argv[1]:
+                    execute_pipeline(pipeline_id, pipeline_details['pipeline'])
     else:
         print('Available Pipelines:')
         for pipeline_id, _ in pipelines():

@@ -90,34 +90,42 @@ def ingest():
     if first:
         return params, None, None
 
-    dp = sys.stdin.readline().strip()
-    if dp == '':
+    dp_json = sys.stdin.readline().strip()
+    if dp_json == '':
         logging.error('Missing input')
         sys.exit(1)
-    dp = json.loads(dp)
+    dp = json.loads(dp_json)
+    resources = dp.get('resources',[])
 
-    schema = datapackage.schema.Schema('tabular')
+    profiles = list(dp.get('profiles', {}).keys())
+    profile = 'tabular'
+    if 'tabular' in profiles:
+        profiles.remove('tabular')
+    if len(profiles)>0:
+        profile = profiles.pop(0)
+    schema = datapackage.schema.Schema(profile)
     schema.validate(dp)
 
     _ = sys.stdin.readline().strip()
 
-    def resources_iterator():
-        for resource in dp['resources']:
+    def resources_iterator(_resources):
+        for resource in _resources:
             if 'path' not in resource:
                 continue
 
             res_iter = ResourceIterator(resource)
             yield res_iter
 
-    return params, dp, resources_iterator()
+    return params, dp, resources_iterator(resources)
+
 
 def spew(dp, resources_iterator):
     row_count = 0
-    print(json.dumps(dp))
+    print(json.dumps(dp, ensure_ascii=True))
     for res in resources_iterator:
         print()
         for rec in res:
-            line = json.dumps(rec, cls=CommonJSONEncoder)
+            line = json.dumps(rec, cls=CommonJSONEncoder, ensure_ascii=True)
             print(line)
             # logging.error('SPEWING: {}'.format(line))
             row_count += 1

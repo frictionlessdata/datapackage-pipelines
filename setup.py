@@ -26,7 +26,9 @@ INSTALL_REQUIRES = [
     'requests',
     'datapackage',
     'jsontableschema',
-    'pyyaml'
+    'pyyaml',
+    'redis',
+    'flask'
 ]
 LINT_REQUIRES = [
     'pylint',

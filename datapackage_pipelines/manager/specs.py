@@ -4,6 +4,7 @@ import logging
 import yaml
 
 from celery.schedules import crontab
+from .status import status
 
 SPEC_FILENAME = 'pipeline-spec.yaml'
 
@@ -95,6 +96,8 @@ def validate_specs():
         else:
             raise NotImplementedError("Couldn't find valid schedule at {0}"
                                       .format(abspath))
+
+        status.register(pipeline_id)
 
         yield pipeline_id, pipeline_details
 
