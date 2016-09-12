@@ -49,7 +49,7 @@ def process_resources(_res_iter):
             values = [(column_mapping[k], v) for (k, v)
                       in row.items()
                       if k in column_mapping]
-            assert len(values)>0
+            assert len(values) > 0
             processed.update(dict(values))
             yield processed
 

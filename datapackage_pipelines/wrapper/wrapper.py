@@ -1,3 +1,4 @@
+import copy
 import sys
 import os
 import json
@@ -7,6 +8,8 @@ import datetime
 import six
 
 import datapackage
+from jsontableschema.exceptions import InvalidCastError
+from jsontableschema.model import SchemaModel
 
 
 def processor():
@@ -62,8 +65,9 @@ class CommonJSONDecoder(json.JSONDecoder):
 # pylint: disable=too-few-public-methods
 class ResourceIterator(object):
 
-    def __init__(self, spec):
+    def __init__(self, spec, copy):
         self.spec = spec
+        self.table_schema = SchemaModel(copy['schema'])
 
     def __iter__(self):
         return self
@@ -74,6 +78,12 @@ class ResourceIterator(object):
             raise StopIteration()
         # logging.error('INGESTING: {}'.format(line))
         line = json.loads(line, cls=CommonJSONDecoder)
+        for k, v in line.items():
+            try:
+                self.table_schema.cast(k, v)
+            except InvalidCastError:
+                logging.error('Bad value %r for field %s', v, k)
+                raise
         return line
 
     def next(self):
@@ -95,7 +105,8 @@ def ingest():
         logging.error('Missing input')
         sys.exit(1)
     dp = json.loads(dp_json)
-    resources = dp.get('resources',[])
+    resources = dp.get('resources', [])
+    original_resources = copy.deepcopy(resources)
 
     profiles = list(dp.get('profiles', {}).keys())
     profile = 'tabular'
@@ -108,15 +119,17 @@ def ingest():
 
     _ = sys.stdin.readline().strip()
 
-    def resources_iterator(_resources):
-        for resource in _resources:
+    def resources_iterator(_resources, _original_resources):
+        # we pass a resource instance that may be changed by the processing code,
+        # so we must keep a copy of the original resource (used to validate incoming data)
+        for resource, copy in zip(_resources, _original_resources):
             if 'path' not in resource:
                 continue
 
-            res_iter = ResourceIterator(resource)
+            res_iter = ResourceIterator(resource, copy)
             yield res_iter
 
-    return params, dp, resources_iterator(resources)
+    return params, dp, resources_iterator(resources, original_resources)
 
 
 def spew(dp, resources_iterator):
