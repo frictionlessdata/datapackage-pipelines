@@ -16,7 +16,7 @@ params, datapackage, res_iter = ingest()
 out_filename = open(params['out-file'], 'wb')
 out_file = zipfile.ZipFile(out_filename, 'w')
 
-out_file.writestr('datapackage.json', json.dumps(datapackage))
+out_file.writestr('datapackage.json', json.dumps(datapackage, ensure_ascii=True))
 
 
 def transform_value(value, _):
@@ -33,13 +33,13 @@ def transform_row(row, fields):
 def rows_processor(_rows, _csv_file, _zip_file, _writer, _fields, _schema):
     for row in _rows:
         transformed_row = transform_row(row, _fields)
-        _writer.writerow(transformed_row)
         for k, v in transformed_row.items():
             try:
                 _schema.cast(k, v)
             except InvalidCastError:
                 logging.error('Bad value %r for field %s', v, k)
                 raise
+        _writer.writerow(transformed_row)
         yield row
     _zip_file.writestr(_rows.spec['path'], _csv_file.getvalue())
 

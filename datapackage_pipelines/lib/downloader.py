@@ -10,7 +10,6 @@ from jsontableschema.model import SchemaModel
 from datapackage_pipelines.wrapper import ingest, spew
 
 
-
 def _reader(opener, _url):
     yield None
     filename = os.path.basename(_url)

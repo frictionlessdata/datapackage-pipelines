@@ -15,8 +15,8 @@ def find_specs(root_dir='.'):
         if SPEC_FILENAME in filenames:
             abspath = os.path.abspath(dirpath)
             fullpath = os.path.join(abspath, SPEC_FILENAME)
-            with open(fullpath) as spec_file:
-                spec = yaml.load(spec_file)
+            with open(fullpath, encoding='utf8') as spec_file:
+                spec = yaml.load(spec_file.read())
                 for pipeline_id, pipeline_details in spec.items():
                     pipeline_id = os.path.join(dirpath, pipeline_id)
                     yield abspath, pipeline_id, pipeline_details
