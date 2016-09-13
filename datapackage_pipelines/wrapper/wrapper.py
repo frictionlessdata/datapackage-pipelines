@@ -1,4 +1,5 @@
 import copy
+import gzip
 import sys
 import os
 import json
@@ -89,15 +90,19 @@ class ResourceIterator(object):
     def next(self):
         return self.__next__()
 
+cache = ''
+
 
 def ingest():
+    global cache
     params = None
     first = True
     validate = False
-    if len(sys.argv) > 3:
+    if len(sys.argv) > 4:
         first = sys.argv[1] == '0'
         params = json.loads(sys.argv[2])
         validate = sys.argv[3] == 'True'
+        cache = sys.argv[4]
 
     if first:
         return params, None, None
@@ -135,14 +140,30 @@ def ingest():
 
 
 def spew(dp, resources_iterator):
+    global cache
+    files = [sys.stdout]
+
+    cache_filename = ''
+    if len(cache) > 0:
+        if not os.path.exists('.cache'):
+            os.mkdir('.cache')
+        cache_filename = os.path.join('.cache', cache)
+        files.append(gzip.open(cache_filename+'.ongoing', 'wt'))
+
     row_count = 0
-    print(json.dumps(dp, ensure_ascii=True))
+    for f in files:
+        f.write(json.dumps(dp, ensure_ascii=True)+'\n')
     for res in resources_iterator:
-        print()
+        for f in files:
+            f.write('\n')
         for rec in res:
             line = json.dumps(rec, cls=CommonJSONEncoder, ensure_ascii=True)
-            print(line)
+            for f in files:
+                f.write(line+'\n')
             # logging.error('SPEWING: {}'.format(line))
             row_count += 1
 
     logging.info('Processed %d rows', row_count)
+
+    if len(cache) > 0:
+        os.rename(cache_filename+'.ongoing', cache_filename)
