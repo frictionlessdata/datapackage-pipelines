@@ -1,6 +1,6 @@
 # datapackage-pipelines
 
-A modular framework for an ETL based on Data Packages
+A modular framework for a stream-processing ETL based on Data Packages
 
 [![Travis](https://img.shields.io/travis/frictionlessdata/datapackage-pipelines/master.svg)](https://travis-ci.org/frictionlessdata/datapackage-pipelines)
 [![Coveralls](http://img.shields.io/coveralls/frictionlessdata/datapackage-pipelines.svg?branch=master)](https://coveralls.io/r/frictionlessdata/datapackage-pipelines?branch=master)
@@ -189,11 +189,13 @@ This framework can run pipelines of data processing modules which are basically 
 Each pipeline also has a set of rules that define a schedule and a pipeline of such executors, working serially to 
     fetch data from the Internet, process it into a finalized FDP and load it to an external destination.
 
-
+All processing in this framework is done by processing the streams of data, row by row. At no point the entire data-set
+is loaded into memory. This allows efficient processing in terms of memory usage as well as truly parallel execution
+of all processing steps, making use of your machine's CPU effectively.
 
 ## Running Instructions
 
-Running instructions are stored in this repo in files named `pipeline-spec.yaml`. 
+Running instructions are stored in files named `pipeline-spec.yaml`. 
 
 Each one of these files is a YAML file which contains instructions for fetching one or more FDPs. For example, such a 
 file might look like this:
@@ -225,8 +227,8 @@ albonian-budget:
 
 **What do we have here?**
 
-Two running instructions for two separate FDPs - one fetching the Albonian spending data and another fetching its budget 
- data. You can see that the pipelines are very similar, and are based on the same building blocks: 
+Two running instructions for two separate data packages - one fetching the Albonian spending data and another fetching 
+its budget data. You can see that the pipelines are very similar, and are based on the same building blocks: 
  `fetch-albonian-fiscal-data`, `translate-codelists` and `normalize-dates`. The differences between the two are 
  - their schedules: spending data is fetched on a daily basis, whilst budgets are fetched on January 7th every year 
         (Albonian government officials adhere to very precise publishing dates)
@@ -249,6 +251,8 @@ A pipeline spec has two keys:
         Relative paths can be specified with the 'dot-notation': `a.b` is referring to script `b` in directory `a`; 
         `...c.d.e` will look for `../../c/d/e.py`. 
     - `parameters`: running parameters which the executor will receive when invoked.
+    - `validate`: should data be validated prior to entering this executor. Data validation is done using the JSON table
+        schema which is embedded in the resource definition.
      
 The first executor in all pipelines must be a fetcher and the rest of the steps must be processors.
  
