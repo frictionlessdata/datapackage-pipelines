@@ -92,11 +92,10 @@ def find_caches(pipeline_steps, pipeline_cwd):
     return pipeline_steps
 
 
-async def construct_process_pipeline(pipeline_steps, pipeline_cwd):
+async def construct_process_pipeline(pipeline_steps, pipeline_cwd, errors):
     error_collectors = []
     processes = []
     error_queue = asyncio.Queue()
-    errors = []
     rfd = None
 
     error_aggregator = \
@@ -130,7 +129,21 @@ async def construct_process_pipeline(pipeline_steps, pipeline_cwd):
         error_collectors.append(
             asyncio.ensure_future(enqueue_errors(process, error_queue))
         )
-    return processes, error_collectors, error_queue, error_aggregator
+
+    def stop_error_collecting(_error_collectors,
+                              _error_queue,
+                              _error_aggregator):
+        async def _func():
+            await asyncio.gather(*_error_collectors)
+            await _error_queue.put(None)
+            await _error_aggregator
+        return _func
+
+
+    return processes, \
+           stop_error_collecting(error_collectors,
+                                 error_queue,
+                                 error_aggregator)
 
 
 async def async_execute_pipeline(pipeline_id,
@@ -143,9 +156,10 @@ async def async_execute_pipeline(pipeline_id,
     logging.info("RUNNING %s:", pipeline_id)
 
     pipeline_steps = find_caches(pipeline_steps, pipeline_cwd)
+    errors = []
 
-    processes, error_collectors, error_queue, error_aggregator = \
-        await construct_process_pipeline(pipeline_steps, pipeline_cwd)
+    processes, stop_error_collecting = \
+        await construct_process_pipeline(pipeline_steps, pipeline_cwd, errors)
 
     def kill_all_processes():
         for to_kill in processes:
@@ -154,6 +168,7 @@ async def async_execute_pipeline(pipeline_id,
             except ProcessLookupError:
                 pass
 
+    success = True
     pending = [asyncio.ensure_future(process_death_waiter(process))
                for process in processes]
     while len(pending) > 0:
@@ -161,8 +176,10 @@ async def async_execute_pipeline(pipeline_id,
         try:
             done, pending = \
                 await asyncio.wait(pending,
-                                   return_when=asyncio.FIRST_COMPLETED)
+                                   return_when=asyncio.FIRST_COMPLETED,
+                                   timeout=10)
         except CancelledError:
+            success = False
             kill_all_processes()
 
         for waiter in done:
@@ -172,12 +189,18 @@ async def async_execute_pipeline(pipeline_id,
                 processes = [p for p in processes if p.pid != process.pid]
             else:
                 logging.error("FAILED %s: %s", process.args, return_code)
+                success = False
                 kill_all_processes()
 
-    await asyncio.gather(*error_collectors)
-    await error_queue.put(None)
-    await error_aggregator
+        status.running(pipeline_id,
+                       trigger,
+                       '\n'.join(errors))
 
+    stop_error_collecting()
+
+    status.idle(pipeline_id,
+                success,
+                '\n'.join(errors))
 
 def execute_pipeline(pipeline_id,
                      pipeline_steps,

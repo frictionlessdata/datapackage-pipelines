@@ -22,10 +22,11 @@ class RedisConnection(object):
             return
         _status = self.redis.get(_id)
         _status = json.loads(_status.decode('ascii'))
+        if _status['running'] is False:
+            _status['started'] = time.time()
         _status.update({
             'id': _id,
             'running': True,
-            'started': time.time(),
             'trigger': trigger,
             'reason': log
         })

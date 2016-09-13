@@ -3,6 +3,7 @@ import sys
 from .manager import execute_pipeline
 from .manager.specs import pipelines
 
+
 def main():
     if len(sys.argv) > 1:
         if sys.argv[1] == 'serve':

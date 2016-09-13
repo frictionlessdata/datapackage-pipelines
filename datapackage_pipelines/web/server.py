@@ -18,10 +18,10 @@ def main():
             if pipeline.get(key):
                 pipeline[key] = datestr(pipeline[key])
         pipeline['class'] = 'warning' if pipeline['running'] else \
-            'success' if pipeline['success'] \
+            'success' if pipeline.get('success') \
                 else 'danger'
         pipeline['status'] = 'Running' if pipeline['running'] else \
-            'Idle' if pipeline['success'] \
+            'Idle' if pipeline.get('success') \
                 else 'Errored'
         pipeline['slug'] = pipeline['id'].replace('/', '_').replace('.', '_')
     return render_template('dashboard.html', pipelines=statuses)

@@ -82,9 +82,15 @@ class ResourceIterator(object):
             for k, v in line.items():
                 try:
                     self.table_schema.cast(k, v)
-                except InvalidCastError:
-                    logging.error('Bad value %r for field %s', v, k)
-                    raise
+                except (InvalidCastError, TypeError):
+                    field = self.table_schema.get_field(k)
+                    if field is None:
+                        logging.error('Validation failed: No such field %s', k)
+                    else:
+                        logging.error('Validation failed: Bad value %r '
+                                      'for field %s with type %s',
+                                      v, k, field.get('type'))
+                    sys.exit(1)
         return line
 
     def next(self):
