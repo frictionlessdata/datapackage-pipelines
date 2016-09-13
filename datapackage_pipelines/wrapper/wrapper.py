@@ -5,7 +5,6 @@ import json
 import logging
 import decimal
 import datetime
-import six
 
 import datapackage
 from jsontableschema.exceptions import InvalidCastError
@@ -41,20 +40,19 @@ class CommonJSONDecoder(json.JSONDecoder):
 
     @classmethod
     def object_hook(cls, obj):  # pylint: disable=method-hidden
-        for key in obj:
-            if isinstance(key, six.string_types):
-                if key == 'type{decimal}':
-                    try:
-                        return decimal.Decimal(obj[key])
-                    except decimal.InvalidOperation:
-                        pass
-                elif key == 'type{date}':
-                    try:
-                        return datetime.datetime\
-                                       .strptime(obj[key], '%Y-%m-%d')\
-                                       .date()
-                    except ValueError:
-                        pass
+        if 'type{decimal}' in obj:
+            try:
+                return decimal.Decimal(obj['type{decimal}'])
+            except decimal.InvalidOperation:
+                pass
+        if 'type{date}' in obj:
+            try:
+                return datetime.datetime \
+                    .strptime(obj["type{date}"], '%Y-%m-%d') \
+                    .date()
+            except ValueError:
+                pass
+
         return obj
 
     def __init__(self, **kwargs):
@@ -65,9 +63,10 @@ class CommonJSONDecoder(json.JSONDecoder):
 # pylint: disable=too-few-public-methods
 class ResourceIterator(object):
 
-    def __init__(self, spec, copy):
+    def __init__(self, spec, copy, validate=False):
         self.spec = spec
         self.table_schema = SchemaModel(copy['schema'])
+        self.validate = validate
 
     def __iter__(self):
         return self
@@ -78,12 +77,13 @@ class ResourceIterator(object):
             raise StopIteration()
         # logging.error('INGESTING: {}'.format(line))
         line = json.loads(line, cls=CommonJSONDecoder)
-        for k, v in line.items():
-            try:
-                self.table_schema.cast(k, v)
-            except InvalidCastError:
-                logging.error('Bad value %r for field %s', v, k)
-                raise
+        if self.validate:
+            for k, v in line.items():
+                try:
+                    self.table_schema.cast(k, v)
+                except InvalidCastError:
+                    logging.error('Bad value %r for field %s', v, k)
+                    raise
         return line
 
     def next(self):
@@ -93,9 +93,11 @@ class ResourceIterator(object):
 def ingest():
     params = None
     first = True
-    if len(sys.argv) > 2:
+    validate = False
+    if len(sys.argv) > 3:
         first = sys.argv[1] == '0'
         params = json.loads(sys.argv[2])
+        validate = sys.argv[3] == 'True'
 
     if first:
         return params, None, None
@@ -126,7 +128,7 @@ def ingest():
             if 'path' not in resource:
                 continue
 
-            res_iter = ResourceIterator(resource, copy)
+            res_iter = ResourceIterator(resource, copy, validate)
             yield res_iter
 
     return params, dp, resources_iterator(resources, original_resources)
