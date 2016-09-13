@@ -17,7 +17,7 @@ for field in fields:
     if field_name not in os_types:
         logging.error('Missing OS Type for field %s', field_name)
     field['type'] = os_types[field_name]
-    field['options'] = options.get(field_name,{})
+    field['options'] = options.get(field_name, {})
 
 result = subprocess.run(['/usr/bin/env', 'os-types', json.dumps(fields)],
                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)

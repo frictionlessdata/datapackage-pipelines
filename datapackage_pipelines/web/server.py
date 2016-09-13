@@ -17,8 +17,11 @@ def main():
         for key in ['ended', 'last_success', 'started']:
             if pipeline.get(key):
                 pipeline[key] = datestr(pipeline[key])
-        pipeline['class'] = 'warning' if pipeline['running'] else 'success' if pipeline['success'] else 'danger'
-        pipeline['status'] = 'Running' if pipeline['running'] else 'Idle' if pipeline['success'] else 'Errored'
+        pipeline['class'] = 'warning' if pipeline['running'] else \
+            'success' if pipeline['success'] \
+                else 'danger'
+        pipeline['status'] = 'Running' if pipeline['running'] else \
+            'Idle' if pipeline['success'] \
+                else 'Errored'
         pipeline['slug'] = pipeline['id'].replace('/', '_').replace('.', '_')
     return render_template('dashboard.html', pipelines=statuses)
-

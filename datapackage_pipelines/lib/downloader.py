@@ -14,12 +14,14 @@ def _reader(opener, _url):
     yield None
     filename = os.path.basename(_url)
     _schema, _headers, _csv_reader = opener()
+    i = 0
     for i, row in enumerate(_csv_reader):
 
         row = [x.strip() for x in row]
         if len(row) == 0:
             # response.iter_lines() might emit an empty string here and there
-            # if the delimiter is more than one byte: https://github.com/kennethreitz/requests/pull/2431
+            # if the delimiter is more than one byte:
+            #       https://github.com/kennethreitz/requests/pull/2431
             continue
         values = set(row)
         if len(values) == 1 and '' in values:
@@ -42,7 +44,7 @@ def _reader(opener, _url):
 
 
 def _null_remover(iterator):
-    for i, line in enumerate(iterator):
+    for line in iterator:
         if line == '':
             continue
         if '\x00' in line:
@@ -50,15 +52,15 @@ def _null_remover(iterator):
         yield line
 
 
-def csv_stream_reader(_resource, url, _encoding=None):
-    def get_opener(_url, _encoding):
+def csv_stream_reader(_resource, _url, _encoding=None):
+    def get_opener(__url, __encoding):
         def opener():
-            if _url.startswith('file://'):
-                response = open(_url[7:], encoding=_encoding)
+            if __url.startswith('file://'):
+                response = open(__url[7:], encoding=__encoding)
             else:
-                response = requests.get(_url, stream=True)
-                if _encoding is not None:
-                    response.encoding = _encoding
+                response = requests.get(__url, stream=True)
+                if __encoding is not None:
+                    response.encoding = __encoding
                 response = response.iter_lines(decode_unicode=True)
             _csv_reader = csv.reader(_null_remover(response))
             _headers = next(_csv_reader)
@@ -76,10 +78,15 @@ def csv_stream_reader(_resource, url, _encoding=None):
                 for header in headers
                 ]
         }
-        resource['schema'] = schema
+        _resource['schema'] = schema
     del csv_reader
 
-    return itertools.islice(_reader(get_opener(url, _encoding), url), 1, None)
+    return itertools\
+        .islice(
+            _reader(
+                get_opener(_url, _encoding),
+                _url),
+            1, None)
 
 
 params, datapackage, res_iter = ingest()

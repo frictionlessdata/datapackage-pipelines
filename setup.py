@@ -28,7 +28,8 @@ INSTALL_REQUIRES = [
     'jsontableschema',
     'pyyaml',
     'redis',
-    'flask'
+    'flask',
+    'os-gobble',
 ]
 LINT_REQUIRES = [
     'pylint',

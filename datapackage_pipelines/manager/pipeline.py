@@ -10,7 +10,9 @@ def initialize_pipeline():
             entry = {
                 'task': TASK_NAME,
                 'schedule': pipeline_details['schedule'],
-                'args': (pipeline_id, pipeline_details['pipeline'], pipeline_cwd)
+                'args': (pipeline_id,
+                         pipeline_details['pipeline'],
+                         pipeline_cwd)
             }
             yield pipeline_id, entry
 

@@ -64,9 +64,9 @@ class CommonJSONDecoder(json.JSONDecoder):
 # pylint: disable=too-few-public-methods
 class ResourceIterator(object):
 
-    def __init__(self, spec, copy, validate=False):
+    def __init__(self, spec, orig_spec, validate=False):
         self.spec = spec
-        self.table_schema = SchemaModel(copy['schema'])
+        self.table_schema = SchemaModel(orig_spec['schema'])
         self.validate = validate
 
     def __iter__(self):
@@ -94,7 +94,7 @@ cache = ''
 
 
 def ingest():
-    global cache
+    global cache # pylint: disable=global-statement
     params = None
     first = True
     validate = False
@@ -119,7 +119,7 @@ def ingest():
     profile = 'tabular'
     if 'tabular' in profiles:
         profiles.remove('tabular')
-    if len(profiles)>0:
+    if len(profiles) > 0:
         profile = profiles.pop(0)
     schema = datapackage.schema.Schema(profile)
     schema.validate(dp)
@@ -127,20 +127,20 @@ def ingest():
     _ = sys.stdin.readline().strip()
 
     def resources_iterator(_resources, _original_resources):
-        # we pass a resource instance that may be changed by the processing code,
-        # so we must keep a copy of the original resource (used to validate incoming data)
-        for resource, copy in zip(_resources, _original_resources):
+        # we pass a resource instance that may be changed by the processing
+        # code, so we must keep a copy of the original resource (used to
+        # validate incoming data)
+        for resource, orig_resource in zip(_resources, _original_resources):
             if 'path' not in resource:
                 continue
 
-            res_iter = ResourceIterator(resource, copy, validate)
+            res_iter = ResourceIterator(resource, orig_resource, validate)
             yield res_iter
 
     return params, dp, resources_iterator(resources, original_resources)
 
 
 def spew(dp, resources_iterator):
-    global cache
     files = [sys.stdout]
 
     cache_filename = ''
