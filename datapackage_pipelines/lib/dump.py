@@ -1,7 +1,8 @@
+import os
 import zipfile
 import csv
 import json
-from io import StringIO
+import tempfile
 
 from jsontableschema.exceptions import InvalidCastError
 from jsontableschema.model import SchemaModel
@@ -41,14 +42,17 @@ def rows_processor(_rows, _csv_file, _zip_file, _writer, _fields, _schema):
                 raise
         _writer.writerow(transformed_row)
         yield row
-    _zip_file.writestr(_rows.spec['path'], _csv_file.getvalue())
+    filename = _csv_file.name
+    _csv_file.close()
+    _zip_file.write(filename, arcname=_rows.spec['path'], compress_type=zipfile.ZIP_DEFLATED)
+    os.unlink(filename)
 
 
 def resource_processor(_res_iter, zip_file):
     for rows in _res_iter:
         schema = rows.spec['schema']
 
-        csv_file = StringIO()
+        csv_file = tempfile.NamedTemporaryFile(mode="w+", delete=False)
         fields = schema['fields']
         headers = list(map(lambda field: field['name'], fields))
 
