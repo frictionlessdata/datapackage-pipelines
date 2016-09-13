@@ -53,10 +53,13 @@ def _null_remover(iterator):
 def csv_stream_reader(_resource, url, _encoding=None):
     def get_opener(_url, _encoding):
         def opener():
-            response = requests.get(_url, stream=True)
-            if _encoding is not None:
-                response.encoding = _encoding
-            response = response.iter_lines(decode_unicode=True)
+            if _url.startswith('file://'):
+                response = open(_url[7:], encoding=_encoding)
+            else:
+                response = requests.get(_url, stream=True)
+                if _encoding is not None:
+                    response.encoding = _encoding
+                response = response.iter_lines(decode_unicode=True)
             _csv_reader = csv.reader(_null_remover(response))
             _headers = next(_csv_reader)
             _schema = _resource.get('schema')

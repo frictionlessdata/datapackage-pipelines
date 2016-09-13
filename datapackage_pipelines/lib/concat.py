@@ -1,3 +1,5 @@
+import logging
+
 from datapackage_pipelines.wrapper import ingest, spew
 
 params, datapackage, res_iter = ingest()
@@ -7,8 +9,12 @@ column_mapping = {}
 for target, sources in column_aliases.items():
     if sources is not None:
         for source in sources:
+            if source in column_mapping:
+                logging.error('Duplicate appearance of %s', source)
             assert source not in column_mapping
             column_mapping[source] = target
+    if target in column_mapping:
+        logging.error('Duplicate appearance of %s', target)
     assert target not in column_mapping
     column_mapping[target] = target
 
