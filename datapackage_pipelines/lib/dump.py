@@ -3,21 +3,20 @@ import zipfile
 import csv
 import json
 import tempfile
+import logging
 
 from jsontableschema.exceptions import InvalidCastError
 from jsontableschema.model import SchemaModel
 
 from datapackage_pipelines.wrapper import ingest, spew
 
-
-import logging
-
 params, datapackage, res_iter = ingest()
 
 out_filename = open(params['out-file'], 'wb')
 out_file = zipfile.ZipFile(out_filename, 'w')
 
-out_file.writestr('datapackage.json', json.dumps(datapackage, ensure_ascii=True))
+out_file.writestr('datapackage.json',
+                  json.dumps(datapackage, ensure_ascii=True))
 
 
 def transform_value(value, _):
@@ -44,7 +43,8 @@ def rows_processor(_rows, _csv_file, _zip_file, _writer, _fields, _schema):
         yield row
     filename = _csv_file.name
     _csv_file.close()
-    _zip_file.write(filename, arcname=_rows.spec['path'], compress_type=zipfile.ZIP_DEFLATED)
+    _zip_file.write(filename, arcname=_rows.spec['path'],
+                    compress_type=zipfile.ZIP_DEFLATED)
     os.unlink(filename)
 
 
@@ -62,7 +62,8 @@ def resource_processor(_res_iter, zip_file):
         fields = dict((field['name'], field) for field in fields)
         schema = SchemaModel(schema)
 
-        yield rows_processor(rows, csv_file, zip_file, csv_writer, fields, schema)
+        yield rows_processor(rows, csv_file, zip_file,
+                             csv_writer, fields, schema)
 
 spew(datapackage, resource_processor(res_iter, out_file))
 out_file.close()

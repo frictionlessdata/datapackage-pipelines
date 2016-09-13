@@ -67,12 +67,15 @@ def find_caches(pipeline_steps, pipeline_cwd):
         m = hashlib.md5()
         m.update(cache_hash.encode('ascii'))
         m.update(open(step['run'], 'rb').read())
-        m.update(json.dumps(step, ensure_ascii=True, sort_keys=True).encode('ascii'))
+        m.update(json.dumps(step, ensure_ascii=True, sort_keys=True)
+                 .encode('ascii'))
         cache_hash = m.hexdigest()
         step['_cache_hash'] = cache_hash
 
     for i, step in reversed(list(enumerate(pipeline_steps))):
-        cache_filename = os.path.join(pipeline_cwd, '.cache', step['_cache_hash'])
+        cache_filename = os.path.join(pipeline_cwd,
+                                      '.cache',
+                                      step['_cache_hash'])
         if os.path.exists(cache_filename):
             logging.info('Found cache for step %d: %s', i, step['run'])
             pipeline_steps = pipeline_steps[i+1:]
@@ -89,20 +92,15 @@ def find_caches(pipeline_steps, pipeline_cwd):
     return pipeline_steps
 
 
-async def async_execute_pipeline(pipeline_id, pipeline_steps, pipeline_cwd, trigger):
-
-    status.running(pipeline_id, trigger, '')
-
-    rfd = None
+async def construct_process_pipeline(pipeline_steps, pipeline_cwd):
+    error_collectors = []
+    processes = []
     error_queue = asyncio.Queue()
     errors = []
-    error_aggregator = asyncio.ensure_future(dequeue_errors(error_queue, errors))
-    error_collectors = []
+    rfd = None
 
-    processes = []
-    logging.info("RUNNING %s:", pipeline_id)
-
-    pipeline_steps = find_caches(pipeline_steps, pipeline_cwd)
+    error_aggregator = \
+        asyncio.ensure_future(dequeue_errors(error_queue, errors))
 
     for i, step in enumerate(pipeline_steps):
 
@@ -129,7 +127,25 @@ async def async_execute_pipeline(pipeline_id, pipeline_steps, pipeline_cwd, trig
 
         processes.append(process)
         rfd = new_rfd
-        error_collectors.append(asyncio.ensure_future(enqueue_errors(process, error_queue)))
+        error_collectors.append(
+            asyncio.ensure_future(enqueue_errors(process, error_queue))
+        )
+    return processes, error_collectors, error_queue, error_aggregator
+
+
+async def async_execute_pipeline(pipeline_id,
+                                 pipeline_steps,
+                                 pipeline_cwd,
+                                 trigger):
+
+    status.running(pipeline_id, trigger, '')
+
+    logging.info("RUNNING %s:", pipeline_id)
+
+    pipeline_steps = find_caches(pipeline_steps, pipeline_cwd)
+
+    processes, error_collectors, error_queue, error_aggregator = \
+        await construct_process_pipeline(pipeline_steps, pipeline_cwd)
 
     def kill_all_processes():
         for to_kill in processes:
@@ -138,11 +154,14 @@ async def async_execute_pipeline(pipeline_id, pipeline_steps, pipeline_cwd, trig
             except ProcessLookupError:
                 pass
 
-    pending = [asyncio.ensure_future(process_death_waiter(process)) for process in processes]
+    pending = [asyncio.ensure_future(process_death_waiter(process))
+               for process in processes]
     while len(pending) > 0:
         done = []
         try:
-            done, pending = await asyncio.wait(pending, return_when=asyncio.FIRST_COMPLETED)
+            done, pending = \
+                await asyncio.wait(pending,
+                                   return_when=asyncio.FIRST_COMPLETED)
         except CancelledError:
             kill_all_processes()
 
@@ -160,13 +179,21 @@ async def async_execute_pipeline(pipeline_id, pipeline_steps, pipeline_cwd, trig
     await error_aggregator
 
 
-def execute_pipeline(pipeline_id, pipeline_steps, pipeline_cwd, trigger='manual'):
+def execute_pipeline(pipeline_id,
+                     pipeline_steps,
+                     pipeline_cwd,
+                     trigger='manual'):
+
     loop = asyncio.get_event_loop()
 
-    pipeline_task = asyncio.ensure_future(async_execute_pipeline(pipeline_id, pipeline_steps, pipeline_cwd, trigger))
+    pipeline_task = \
+        asyncio.ensure_future(async_execute_pipeline(pipeline_id,
+                                                     pipeline_steps,
+                                                     pipeline_cwd,
+                                                     trigger))
     try:
         loop.run_until_complete(pipeline_task)
-    except KeyboardInterrupt as e:
+    except KeyboardInterrupt:
         logging.info("Caught keyboard interrupt. Cancelling tasks...")
         # pipeline_task.throw(e)
         pipeline_task.cancel()

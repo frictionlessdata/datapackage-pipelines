@@ -11,7 +11,9 @@ def main():
         else:
             for pipeline_id, pipeline_details, pipeline_cwd in pipelines():
                 if pipeline_id == sys.argv[1]:
-                    execute_pipeline(pipeline_id, pipeline_details['pipeline'], pipeline_cwd)
+                    execute_pipeline(pipeline_id,
+                                     pipeline_details['pipeline'],
+                                     pipeline_cwd)
                     break
     else:
         print('Available Pipelines:')
