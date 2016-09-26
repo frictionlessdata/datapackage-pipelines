@@ -186,12 +186,16 @@ async def async_execute_pipeline(pipeline_id,
                        trigger,
                        '\n'.join(errors))
 
-    stop_error_collecting()
+    await stop_error_collecting()
+
+    cache_hash = ''
+    if len(pipeline_steps) > 0:
+        cache_hash = pipeline_steps[-1]['_cache_hash']
 
     status.idle(pipeline_id,
                 success,
                 '\n'.join(errors),
-                pipeline_steps[-1]['cache_hash'])
+                cache_hash)
 
 
 def execute_pipeline(pipeline_id,
