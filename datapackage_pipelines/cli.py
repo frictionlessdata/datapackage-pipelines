@@ -10,7 +10,8 @@ def main():
             from .web import app
             app.run(host='0.0.0.0', debug=True, port=5000)
         else:
-            for pipeline_id, pipeline_details, pipeline_cwd in pipelines():
+            for pipeline_id, pipeline_details, pipeline_cwd, dirty \
+                    in pipelines():
                 if pipeline_id == sys.argv[1]:
                     execute_pipeline(pipeline_id,
                                      pipeline_details['pipeline'],
@@ -18,8 +19,8 @@ def main():
                     break
     else:
         print('Available Pipelines:')
-        for pipeline_id, _, _ in pipelines():
-            print('- {}'.format(pipeline_id))
+        for pipeline_id, _, _, dirty in pipelines():
+            print('- {} {}'.format(pipeline_id, '(*)' if dirty else ''))
 
 if __name__ == "__main__":
     main()

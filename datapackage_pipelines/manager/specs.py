@@ -1,5 +1,7 @@
+import json
 import os
 import logging
+import hashlib
 
 import yaml
 
@@ -87,6 +89,16 @@ def validate_specs():
             logging.error(e)
             continue
 
+        cache_hash = ''
+        for step in pipeline:
+            m = hashlib.md5()
+            m.update(cache_hash.encode('ascii'))
+            m.update(open(step['run'], 'rb').read())
+            m.update(json.dumps(step, ensure_ascii=True, sort_keys=True)
+                     .encode('ascii'))
+            cache_hash = m.hexdigest()
+            step['_cache_hash'] = cache_hash
+
         schedule = pipeline_details['schedule']
         if 'crontab' in schedule:
             crontab_spec = schedule['crontab'].split()
@@ -96,9 +108,9 @@ def validate_specs():
             raise NotImplementedError("Couldn't find valid schedule at {0}"
                                       .format(abspath))
 
-        status.register(pipeline_id)
+        dirty = status.register(pipeline_id, cache_hash)
 
-        yield pipeline_id, pipeline_details, abspath
+        yield pipeline_id, pipeline_details, abspath, dirty
 
 
 def pipelines():

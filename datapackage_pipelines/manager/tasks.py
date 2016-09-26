@@ -1,4 +1,3 @@
-import hashlib
 import os
 import sys
 import json
@@ -61,16 +60,6 @@ def find_caches(pipeline_steps, pipeline_cwd):
     if not any(step.get('cache') for step in pipeline_steps):
         # If no step requires caching then bail
         return pipeline_steps
-
-    cache_hash = ''
-    for step in pipeline_steps:
-        m = hashlib.md5()
-        m.update(cache_hash.encode('ascii'))
-        m.update(open(step['run'], 'rb').read())
-        m.update(json.dumps(step, ensure_ascii=True, sort_keys=True)
-                 .encode('ascii'))
-        cache_hash = m.hexdigest()
-        step['_cache_hash'] = cache_hash
 
     for i, step in reversed(list(enumerate(pipeline_steps))):
         cache_filename = os.path.join(pipeline_cwd,
@@ -139,7 +128,6 @@ async def construct_process_pipeline(pipeline_steps, pipeline_cwd, errors):
             await _error_aggregator
         return _func
 
-
     return processes, \
            stop_error_collecting(error_collectors,
                                  error_queue,
@@ -151,7 +139,9 @@ async def async_execute_pipeline(pipeline_id,
                                  pipeline_cwd,
                                  trigger):
 
-    status.running(pipeline_id, trigger, '')
+    if not status.running(pipeline_id, trigger, ''):
+        logging.info("ALREADY RUNNING %s, BAILING OUT", pipeline_id)
+        return
 
     logging.info("RUNNING %s:", pipeline_id)
 
@@ -200,7 +190,9 @@ async def async_execute_pipeline(pipeline_id,
 
     status.idle(pipeline_id,
                 success,
-                '\n'.join(errors))
+                '\n'.join(errors),
+                pipeline_steps[-1]['cache_hash'])
+
 
 def execute_pipeline(pipeline_id,
                      pipeline_steps,
@@ -218,15 +210,11 @@ def execute_pipeline(pipeline_id,
         loop.run_until_complete(pipeline_task)
     except KeyboardInterrupt:
         logging.info("Caught keyboard interrupt. Cancelling tasks...")
-        # pipeline_task.throw(e)
         pipeline_task.cancel()
         loop.run_forever()
-        # pipeline_task.exception()
         logging.info("Caught keyboard interrupt. DONE!")
     finally:
         loop.close()
-
-    loop.close()
 
 
 @current_app.task
