@@ -6,7 +6,6 @@ import logging
 import asyncio
 from concurrent.futures import CancelledError
 
-from celery import current_app
 from .status import status
 from .specs import resolve_executor
 
@@ -139,9 +138,11 @@ async def async_execute_pipeline(pipeline_id,
                                  pipeline_cwd,
                                  trigger):
 
-    if not status.running(pipeline_id, trigger, ''):
+    if status.is_running(pipeline_id):
         logging.info("ALREADY RUNNING %s, BAILING OUT", pipeline_id)
         return
+
+    status.running(pipeline_id, trigger, '')
 
     logging.info("RUNNING %s:", pipeline_id)
 
@@ -220,7 +221,3 @@ def execute_pipeline(pipeline_id,
     finally:
         loop.close()
 
-
-@current_app.task
-def execute_pipeline_task(pipeline_id, pipeline_steps, pipeline_cwd):
-    execute_pipeline(pipeline_id, pipeline_steps, pipeline_cwd, 'schedule')

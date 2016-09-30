@@ -171,5 +171,8 @@ def spew(dp, resources_iterator):
 
     logging.info('Processed %d rows', row_count)
 
+    for f in files:
+        f.close()
+
     if len(cache) > 0:
         os.rename(cache_filename+'.ongoing', cache_filename)

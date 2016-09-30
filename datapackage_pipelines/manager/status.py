@@ -23,18 +23,28 @@ class RedisConnection(object):
             self.redis = None
         self.initialized = False
 
+    def is_running(self, _id):
+        if self.redis is None:
+            return False
+        _status = self.redis.get(_id)
+        _status = json.loads(_status.decode('ascii'))
+        cur_time = time.time()
+        # A running task must have been updated in the last 10 seconds
+        is_running = \
+            (_status['running'] is True) and \
+            (cur_time - _status.get('updated', cur_time) < 60)
+        return is_running
+
     def running(self, _id, trigger=None, log=None):
         if self.redis is None:
             return True
         _status = self.redis.get(_id)
         _status = json.loads(_status.decode('ascii'))
+
         cur_time = time.time()
-        # If a task was interrupted, after a minute it implicitly becomes idle
-        was_idle = \
-            (_status['running'] is False) or \
-            (_status.get('updated', cur_time) - cur_time > 60)
-        if was_idle:
+        if not self.is_running(_id):
             _status['started'] = cur_time
+
         _status.update({
             'id': _id,
             'running': True,
@@ -43,7 +53,6 @@ class RedisConnection(object):
             'reason': log
         })
         self.redis.set(_id, json.dumps(_status))
-        return was_idle
 
     def idle(self, _id, success, reason=None, cache_hash=None):
         if self.redis is None:
@@ -82,7 +91,6 @@ class RedisConnection(object):
             }
         dirty = _status['cache_hash'] != cache_hash
         _status.update({
-            'updated': time.time(),
             'running': False,
         })
         self.redis.set(_id, json.dumps(_status, ensure_ascii=True))

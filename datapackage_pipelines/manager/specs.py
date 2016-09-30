@@ -101,8 +101,7 @@ def validate_specs():
 
         schedule = pipeline_details['schedule']
         if 'crontab' in schedule:
-            crontab_spec = schedule['crontab'].split()
-            schedule = crontab(*crontab_spec)
+            schedule = schedule['crontab'].split()
             pipeline_details['schedule'] = schedule
         else:
             raise NotImplementedError("Couldn't find valid schedule at {0}"
