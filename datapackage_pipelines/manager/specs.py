@@ -84,6 +84,7 @@ def validate_specs():
             for step in pipeline:
                 validate_required_keys(step, ['run'], abspath)
                 executor = step['run']
+                step['name'] = executor
                 step['run'] = resolve_executor(executor, abspath)
         except FileNotFoundError as e:
             logging.error(e)

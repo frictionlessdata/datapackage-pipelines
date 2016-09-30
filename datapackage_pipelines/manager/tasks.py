@@ -12,9 +12,10 @@ from .specs import resolve_executor
 runner = '%-32s' % 'Main'
 logging.basicConfig(level=logging.DEBUG,
                     format="%(levelname)-8s:"+runner+":%(message)s")
+logging.root.setLevel(logging.DEBUG)
 
 
-async def enqueue_errors(process, queue):
+async def enqueue_errors(step, process, queue):
     out = process.stderr
     while True:
         line = await out.readline()
@@ -22,7 +23,7 @@ async def enqueue_errors(process, queue):
             break
         line = line.decode('utf8').rstrip()
         if len(line) != 0:
-            print(line)
+            logging.info("%s: %s", step['name'], line)
             await queue.put(line)
 
 
@@ -115,7 +116,7 @@ async def construct_process_pipeline(pipeline_steps, pipeline_cwd, errors):
         processes.append(process)
         rfd = new_rfd
         error_collectors.append(
-            asyncio.ensure_future(enqueue_errors(process, error_queue))
+            asyncio.ensure_future(enqueue_errors(step, process, error_queue))
         )
 
     def stop_error_collecting(_error_collectors,
