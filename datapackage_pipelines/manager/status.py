@@ -89,7 +89,7 @@ class RedisConnection(object):
                 'id': _id,
                 'cache_hash': ''
             }
-        dirty = _status['cache_hash'] != cache_hash
+        dirty = _status.get('cache_hash') != cache_hash
         _status.update({
             'running': False,
         })
