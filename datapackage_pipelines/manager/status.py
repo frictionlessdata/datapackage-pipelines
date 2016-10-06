@@ -83,12 +83,13 @@ class RedisConnection(object):
             self.initialized = True
         self.redis.sadd('all-pipelines', _id)
         _status = self.redis.get(_id)
-        _status = json.loads(_status.decode('ascii'))
         if _status is None:
             _status = {
                 'id': _id,
                 'cache_hash': ''
             }
+        else:
+            _status = json.loads(_status.decode('ascii'))
         dirty = _status.get('cache_hash') != cache_hash
         _status.update({
             'running': False,
