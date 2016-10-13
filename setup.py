@@ -30,6 +30,7 @@ INSTALL_REQUIRES = [
     'redis',
     'flask',
     'os-gobble',
+    'click',
 ]
 LINT_REQUIRES = [
     'pylint',
@@ -77,7 +78,7 @@ setup(
     ],
     entry_points={
       'console_scripts': [
-        'dpp = datapackage_pipelines.cli:main',
+        'dpp = datapackage_pipelines.cli:cli',
       ]
     },
 )

@@ -21,7 +21,6 @@ class RedisConnection(object):
             logging.warning('Failed to connect to Redis, host:%s, port:%s',
                             host, port)
             self.redis = None
-        self.initialized = False
 
     def is_running(self, _id):
         if self.redis is None:
@@ -78,9 +77,6 @@ class RedisConnection(object):
     def register(self, _id, cache_hash):
         if self.redis is None:
             return
-        if not self.initialized:
-            self.redis.delete('all-pipelines')
-            self.initialized = True
         self.redis.sadd('all-pipelines', _id)
         _status = self.redis.get(_id)
         if _status is None:
@@ -96,6 +92,11 @@ class RedisConnection(object):
         })
         self.redis.set(_id, json.dumps(_status, ensure_ascii=True))
         return dirty
+
+    def initialize(self):
+        if self.redis is None:
+            return
+        self.redis.delete('all-pipelines')
 
     def all_statuses(self):
         if self.redis is None:
