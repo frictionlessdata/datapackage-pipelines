@@ -246,8 +246,9 @@ A pipeline spec has two keys:
     `crontab` schedule row.
  - `pipeline`: a list of steps, each is an object with the following properties:
     - `run`: the name of the executor - a Python script which will perform the step's actions.
-        This script is searched in the current directory (read: where the running instructions file is located), or 
-        in the common lib of executors (in that order).
+        This script is searched in the current directory (read: where the running instructions file is located), 
+        in paths specified in the `DATAPIPELINES_PROCESSOR_PATH` environment variable, or in the common lib 
+        of executors (in that order).
         Relative paths can be specified with the 'dot-notation': `a.b` is referring to script `b` in directory `a`; 
         `...c.d.e` will look for `../../c/d/e.py`. 
     - `parameters`: running parameters which the executor will receive when invoked.

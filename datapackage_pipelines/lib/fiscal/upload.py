@@ -20,4 +20,4 @@ in_file.close()
 datapackage_json = os.path.join(temp_dir, 'datapackage.json')
 
 package = gobble.fiscal.FiscalDataPackage(datapackage_json, user=user)
-package.upload()
+package.upload(skip_validation=True)

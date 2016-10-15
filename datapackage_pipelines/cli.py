@@ -22,14 +22,17 @@ def serve():
 
 
 @cli.command()
-def run(pipeline_id):
+@click.argument('pipeline_id')
+@click.option('--use-cache/--no-use-cache', default=True)
+def run(pipeline_id, use_cache):
     """Execute a single pipeline"""
     for _pipeline_id, pipeline_details, pipeline_cwd, dirty \
             in pipelines():
         if _pipeline_id == pipeline_id:
             execute_pipeline(pipeline_id,
                              pipeline_details['pipeline'],
-                             pipeline_cwd)
+                             pipeline_cwd,
+                             use_cache=use_cache)
             break
 
 

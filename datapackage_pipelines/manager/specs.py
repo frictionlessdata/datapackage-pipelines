@@ -5,14 +5,13 @@ import hashlib
 
 import yaml
 
-from celery.schedules import crontab
 from .status import status
 
 SPEC_FILENAME = 'pipeline-spec.yaml'
+PROCESSOR_PATH = os.environ.get('DATAPIPELINES_PROCESSOR_PATH', '').split(';')
 
 
 def find_specs(root_dir='.'):
-
     for dirpath, _, filenames in os.walk(root_dir):
         if SPEC_FILENAME in filenames:
             abspath = os.path.abspath(dirpath)
@@ -40,13 +39,13 @@ def resolve_executor(executor, path):
     parts.extend(executor)
 
     local_parts = [path] + parts
-    if os.path.exists('common'):
-        common_parts = [os.path.abspath('common')] + parts
-    else:
-        common_parts = local_parts
-    lib_parts = [os.path.dirname(__file__), '..', 'lib'] + parts
+    resolve_order = [local_parts]
 
-    resolve_order = [local_parts, common_parts, lib_parts]
+    for resolve_location in PROCESSOR_PATH:
+        resolve_order.append([os.path.abspath(resolve_location)] + parts)
+
+    lib_parts = [os.path.dirname(__file__), '..', 'lib'] + parts
+    resolve_order.append(lib_parts)
 
     for option in resolve_order:
         option = os.path.join(*option)

@@ -137,7 +137,8 @@ async def construct_process_pipeline(pipeline_steps, pipeline_cwd, errors):
 async def async_execute_pipeline(pipeline_id,
                                  pipeline_steps,
                                  pipeline_cwd,
-                                 trigger):
+                                 trigger,
+                                 use_cache):
 
     if status.is_running(pipeline_id):
         logging.info("ALREADY RUNNING %s, BAILING OUT", pipeline_id)
@@ -147,7 +148,8 @@ async def async_execute_pipeline(pipeline_id,
 
     logging.info("RUNNING %s:", pipeline_id)
 
-    pipeline_steps = find_caches(pipeline_steps, pipeline_cwd)
+    if use_cache:
+        pipeline_steps = find_caches(pipeline_steps, pipeline_cwd)
     errors = []
 
     processes, stop_error_collecting = \
@@ -203,7 +205,8 @@ async def async_execute_pipeline(pipeline_id,
 def execute_pipeline(pipeline_id,
                      pipeline_steps,
                      pipeline_cwd,
-                     trigger='manual'):
+                     trigger='manual',
+                     use_cache=True):
 
     loop = asyncio.get_event_loop()
 
@@ -211,7 +214,8 @@ def execute_pipeline(pipeline_id,
         asyncio.ensure_future(async_execute_pipeline(pipeline_id,
                                                      pipeline_steps,
                                                      pipeline_cwd,
-                                                     trigger))
+                                                     trigger,
+                                                     use_cache))
     try:
         loop.run_until_complete(pipeline_task)
     except KeyboardInterrupt:
