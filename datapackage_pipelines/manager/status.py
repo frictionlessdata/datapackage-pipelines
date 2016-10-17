@@ -98,6 +98,15 @@ class RedisConnection(object):
             return
         self.redis.delete('all-pipelines')
 
+    def get_status(self, _id):
+        if self.redis is None:
+            return None
+        sts = self.redis.get(_id)
+        if sts is not None:
+            return json.loads(sts.decode('ascii'))
+        else:
+            return None
+
     def all_statuses(self):
         if self.redis is None:
             return []
