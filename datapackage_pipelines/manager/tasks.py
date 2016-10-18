@@ -5,6 +5,7 @@ import logging
 
 import asyncio
 from concurrent.futures import CancelledError
+from json.decoder import JSONDecodeError
 
 from .status import status
 from .specs import resolve_executor
@@ -40,18 +41,28 @@ async def dequeue_errors(queue, out):
 async def count_lines(infile):
     reader = asyncio.StreamReader()
     reader_protocol = asyncio.StreamReaderProtocol(reader)
-    await asyncio.get_event_loop() \
+    transport, protocol = await asyncio.get_event_loop() \
         .connect_read_pipe(lambda: reader_protocol, infile)
     count = 0
-    line = None
     dp = None
-    while line != b'':
+    while True:
         line = await reader.readline()
+        if line == b'':
+            break
         if dp is None:
-            dp = json.loads(line.decode('ascii'))
+            try:
+                dp = json.loads(line.decode('ascii'))
+            except JSONDecodeError:
+                break
         count += 1
+
+    transport.close()
+
+    if dp is None or count == 0:
+        return 0
+
     # 1 for the datapackage, 1 for the last '' line and 1 per resource
-    count = count - 2 - len(dp.get('resources', []))
+    count = count - 1 - len(dp.get('resources', []))
     return count
 
 

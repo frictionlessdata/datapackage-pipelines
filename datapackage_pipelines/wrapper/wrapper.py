@@ -62,18 +62,23 @@ def spew(dp, resources_iterator):
         files.append(gzip.open(cache_filename+'.ongoing', 'wt'))
 
     row_count = 0
-    for f in files:
-        f.write(json.dumps(dp, ensure_ascii=True)+'\n')
-    for res in resources_iterator:
+    try:
         for f in files:
-            f.write('\n')
-        for rec in res:
-            line = json.dumps(rec, cls=CommonJSONEncoder, ensure_ascii=True)
-            # logging.error('SPEWING: {}'.format(line))
+            f.write(json.dumps(dp, ensure_ascii=True)+'\n')
+        for res in resources_iterator:
             for f in files:
-                f.write(line+'\n')
-            # logging.error('WROTE')
-            row_count += 1
+                f.write('\n')
+            for rec in res:
+                line = json.dumps(rec, cls=CommonJSONEncoder, ensure_ascii=True)
+                # logging.error('SPEWING: {}'.format(line))
+                for f in files:
+                    f.write(line+'\n')
+                # logging.error('WROTE')
+                row_count += 1
+    except BrokenPipeError:
+        logging.error('Output pipe disappeared!')
+        sys.stderr.close()
+        sys.exit(1)
 
     logging.info('Processed %d rows', row_count)
 
