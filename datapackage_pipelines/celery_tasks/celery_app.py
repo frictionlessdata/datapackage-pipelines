@@ -5,7 +5,8 @@ from celery.schedules import crontab
 
 from datapackage_pipelines.manager import pipelines
 
-TASK_NAME = 'datapackage_pipelines.celery_tasks.celery_tasks.execute_pipeline_task'
+TASK_NAME = 'datapackage_pipelines.celery_tasks.celery_tasks' + \
+                '.execute_pipeline_task'
 
 
 CELERY_SCHEDULE = {}

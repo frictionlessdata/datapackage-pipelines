@@ -26,7 +26,7 @@ def serve():
 @click.option('--use-cache/--no-use-cache', default=True)
 def run(pipeline_id, use_cache):
     """Execute a single pipeline"""
-    for _pipeline_id, pipeline_details, pipeline_cwd, dirty \
+    for _pipeline_id, pipeline_details, pipeline_cwd, _ \
             in pipelines():
         if _pipeline_id == pipeline_id:
             execute_pipeline(pipeline_id,

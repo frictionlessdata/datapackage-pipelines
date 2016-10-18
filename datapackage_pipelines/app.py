@@ -1,6 +1,8 @@
 import logging
 
 from .manager import pipelines
+
+# pylint: disable=unused-import
 from .celery_tasks import celery_app, execute_pipeline_task
 
 

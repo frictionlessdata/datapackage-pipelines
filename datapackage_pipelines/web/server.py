@@ -38,6 +38,9 @@ def badge(pipeline_id):
     success = pipeline_status.get('success')
     if success is True:
         status_text = 'Passing'
+        record_count = pipeline_status.get('record_count')
+        if record_count is not None:
+            status_text += ' (%d records)' % record_count
         status_color = 'brightgreen'
     elif success is False:
         status_text = 'Failing'

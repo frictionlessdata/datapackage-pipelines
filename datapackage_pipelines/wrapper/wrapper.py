@@ -1,4 +1,3 @@
-import copy
 import gzip
 import sys
 import os
@@ -7,9 +6,7 @@ import logging
 import decimal
 import datetime
 
-import datapackage
-from jsontableschema.exceptions import InvalidCastError
-from jsontableschema.model import SchemaModel
+from .input_processor import process_input
 
 
 def processor():
@@ -33,73 +30,10 @@ class CommonJSONEncoder(json.JSONEncoder):
             return {'type{date}': str(obj)}
 
 
-class CommonJSONDecoder(json.JSONDecoder):
-    """
-    Common JSON Encoder
-    json.loads(myString, cls=CommonJSONEncoder)
-    """
-
-    @classmethod
-    def object_hook(cls, obj):  # pylint: disable=method-hidden
-        if 'type{decimal}' in obj:
-            try:
-                return decimal.Decimal(obj['type{decimal}'])
-            except decimal.InvalidOperation:
-                pass
-        if 'type{date}' in obj:
-            try:
-                return datetime.datetime \
-                    .strptime(obj["type{date}"], '%Y-%m-%d') \
-                    .date()
-            except ValueError:
-                pass
-
-        return obj
-
-    def __init__(self, **kwargs):
-        kwargs['object_hook'] = self.object_hook
-        super(CommonJSONDecoder, self).__init__(**kwargs)
-
-
-# pylint: disable=too-few-public-methods
-class ResourceIterator(object):
-
-    def __init__(self, spec, orig_spec, validate=False):
-        self.spec = spec
-        self.table_schema = SchemaModel(orig_spec['schema'])
-        self.validate = validate
-
-    def __iter__(self):
-        return self
-
-    def __next__(self): # pylint: disable=no-self-use
-        line = sys.stdin.readline().strip()
-        if line == '':
-            raise StopIteration()
-        # logging.error('INGESTING: {}'.format(line))
-        line = json.loads(line, cls=CommonJSONDecoder)
-        if self.validate:
-            for k, v in line.items():
-                try:
-                    self.table_schema.cast(k, v)
-                except (InvalidCastError, TypeError):
-                    field = self.table_schema.get_field(k)
-                    if field is None:
-                        logging.error('Validation failed: No such field %s', k)
-                    else:
-                        logging.error('Validation failed: Bad value %r '
-                                      'for field %s with type %s',
-                                      v, k, field.get('type'))
-                    sys.exit(1)
-        return line
-
-    def next(self):
-        return self.__next__()
-
 cache = ''
 
 
-def ingest():
+def ingest(debug=False):
     global cache # pylint: disable=global-statement
     params = None
     first = True
@@ -113,37 +47,8 @@ def ingest():
     if first:
         return params, None, None
 
-    dp_json = sys.stdin.readline().strip()
-    if dp_json == '':
-        logging.error('Missing input')
-        sys.exit(1)
-    dp = json.loads(dp_json)
-    resources = dp.get('resources', [])
-    original_resources = copy.deepcopy(resources)
-
-    profiles = list(dp.get('profiles', {}).keys())
-    profile = 'tabular'
-    if 'tabular' in profiles:
-        profiles.remove('tabular')
-    if len(profiles) > 0:
-        profile = profiles.pop(0)
-    schema = datapackage.schema.Schema(profile)
-    schema.validate(dp)
-
-    _ = sys.stdin.readline().strip()
-
-    def resources_iterator(_resources, _original_resources):
-        # we pass a resource instance that may be changed by the processing
-        # code, so we must keep a copy of the original resource (used to
-        # validate incoming data)
-        for resource, orig_resource in zip(_resources, _original_resources):
-            if 'path' not in resource:
-                continue
-
-            res_iter = ResourceIterator(resource, orig_resource, validate)
-            yield res_iter
-
-    return params, dp, resources_iterator(resources, original_resources)
+    datapackage, resource_iterator = process_input(sys.stdin, validate, debug)
+    return params, datapackage, resource_iterator
 
 
 def spew(dp, resources_iterator):
@@ -164,9 +69,10 @@ def spew(dp, resources_iterator):
             f.write('\n')
         for rec in res:
             line = json.dumps(rec, cls=CommonJSONEncoder, ensure_ascii=True)
+            # logging.error('SPEWING: {}'.format(line))
             for f in files:
                 f.write(line+'\n')
-            # logging.error('SPEWING: {}'.format(line))
+            # logging.error('WROTE')
             row_count += 1
 
     logging.info('Processed %d rows', row_count)

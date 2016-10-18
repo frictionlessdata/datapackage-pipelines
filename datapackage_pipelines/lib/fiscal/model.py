@@ -44,6 +44,7 @@ datapackage['profiles'] = {
     'fiscal': '*',
     'tabular': '*'
 }
-datapackage['@context'] = 'http://schemas.frictionlessdata.io/fiscal-data-package.jsonld'
+datapackage['@context'] = \
+    'http://schemas.frictionlessdata.io/fiscal-data-package.jsonld'
 
 spew(datapackage, res_iter)

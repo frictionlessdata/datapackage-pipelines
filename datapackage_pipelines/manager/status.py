@@ -53,7 +53,8 @@ class RedisConnection(object):
         })
         self.redis.set(_id, json.dumps(_status))
 
-    def idle(self, _id, success, reason=None, cache_hash=None):
+    def idle(self, _id, success, reason=None, cache_hash=None,
+             record_count=None):
         if self.redis is None:
             return
         _status = self.redis.get(_id)
@@ -70,7 +71,8 @@ class RedisConnection(object):
         if success is True:
             _status.update({
                 'last_success': _status['ended'],
-                'cache_hash': cache_hash
+                'cache_hash': cache_hash,
+                'record_count': record_count
             })
         self.redis.set(_id, json.dumps(_status, ensure_ascii=True))
 

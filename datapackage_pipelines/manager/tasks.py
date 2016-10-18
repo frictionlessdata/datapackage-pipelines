@@ -37,6 +37,24 @@ async def dequeue_errors(queue, out):
             out.pop(0)
 
 
+async def count_lines(infile):
+    reader = asyncio.StreamReader()
+    reader_protocol = asyncio.StreamReaderProtocol(reader)
+    await asyncio.get_event_loop() \
+        .connect_read_pipe(lambda: reader_protocol, infile)
+    count = 0
+    line = None
+    dp = None
+    while line != b'':
+        line = await reader.readline()
+        if dp is None:
+            dp = json.loads(line.decode('ascii'))
+        count += 1
+    # 1 for the datapackage, 1 for the last '' line and 1 per resource
+    count = count - 2 - len(dp.get('resources', []))
+    return count
+
+
 def create_process(args, cwd, wfd, rfd):
     pass_fds = {rfd, wfd}
     if None in pass_fds:
@@ -92,10 +110,7 @@ async def construct_process_pipeline(pipeline_steps, pipeline_cwd, errors):
 
     for i, step in enumerate(pipeline_steps):
 
-        if i != len(pipeline_steps)-1:
-            new_rfd, wfd = os.pipe()
-        else:
-            new_rfd, wfd = None, None
+        new_rfd, wfd = os.pipe()
 
         logging.info("- %s", step['run'])
         args = [
@@ -119,21 +134,25 @@ async def construct_process_pipeline(pipeline_steps, pipeline_cwd, errors):
             asyncio.ensure_future(enqueue_errors(step, process, error_queue))
         )
 
-    def stop_error_collecting(_error_collectors,
-                              _error_queue,
-                              _error_aggregator):
+    error_collectors.append(asyncio.ensure_future(count_lines(os.fdopen(rfd))))
+
+    def wait_for_finish(_error_collectors,
+                        _error_queue,
+                        _error_aggregator):
         async def _func():
-            await asyncio.gather(*_error_collectors)
+            *_, count = await asyncio.gather(*_error_collectors)
             await _error_queue.put(None)
             await _error_aggregator
+            return count
         return _func
 
     return processes, \
-           stop_error_collecting(error_collectors,
-                                 error_queue,
-                                 error_aggregator)
+        wait_for_finish(error_collectors,
+                        error_queue,
+                        error_aggregator)
 
 
+# pylint: disable=too-many-locals
 async def async_execute_pipeline(pipeline_id,
                                  pipeline_steps,
                                  pipeline_cwd,
@@ -190,7 +209,7 @@ async def async_execute_pipeline(pipeline_id,
                        trigger,
                        '\n'.join(errors))
 
-    await stop_error_collecting()
+    line_count = await stop_error_collecting()
 
     cache_hash = ''
     if len(pipeline_steps) > 0:
@@ -199,7 +218,8 @@ async def async_execute_pipeline(pipeline_id,
     status.idle(pipeline_id,
                 success,
                 '\n'.join(errors),
-                cache_hash)
+                cache_hash,
+                line_count)
 
 
 def execute_pipeline(pipeline_id,
@@ -225,4 +245,3 @@ def execute_pipeline(pipeline_id,
         logging.info("Caught keyboard interrupt. DONE!")
     finally:
         loop.close()
-
