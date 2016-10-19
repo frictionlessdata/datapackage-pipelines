@@ -1,11 +1,11 @@
 import os
 import sys
 import json
+from json.decoder import JSONDecodeError
 import logging
 
 import asyncio
 from concurrent.futures import CancelledError
-from json.decoder import JSONDecodeError
 
 from .status import status
 from .specs import resolve_executor
@@ -41,7 +41,7 @@ async def dequeue_errors(queue, out):
 async def count_lines(infile):
     reader = asyncio.StreamReader()
     reader_protocol = asyncio.StreamReaderProtocol(reader)
-    transport, protocol = await asyncio.get_event_loop() \
+    transport, _ = await asyncio.get_event_loop() \
         .connect_read_pipe(lambda: reader_protocol, infile)
     count = 0
     dp = None

@@ -5,10 +5,10 @@ import hashlib
 
 import yaml
 
+from .resolver import resolve_executor
 from .status import status
 
 SPEC_FILENAME = 'pipeline-spec.yaml'
-PROCESSOR_PATH = os.environ.get('DATAPIPELINES_PROCESSOR_PATH', '').split(';')
 
 
 def find_specs(root_dir='.'):
@@ -21,39 +21,6 @@ def find_specs(root_dir='.'):
                 for pipeline_id, pipeline_details in spec.items():
                     pipeline_id = os.path.join(dirpath, pipeline_id)
                     yield abspath, pipeline_id, pipeline_details
-
-
-def resolve_executor(executor, path):
-
-    parts = []
-    while executor.startswith('..'):
-        parts.append('..')
-        executor = executor[1:]
-
-    if executor.startswith('.'):
-        executor = executor[1:]
-
-    executor = executor.split('.')
-    executor[-1] += '.py'
-
-    parts.extend(executor)
-
-    local_parts = [path] + parts
-    resolve_order = [local_parts]
-
-    for resolve_location in PROCESSOR_PATH:
-        resolve_order.append([os.path.abspath(resolve_location)] + parts)
-
-    lib_parts = [os.path.dirname(__file__), '..', 'lib'] + parts
-    resolve_order.append(lib_parts)
-
-    for option in resolve_order:
-        option = os.path.join(*option)
-        if os.path.exists(option):
-            return option
-
-    raise FileNotFoundError("Couldn't resolve {0} at {1}"
-                            .format(executor, path))
 
 
 def validate_required_keys(obj, keys, abspath):
