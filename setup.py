@@ -31,6 +31,7 @@ INSTALL_REQUIRES = [
     'flask',
     'os-gobble',
     'click',
+    'awesome-slugify'
 ]
 LINT_REQUIRES = [
     'pylint',
