@@ -5,22 +5,65 @@ import hashlib
 
 import yaml
 
-from .resolver import resolve_executor
+from .resolver import resolve_executor, resolve_generator
 from .status import status
 
 SPEC_FILENAME = 'pipeline-spec.yaml'
+SOURCE_FILENAME_SUFFIX = '.source-spec.yaml'
+
+
+def find_pipeline_specs(dirpath, filenames):
+    if SPEC_FILENAME in filenames:
+        abspath = os.path.abspath(dirpath)
+        fullpath = os.path.join(abspath, SPEC_FILENAME)
+        with open(fullpath, encoding='utf8') as spec_file:
+            spec = yaml.load(spec_file.read())
+            for pipeline_id, pipeline_details in spec.items():
+                pipeline_id = os.path.join(dirpath, pipeline_id)
+                yield abspath, pipeline_id, pipeline_details
+
+
+def find_source_specs(dirpath, filenames):
+    abspath = os.path.abspath(dirpath)
+    for filename in filenames:
+        if not filename.endswith(SOURCE_FILENAME_SUFFIX):
+            continue
+
+        fullpath = os.path.join(abspath, filename)
+
+        module_name = filename[:-len(SOURCE_FILENAME_SUFFIX)]
+        generator = resolve_generator(module_name)
+        if generator is None:
+            logging.warning('Unknown source description kind "%s" in %s',
+                            module_name, fullpath)
+            continue
+
+        with open(fullpath, encoding='utf8') as spec_file:
+            source_spec = yaml.load(spec_file.read())
+            if generator.internal_validate(source_spec):
+                spec = generator.internal_generate(source_spec)
+                for pipeline_id, schedule, steps in spec:
+                    pipeline_details = {
+                        'schedule': {'crontab': schedule},
+                        'pipeline': steps
+                    }
+                    pipeline_id = os.path.join(dirpath, pipeline_id)
+                    yield abspath, pipeline_id, pipeline_details
+            else:
+                logging.warning('Invalid source description for "%s" in %s',
+                                module_name, fullpath)
 
 
 def find_specs(root_dir='.'):
     for dirpath, _, filenames in os.walk(root_dir):
-        if SPEC_FILENAME in filenames:
-            abspath = os.path.abspath(dirpath)
-            fullpath = os.path.join(abspath, SPEC_FILENAME)
-            with open(fullpath, encoding='utf8') as spec_file:
-                spec = yaml.load(spec_file.read())
-                for pipeline_id, pipeline_details in spec.items():
-                    pipeline_id = os.path.join(dirpath, pipeline_id)
-                    yield abspath, pipeline_id, pipeline_details
+
+        # Pipeline Specs
+        for p in find_pipeline_specs(dirpath, filenames):
+            yield p
+
+        # Source specs:
+        for p in find_source_specs(dirpath, filenames):
+            yield p
 
 
 def validate_required_keys(obj, keys, abspath):
@@ -71,8 +114,9 @@ def validate_specs():
             schedule = schedule['crontab'].split()
             pipeline_details['schedule'] = schedule
         else:
-            raise NotImplementedError("Couldn't find valid schedule at {0}"
-                                      .format(abspath))
+            logging.warning("Couldn't find valid schedule at %s",
+                            abspath)
+            continue
 
         dirty = status.register(pipeline_id, cache_hash)
 
