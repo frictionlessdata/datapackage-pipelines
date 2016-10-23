@@ -63,7 +63,7 @@ Available Pipelines:
 - ./albanian-treasury
 
 # Invoke the pipeline manually
-$ dpp ./albanian-treasury
+$ dpp run ./albanian-treasury
 INFO    :Main                            :RUNNING ./albanian-treasury:
 INFO    :Main                            :- /Users/adam/code/os/datapackage-pipelines/datapackage_pipelines/manager/../lib/simple_remote_source.py
 INFO    :Main                            :- /Users/adam/code/os/datapackage-pipelines/datapackage_pipelines/manager/../lib/model.py
@@ -179,15 +179,14 @@ $ unzip -p al-treasury-spending.zip datapackage.json | json_pp
 
 ## Documentation
 
-This framework can run pipelines of data processing modules which are basically a list of steps which implement an ETL
-  process. Each step is an *executor*, which can be one of these: 
+This framework is intended for running predefined processing steps on sources of tabular data.
+These steps (or 'processors') can be extraction steps (e.g. web scrapers), transformation steps or loading steps (e.g. dump to file).
 
- - Extractor: Python scripts which get tabular data located somewhere on the web and output a Fiscal Data Package (FDP).
- - Transformer: Python scripts which get an FDP as input, modify it and output a new FDP.
- - Loader: Python scripts which get an FDP as input, upload it to some web service or storage and output it once more.
+A combination of these processors in a specific order is called a 'pipeline'. 
+Each pipeline has a separate schedule, which dictates when it should be run.
 
-Each pipeline also has a set of rules that define a schedule and a pipeline of such executors, working serially to 
-    fetch data from the Internet, process it into a finalized FDP and load it to an external destination.
+Pipelines are independent (i.e. a pipeline does not depend on another pipeline), 
+but the processors that compose the pipeline can be shared among pipelines, as part of a common library.  
 
 All processing in this framework is done by processing the streams of data, row by row. At no point the entire data-set
 is loaded into memory. This allows efficient processing in terms of memory usage as well as truly parallel execution
@@ -246,23 +245,24 @@ A pipeline spec has two keys:
     `crontab` schedule row.
  - `pipeline`: a list of steps, each is an object with the following properties:
     - `run`: the name of the executor - a Python script which will perform the step's actions.
-        This script is searched in the current directory (read: where the running instructions file is located), 
-        in paths specified in the `DATAPIPELINES_PROCESSOR_PATH` environment variable, or in the common lib 
-        of executors (in that order).
+        This script is searched in:
+        - the current directory (read: where the running instructions file is located), 
+        - in paths specified in the `DATAPIPELINES_PROCESSOR_PATH` environment variable,
+        - in extensions (see below),
+        - or in the common lib of executors.
+        (in this order)
         Relative paths can be specified with the 'dot-notation': `a.b` is referring to script `b` in directory `a`; 
-        `...c.d.e` will look for `../../c/d/e.py`. 
+        `...c.d.e` will look for `../../c/d/e.py`.
     - `parameters`: running parameters which the executor will receive when invoked.
     - `validate`: should data be validated prior to entering this executor. Data validation is done using the JSON table
         schema which is embedded in the resource definition.
      
-The first executor in all pipelines must be a fetcher and the rest of the steps must be processors.
- 
-## Executors
+## Processors
 
-Executors are Python scripts with a simple API, based on their standard input & standard output streams (as well as
+Processors are Python scripts with a simple API, based on their standard input & standard output streams (as well as
   command line parameters).
 
-All executors output an FDP to the standard output. This is done in the following way:
+All processors output a tabular data package to the standard output. This is done in the following way:
  - The first line printed to `stdout` must be the contents of the `datapackage.json` - that is, a JSON object without
   any newlines.
  - After that first line, tabular data files can be appended (we don't support any other kind of files ATM).
@@ -271,7 +271,8 @@ All executors output an FDP to the standard output. This is done in the followin
      - Subsequent lines contain the contents of the data rows of the file (i.e. no header row or other chaff)
      - Each row in the file must be printed as a single-line JSON encoded object, which maps the header names to values
      
-Processors will receive an FDP in the exact same format in their stdin. Fetchers will receive nothing in their stdin.
+Processors will receive an tabular data package in the exact same format in their stdin 
+(Except the first processor in the pipeline, which will receive nothing in its stdin).
 
 Parameters are passed as a JSON encoded string in the first command line argument of the executor.
 
@@ -318,7 +319,80 @@ if __name__=="__main__":
   spew(fdp, (process_resource(r) for r in resource_iterator))
   
 ```
+
+## Extensions
+
+You can define extensions to this framework, by creating Python packages names `datapackage_pipelines_<extension-name>`.
+
+Extensions provide two things:
+- Processor packs: processors defined under the `processors` directory in the extension package can be accessed as 
+  `<extension-name>.<processor-name>`.
+- Source templates, which provide a method for creating standard pipelines based on common parameters.
+
+The directory structure of a sample extension package would be:
+```
+datapackage_pipelines_ml/
+  processors/
+    svm.py
+    neural_network.py
+  __init__.py
+  generator.py
+  schema.json
+```
+
+In this case, after installing `datapackage_pipelines_ml` package, 
+the `ml.svm` will be available to use in a pipeline. 
+
+## Source Templates
+
+Source templates is a way to generate processing pipelines based on user provided parameters.
   
+When `dpp` is used, it scans for `pipeline-spec.yml` files for existing pipelines.
+Along with them, it also tries to find files calles `<extension-name>.source-spec.yml`. 
+In our example above, we will try to find files named `ml.source-spec.yml`. 
+
+Once found, it will try to validate them. If validated, they will be 
+used as input to a generator logic that produces the details of one or more pipelines.
+  
+Both the validation and generation are done using the `Generator` class, which must be available
+in the module when imported (i.e. `datapackage_pipelines_ml.Generator`). 
+This class must inherit from `datapackage_pipelines.generators.GeneratorBase`, and implement
+two methods:
+- `get_schema()` - should return a valid JSON schema file for validating source templates.
+- `generate_pipeline(source)` - should return a list of tuples: `(pipeline_id, schedule, steps)`
+
+Sample `generator.py` file:
+```python
+import os
+import json
+
+from datapackage_pipelines.generators import \
+    GeneratorBase, SCHEDULE_DAILY, slugify, steps
+
+SCHEMA_FILE = os.path.join(os.path.dirname(__file__), 'schema.json')
+
+
+class Generator(GeneratorBase):
+
+    @classmethod
+    def get_schema(cls):
+        return json.load(open(SCHEMA_FILE))
+
+    @classmethod
+    def generate_pipeline(cls, source):
+        schedule = SCHEDULE_DAILY
+        pipeline_id = slugify(source['title']).lower()
+    
+        if source['kind'] == 'svm':
+            yield pipeline_id, schedule, steps(
+                ('svm', source['svm-parameters'])
+            )
+        elif source['kind'] == 'neural-network':
+            yield pipeline_id, schedule, steps(
+                ('neural_network', source['nn-parameters'])
+            )
+```
+ 
 ## Running the Datapackage-Pipeline Deamon
 
 ```
