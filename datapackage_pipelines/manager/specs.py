@@ -20,7 +20,7 @@ def find_pipeline_specs(dirpath, filenames):
             spec = yaml.load(spec_file.read())
             for pipeline_id, pipeline_details in spec.items():
                 pipeline_id = os.path.join(dirpath, pipeline_id)
-                yield abspath, pipeline_id, pipeline_details
+                yield abspath, pipeline_id, pipeline_details, None
 
 
 def find_source_specs(dirpath, filenames):
@@ -48,7 +48,7 @@ def find_source_specs(dirpath, filenames):
                         'pipeline': steps
                     }
                     pipeline_id = os.path.join(dirpath, pipeline_id)
-                    yield abspath, pipeline_id, pipeline_details
+                    yield abspath, pipeline_id, pipeline_details, source_spec
             else:
                 logging.warning('Invalid source description for "%s" in %s',
                                 module_name, fullpath)
@@ -77,7 +77,7 @@ def validate_specs():
 
     all_pipeline_ids = set()
 
-    for abspath, pipeline_id, pipeline_details in find_specs():
+    for abspath, pipeline_id, pipeline_details, source_details in find_specs():
 
         if pipeline_id in all_pipeline_ids:
             raise KeyError('Duplicate key {0} in {1}'
@@ -118,7 +118,9 @@ def validate_specs():
                             abspath)
             continue
 
-        dirty = status.register(pipeline_id, cache_hash)
+        dirty = status.register(pipeline_id, cache_hash,
+                                pipeline=pipeline_details,
+                                source=source_details)
 
         yield pipeline_id, pipeline_details, abspath, dirty
 

@@ -1,6 +1,7 @@
 import datetime
 
 from flask import Flask, render_template, abort, redirect
+import yaml
 
 from ..manager.status import status
 
@@ -11,9 +12,14 @@ def datestr(x):
     return str(datetime.datetime.fromtimestamp(x))
 
 
+def yamlize(x):
+    ret = yaml.dump(x, default_flow_style=False)
+    return ret
+
+
 @app.route("/")
 def main():
-    statuses = status.all_statuses()
+    statuses = sorted(status.all_statuses(), key=lambda x:x.get('id'))
     for pipeline in statuses:
         for key in ['ended', 'last_success', 'started']:
             if pipeline.get(key):
@@ -25,7 +31,8 @@ def main():
             'Idle' if pipeline.get('success') \
             else 'Failed'
         pipeline['slug'] = pipeline['id'].replace('/', '_').replace('.', '_')
-    return render_template('dashboard.html', pipelines=statuses)
+        print(pipeline.keys())
+    return render_template('dashboard.html', pipelines=statuses, yamlize=yamlize)
 
 
 @app.route("/badge/<path:pipeline_id>")

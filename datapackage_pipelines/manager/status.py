@@ -76,7 +76,7 @@ class RedisConnection(object):
             })
         self.redis.set(_id, json.dumps(_status, ensure_ascii=True))
 
-    def register(self, _id, cache_hash):
+    def register(self, _id, cache_hash, pipeline=[], source=None):
         if self.redis is None:
             return
         self.redis.sadd('all-pipelines', _id)
@@ -91,6 +91,8 @@ class RedisConnection(object):
         dirty = _status.get('cache_hash') != cache_hash
         _status.update({
             'running': False,
+            'pipeline': pipeline,
+            'source': source
         })
         self.redis.set(_id, json.dumps(_status, ensure_ascii=True))
         return dirty

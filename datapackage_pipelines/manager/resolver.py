@@ -37,7 +37,7 @@ def load_module(module):
         module = __import__(module_name)
         return module
     except ImportError:
-        logging.warning("Couldn't import %s", module_name)
+        pass
 
 
 def resolve_executor(executor, path):
