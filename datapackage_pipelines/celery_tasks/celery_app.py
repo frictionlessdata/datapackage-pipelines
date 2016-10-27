@@ -11,16 +11,17 @@ TASK_NAME = 'datapackage_pipelines.celery_tasks.celery_tasks' + \
 
 CELERY_SCHEDULE = {}
 
-for pipeline_id, pipeline_details, pipeline_cwd, dirty \
+for pipeline_id, pipeline_details, pipeline_cwd, dirty, errors \
         in pipelines():
-    entry = {
-        'task': TASK_NAME,
-        'schedule': crontab(*pipeline_details['schedule']),
-        'args': (pipeline_id,
-                 pipeline_details['pipeline'],
-                 pipeline_cwd)
-    }
-    CELERY_SCHEDULE[pipeline_id] = entry
+    if len(errors) == 0:
+        entry = {
+            'task': TASK_NAME,
+            'schedule': crontab(*pipeline_details['schedule']),
+            'args': (pipeline_id,
+                     pipeline_details['pipeline'],
+                     pipeline_cwd)
+        }
+        CELERY_SCHEDULE[pipeline_id] = entry
 
 celery_app = Celery('dpp')
 celery_app.conf.update(CELERYBEAT_SCHEDULE=CELERY_SCHEDULE,

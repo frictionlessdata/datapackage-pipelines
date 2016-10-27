@@ -84,14 +84,14 @@
             <div class="panel panel-{{ status.class }}">
                 <div class="panel-heading">
                     <h1 class="panel-title">{{ status.id }}
-                        <small>{{ status.status }}</small>
+                        <small>{{ status.message }}</small>
                     </h1>
                 </div>
                 <div class="panel-body">
                     <!--<a role="button" data-toggle="collapse" data-target="#log-{{ status.slug }}" href="#"><strong>Last Log:</strong></a>-->
                     <!--<pre class="collapse" id="log-{{ status.slug }}">{{ status.reason }}</pre>-->
                     <div class="row">
-                        <div class="col-md-1">
+                        <div class="col-sm-1">
                             <ul class="nav nav-pills nav-stacked" role="tablist">
                                 <li role="presentation" class="active"><a href="#status-{{status.slug}}" aria-controls="status" role="tab" data-toggle="tab">Status</a></li>
                                 <li role="presentation"><a href="#pipeline-{{status.slug}}" aria-controls="pipeline-{{status.id}}" role="tab" data-toggle="tab">Pipeline</a></li>
@@ -99,7 +99,7 @@
                                 <li role="presentation"><a href="#log-{{status.slug}}" aria-controls="log" role="tab" data-toggle="tab">Log</a></li>
                             </ul>
                         </div>
-                        <div class="col-md-11">
+                        <div class="col-sm-11">
                             <!-- Tab panes -->
                             <div class="tab-content">
                                 <div role="tabpanel" class="tab-pane active" id="status-{{status.slug}}">

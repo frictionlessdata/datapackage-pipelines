@@ -10,8 +10,13 @@ from .manager.specs import pipelines
 def cli(ctx):
     if ctx.invoked_subcommand is None:
         click.echo('Available Pipelines:')
-        for pipeline_id, _, _, dirty in pipelines():
-            click.echo('- {} {}'.format(pipeline_id, '(*)' if dirty else ''))
+        for pipeline_id, _, _, dirty, errors in pipelines():
+            click.echo('- {} {}{}'
+                       .format(pipeline_id,
+                               '(*)' if dirty else '',
+                               '(E)' if len(errors) > 0 else ''))
+            for short, long in errors:
+                click.echo('\t{}: {}'.format(short, long))
 
 
 @cli.command()
@@ -26,9 +31,10 @@ def serve():
 @click.option('--use-cache/--no-use-cache', default=True)
 def run(pipeline_id, use_cache):
     """Execute a single pipeline"""
-    for _pipeline_id, pipeline_details, pipeline_cwd, _ \
+    for _pipeline_id, pipeline_details, pipeline_cwd, _, errors \
             in pipelines():
-        if _pipeline_id == pipeline_id:
+        if (_pipeline_id == pipeline_id or pipeline_id == 'all') \
+                and len(errors) == 0:
             execute_pipeline(pipeline_id,
                              pipeline_details['pipeline'],
                              pipeline_cwd,

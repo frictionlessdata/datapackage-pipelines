@@ -2,6 +2,7 @@ import datetime
 
 from flask import Flask, render_template, abort, redirect
 import yaml
+import slugify
 
 from ..manager.status import status
 
@@ -19,20 +20,20 @@ def yamlize(x):
 
 @app.route("/")
 def main():
-    statuses = sorted(status.all_statuses(), key=lambda x:x.get('id'))
+    statuses = sorted(status.all_statuses(), key=lambda x: x.get('id'))
     for pipeline in statuses:
         for key in ['ended', 'last_success', 'started']:
             if pipeline.get(key):
                 pipeline[key] = datestr(pipeline[key])
         pipeline['class'] = 'warning' if pipeline['running'] else \
-            'success' if pipeline.get('success') \
-            else 'danger'
-        pipeline['status'] = 'Running' if pipeline['running'] else \
-            'Idle' if pipeline.get('success') \
-            else 'Failed'
-        pipeline['slug'] = pipeline['id'].replace('/', '_').replace('.', '_')
+                            'success' if pipeline.get('success') is True else \
+                            'danger' if pipeline.get('success') is False else \
+                            'default'
+        pipeline['slug'] = slugify.slugify(pipeline['id'])
         print(pipeline.keys())
-    return render_template('dashboard.html', pipelines=statuses, yamlize=yamlize)
+    return render_template('dashboard.html',
+                           pipelines=statuses,
+                           yamlize=yamlize)
 
 
 @app.route("/badge/<path:pipeline_id>")
@@ -50,7 +51,7 @@ def badge(pipeline_id):
             status_text += ' (%d records)' % record_count
         status_color = 'brightgreen'
     elif success is False:
-        status_text = 'Failing'
+        status_text = pipeline_status.get('message')
         status_color = 'red'
     else:
         status_text = "Haven't run"
