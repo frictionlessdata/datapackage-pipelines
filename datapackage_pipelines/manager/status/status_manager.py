@@ -1,8 +1,133 @@
+import logging
 import os
 import time
 
 from .backend_redis import RedisBackend
 from .backend_shelve import ShelveBackend
+
+
+class PipelineStatus(object):
+
+    STATES = {
+        'INIT': {},
+        'REGISTERED': {
+            'success': None,
+            'message': "Didn't run",
+        },
+        'INVALID': {
+            'success': False,
+        },
+        'RUNNING': {
+            'success': None,
+            'message': 'Running',
+        },
+        'SUCCEEDED': {
+            'success': True,
+            'message': 'Succeeded',
+        },
+        'FAILED': {
+            'success': False,
+            'message': 'Failed'
+        }
+    }
+
+    def __init__(self, backend, pipeline_id):
+        self.backend = backend
+        self.pipeline_id = pipeline_id
+        self.data = backend.get_status(pipeline_id)
+        if self.data is None or 'state' not in self.data:
+            self.data = {'state': 'INIT'}
+        self.data.update({
+            'id': self.pipeline_id,
+        })
+
+    def set_state(self, state):
+        self.data['state'] = state
+        self.data.update(self.STATES[state])
+
+    def check_running(self):
+        cur_time = time.time()
+        if self.data is None:
+            return False
+
+        # A running task must have been updated in the last 10 seconds
+        running = self.data.get('state') == 'RUNNING'
+        updating = (cur_time - self.data.get('updated', cur_time)) < 60
+        if running and not updating:
+            self.set_idle(False, None, None, None)
+        return self.data.get('state') == 'RUNNING'
+
+    def set_running(self, trigger, log):
+        if self.data['state'] not in {'REGISTERED',
+                                      'SUCCEEDED',
+                                      'FAILED',
+                                      'RUNNING'}:
+            logging.error('set_running: bad state %s', self.data['state'])
+            return
+
+        cur_time = time.time()
+        if not self.check_running():
+            self.data.update({
+                'started': cur_time,
+                'trigger': trigger,
+            })
+            self.set_state('RUNNING')
+
+        self.data.update({
+            'reason': log
+        })
+        self.save()
+
+    def set_idle(self, success, log, cache_hash, record_count):
+        if self.data['state'] not in {'RUNNING'}:
+            logging.error('set_idle: bad state %s', self.data['state'])
+            return
+
+        cur_time = time.time()
+        if self.check_running():
+            self.data.update({
+                'ended': cur_time,
+                'reason': log,
+            })
+            if success is True:
+                self.data.update({
+                    'last_success': self.data['ended'],
+                    'cache_hash': cache_hash,
+                    'record_count': record_count,
+                })
+                self.set_state('SUCCEEDED')
+            else:
+                self.set_state('FAILED')
+        self.save()
+
+    def register(self, cache_hash, pipeline, source, errors):
+        # Is pipeline dirty?
+        dirty = self.data.setdefault('cache_hash', '') != cache_hash
+        dirty = dirty and len(errors) == 0
+
+        self.data.update({
+            'pipeline': pipeline,
+            'source': source,
+            'reason': '\n'.join('{}: {}'.format(*e) for e in errors),
+        })
+        if len(errors) > 0:
+            self.data.update({
+                'message': errors[0][0],
+            })
+            self.set_state('INVALID')
+        else:
+            self.set_state('REGISTERED')
+
+        self.backend.register_pipeline_id(self.pipeline_id)
+        self.save()
+        return dirty
+
+    def save(self):
+        cur_time = time.time()
+        self.data.update({
+            'updated': cur_time
+        })
+        self.backend.set_status(self.pipeline_id, self.data)
 
 
 class StatusManager(object):
@@ -12,109 +137,29 @@ class StatusManager(object):
         self.backend = redis if redis.is_init() else ShelveBackend()
 
     def is_running(self, _id):
-        if self.backend is None:
-            return False
-        _status = self.backend.get_status(_id)
-        cur_time = time.time()
-        # A running task must have been updated in the last 10 seconds
-        is_running = \
-            (_status is not None) and \
-            (_status['running'] is True) and \
-            (cur_time - _status.get('updated', cur_time) < 60)
-        return is_running
+        return PipelineStatus(self.backend, _id).check_running()
 
     def running(self, _id, trigger=None, log=None):
-        if self.backend is None:
-            return False
-        _status = self.backend.get_status(_id)
-        if _status is None:
-            _status = {}
-
-        cur_time = time.time()
-        if not self.is_running(_id):
-            _status['started'] = cur_time
-
-        _status.update({
-            'id': _id,
-            'running': True,
-            'trigger': trigger,
-            'updated': cur_time,
-            'message': 'Running',
-            'reason': log
-        })
-        self.backend.set_status(_id, _status)
+        PipelineStatus(self.backend, _id).set_running(trigger, log)
 
     def idle(self, _id, success,
              reason=None,
              cache_hash=None,
              record_count=None):
-        if self.backend is None:
-            return
-        _status = self.backend.get_status(_id)
-
-        cur_time = time.time()
-        _status.update({
-            'id': _id,
-            'running': False,
-            'ended': cur_time,
-            'updated': cur_time,
-            'success': success,
-            'message': 'Idle' if success else 'Failed',
-            'reason': reason
-        })
-        if success is True:
-            _status.update({
-                'last_success': _status['ended'],
-                'cache_hash': cache_hash,
-                'record_count': record_count
-            })
-        self.backend.set_status(_id, _status)
+        PipelineStatus(self.backend, _id)\
+            .set_idle(success, reason, cache_hash, record_count)
 
     def register(self, _id, cache_hash, pipeline=(), source=None, errors=()):
-        if self.backend is None:
-            return
-        self.backend.register_pipeline_id(_id)
-        _status = self.backend.get_status(_id)
-        if _status is None:
-            _status = {
-                'id': _id,
-                'cache_hash': ''
-            }
-        dirty = _status.get('cache_hash') != cache_hash
-        _status.update({
-            'running': False,
-            'pipeline': pipeline,
-            'source': source
-        })
-        if len(errors) > 0:
-            _status.update({
-                'message': errors[0][0],
-                'reason': '\n'.join('{}: {}'.format(*e) for e in errors),
-                'success': False
-            })
-        else:
-            _status.update({
-                'message': '',
-                'reason': '',
-                'success': None
-            })
-
-        self.backend.set_status(_id, _status)
-        return dirty
+        return PipelineStatus(self.backend, _id)\
+                .register(cache_hash, pipeline, source, errors)
 
     def initialize(self):
-        if self.backend is None:
-            return
         self.backend.reset()
 
     def get_status(self, _id):
-        if self.backend is None:
-            return None
         return self.backend.get_status(_id)
 
     def all_statuses(self):
-        if self.backend is None:
-            return []
         return self.backend.all_statuses()
 
 status = StatusManager(os.environ.get('DATAPIPELINES_REDIS_HOST'))

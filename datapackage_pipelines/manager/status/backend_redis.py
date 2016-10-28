@@ -16,6 +16,9 @@ class RedisBackend(object):
             except redis.exceptions.ConnectionError:
                 logging.warning('Failed to connect to Redis, host:%s, port:%s',
                                 host, port)
+        else:
+            logging.info('Skipping redis connection, host:%s, port:%s',
+                         host, port)
 
     def is_init(self):
         return self.redis is not None

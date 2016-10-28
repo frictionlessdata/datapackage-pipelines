@@ -254,5 +254,9 @@ def execute_pipeline(pipeline_id,
         pipeline_task.cancel()
         loop.run_forever()
         logging.info("Caught keyboard interrupt. DONE!")
-    finally:
-        loop.close()
+        raise KeyboardInterrupt()
+
+
+def finalize():
+    loop = asyncio.get_event_loop()
+    loop.close()
