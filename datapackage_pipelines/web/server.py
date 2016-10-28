@@ -34,9 +34,18 @@ def main():
                             }[pipeline.get('state', 'INIT')]
 
         pipeline['slug'] = slugify.slugify(pipeline['id'])
-        print(pipeline.keys())
+    categories = [
+        ['REGISTERED', 'Waiting to run'],
+        ['INVALID', 'Failed validation'],
+        ['RUNNING', 'Running'],
+        ['SUCCEEDED', 'Successful Execution'],
+        ['FAILED', 'Failed Execution']
+    ]
+    for item in categories:
+        item.append([p for p in statuses if p.get('state') == item[0]])
+        item.append(len(item[-1]))
     return render_template('dashboard.html',
-                           pipelines=statuses,
+                           categories=categories,
                            yamlize=yamlize)
 
 

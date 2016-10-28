@@ -78,54 +78,65 @@
 </nav>
 
 <div class="container-fluid">
-    <div class="row">
-        {% for status in pipelines %}
-        <div class="col-md-12">
-            <div class="panel panel-{{ status.class }}">
-                <div class="panel-heading">
-                    <h1 class="panel-title">{{ status.id }}
-                        <small>{{ status.message }}</small>
-                    </h1>
-                </div>
-                <div class="panel-body">
-                    <!--<a role="button" data-toggle="collapse" data-target="#log-{{ status.slug }}" href="#"><strong>Last Log:</strong></a>-->
-                    <!--<pre class="collapse" id="log-{{ status.slug }}">{{ status.reason }}</pre>-->
-                    <div class="row">
-                        <div class="col-sm-1">
-                            <ul class="nav nav-pills nav-stacked" role="tablist">
-                                <li role="presentation" class="active"><a href="#status-{{status.slug}}" aria-controls="status" role="tab" data-toggle="tab">Status</a></li>
-                                <li role="presentation"><a href="#pipeline-{{status.slug}}" aria-controls="pipeline-{{status.id}}" role="tab" data-toggle="tab">Pipeline</a></li>
-                                <li role="presentation"><a href="#source-{{status.slug}}" aria-controls="source" role="tab" data-toggle="tab">Source</a></li>
-                                <li role="presentation"><a href="#log-{{status.slug}}" aria-controls="log" role="tab" data-toggle="tab">Log</a></li>
-                            </ul>
+    <ul class="nav nav-tabs" role="tablist">
+        {% for category in categories %}
+        <li role="presentation"><a href="#state-{{category[0]}}" aria-controls="{{category[0]}}" role="tab" data-toggle="tab">{{category[1]}} ({{category[3]}})</a></li>
+        {% endfor %}
+    </ul>
+    <div class="tab-content">
+        {% for category in categories %}
+        <div role="tabpanel" class="tab-pane active" id="state-{{category[0]}}">
+            {% for status in category[2] %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="panel panel-{{ status.class }}">
+                        <div class="panel-heading">
+                            <h1 class="panel-title">{{ status.id }}
+                                <small>{{ status.message }}</small>
+                            </h1>
                         </div>
-                        <div class="col-sm-11">
-                            <!-- Tab panes -->
-                            <div class="tab-content">
-                                <div role="tabpanel" class="tab-pane active" id="status-{{status.slug}}">
-                                    <dl class="dl-horizontal">
-                                        <dt>Last Run triggered by:</dt><dd>{{ status.trigger }}</dd>
-                                        <dt>Last Run started at:</dt><dd>{{ status.started }}</dd>
-                                        <dt>Last Completion:</dt><dd>{{ status.ended }}</dd>
-                                        <dt>Last Success:</dt><dd>{{ status.last_success }}</dd>
-                                    </dl>
+                        <div class="panel-body">
+                            <!--<a role="button" data-toggle="collapse" data-target="#log-{{ status.slug }}" href="#"><strong>Last Log:</strong></a>-->
+                            <!--<pre class="collapse" id="log-{{ status.slug }}">{{ status.reason }}</pre>-->
+                            <div class="row">
+                                <div class="col-sm-1">
+                                    <ul class="nav nav-pills nav-stacked" role="tablist">
+                                        <li role="presentation" class="active"><a href="#status-{{status.slug}}" aria-controls="status" role="tab" data-toggle="tab">Status</a></li>
+                                        <li role="presentation"><a href="#pipeline-{{status.slug}}" aria-controls="pipeline-{{status.id}}" role="tab" data-toggle="tab">Pipeline</a></li>
+                                        <li role="presentation"><a href="#source-{{status.slug}}" aria-controls="source" role="tab" data-toggle="tab">Source</a></li>
+                                        <li role="presentation"><a href="#log-{{status.slug}}" aria-controls="log" role="tab" data-toggle="tab">Log</a></li>
+                                    </ul>
                                 </div>
-                                <div role="tabpanel" class="tab-pane" id="pipeline-{{status.slug}}">
-                                    <pre>{{ yamlize(status.pipeline) }}</pre>
-                                </div>
-                                <div role="tabpanel" class="tab-pane" id="source-{{status.slug}}">
-                                    <pre>{{ yamlize(status.source) }}</pre>
-                                </div>
-                                <div role="tabpanel" class="tab-pane" id="log-{{status.slug}}">
-                                    <pre>{{ status.reason }}</pre>
+                                <div class="col-sm-11">
+                                    <!-- Tab panes -->
+                                    <div class="tab-content">
+                                        <div role="tabpanel" class="tab-pane active" id="status-{{status.slug}}">
+                                            <dl class="dl-horizontal">
+                                                <dt>Last Run triggered by:</dt><dd>{{ status.trigger }}</dd>
+                                                <dt>Last Run started at:</dt><dd>{{ status.started }}</dd>
+                                                <dt>Last Completion:</dt><dd>{{ status.ended }}</dd>
+                                                <dt>Last Success:</dt><dd>{{ status.last_success }}</dd>
+                                            </dl>
+                                        </div>
+                                        <div role="tabpanel" class="tab-pane" id="pipeline-{{status.slug}}">
+                                            <pre>{{ yamlize(status.pipeline) }}</pre>
+                                        </div>
+                                        <div role="tabpanel" class="tab-pane" id="source-{{status.slug}}">
+                                            <pre>{{ yamlize(status.source) }}</pre>
+                                        </div>
+                                        <div role="tabpanel" class="tab-pane" id="log-{{status.slug}}">
+                                            <pre>{{ status.reason }}</pre>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+
                         </div>
+
                     </div>
-
                 </div>
-
             </div>
+            {% endfor %}
         </div>
         {% endfor %}
     </div>
