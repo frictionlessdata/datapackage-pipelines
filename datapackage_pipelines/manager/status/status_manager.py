@@ -103,6 +103,8 @@ class PipelineStatus(object):
     def register(self, cache_hash, pipeline, source, errors):
         # Is pipeline dirty?
         dirty = self.data.setdefault('cache_hash', '') != cache_hash
+        dirty = (dirty or
+                 self.data.get('state') not in {'SUCCEEDED', 'FAILED'})
         dirty = dirty and len(errors) == 0
 
         self.data.update({
@@ -116,7 +118,8 @@ class PipelineStatus(object):
             })
             self.set_state('INVALID')
         else:
-            self.set_state('REGISTERED')
+            if self.data.get('state') == 'INIT':
+                self.set_state('REGISTERED')
 
         self.backend.register_pipeline_id(self.pipeline_id)
         self.save()
