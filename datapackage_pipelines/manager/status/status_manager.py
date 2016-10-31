@@ -13,6 +13,7 @@ class PipelineStatus(object):
         'REGISTERED': {
             'success': None,
             'message': "Didn't run",
+            'reason': "Didn't run yet"
         },
         'INVALID': {
             'success': False,
@@ -110,11 +111,11 @@ class PipelineStatus(object):
         self.data.update({
             'pipeline': pipeline,
             'source': source,
-            'reason': '\n'.join('{}: {}'.format(*e) for e in errors),
         })
         if len(errors) > 0:
             self.data.update({
                 'message': errors[0][0],
+                'reason': '\n'.join('{}: {}'.format(*e) for e in errors),
             })
             self.set_state('INVALID')
         else:
@@ -145,10 +146,7 @@ class StatusManager(object):
     def running(self, _id, trigger=None, log=None):
         PipelineStatus(self.backend, _id).set_running(trigger, log)
 
-    def idle(self, _id, success,
-             reason=None,
-             cache_hash=None,
-             record_count=None):
+    def idle(self, _id, success, reason, cache_hash, record_count):
         PipelineStatus(self.backend, _id)\
             .set_idle(success, reason, cache_hash, record_count)
 

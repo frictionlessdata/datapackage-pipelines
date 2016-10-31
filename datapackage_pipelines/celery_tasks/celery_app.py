@@ -19,7 +19,8 @@ for pipeline_id, pipeline_details, pipeline_cwd, dirty, errors \
             'schedule': crontab(*pipeline_details['schedule']),
             'args': (pipeline_id,
                      pipeline_details['pipeline'],
-                     pipeline_cwd)
+                     pipeline_cwd,
+                     'schedule')
         }
         CELERY_SCHEDULE[pipeline_id] = entry
 

@@ -36,7 +36,7 @@ class RedisBackend(object):
 
     def register_pipeline_id(self, pipeline_id):
         if self.is_init():
-            self.redis.sadd('all-pipelines', pipeline_id)
+            self.redis.sadd('all-pipelines', pipeline_id.strip())
 
     def reset(self):
         if self.is_init():

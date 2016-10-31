@@ -12,4 +12,5 @@ for pipeline_id, pipeline_details, pipeline_cwd, dirty, errors \
         logging.info('Executing DIRTY task %s', pipeline_id)
         execute_pipeline_task.delay(pipeline_id,
                                     pipeline_details['pipeline'],
-                                    pipeline_cwd)
+                                    pipeline_cwd,
+                                    'dirty-task')
