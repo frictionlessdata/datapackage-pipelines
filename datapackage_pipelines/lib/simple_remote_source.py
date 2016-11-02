@@ -1,6 +1,5 @@
 from datapackage_pipelines.wrapper import ingest, spew
 
-
 params, _, _ = ingest()
 
 datapackage = {

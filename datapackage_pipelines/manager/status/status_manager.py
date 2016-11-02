@@ -53,9 +53,9 @@ class PipelineStatus(object):
 
         # A running task must have been updated in the last 10 seconds
         running = self.data.get('state') == 'RUNNING'
-        updating = (cur_time - self.data.get('updated', cur_time)) < 60
+        updating = (cur_time - self.data.get('updated', 0)) < 60
         if running and not updating:
-            self.set_idle(False, None, None, None)
+            self.set_idle(False, None, None, None, True)
         return self.data.get('state') == 'RUNNING'
 
     def set_running(self, trigger, log):
@@ -79,13 +79,13 @@ class PipelineStatus(object):
         })
         self.save()
 
-    def set_idle(self, success, log, cache_hash, record_count):
+    def set_idle(self, success, log, cache_hash, record_count, force=False):
         if self.data['state'] not in {'RUNNING'}:
             logging.error('set_idle: bad state %s', self.data['state'])
             return
 
         cur_time = time.time()
-        if self.check_running():
+        if force or self.check_running():
             self.data.update({
                 'ended': cur_time,
                 'reason': log,
@@ -102,10 +102,12 @@ class PipelineStatus(object):
         self.save()
 
     def register(self, cache_hash, pipeline, source, errors):
+
+        self.check_running()
+
         # Is pipeline dirty?
         dirty = self.data.setdefault('cache_hash', '') != cache_hash
-        dirty = (dirty or
-                 self.data.get('state') not in {'SUCCEEDED', 'FAILED'})
+        dirty = dirty or self.data.get('state') != 'SUCCEEDED'
         dirty = dirty and len(errors) == 0
 
         self.data.update({
