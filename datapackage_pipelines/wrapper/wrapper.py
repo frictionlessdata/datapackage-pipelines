@@ -31,12 +31,13 @@ class CommonJSONEncoder(json.JSONEncoder):
 
 
 cache = ''
+first = True
 
 
 def ingest(debug=False):
-    global cache # pylint: disable=global-statement
+    global cache  # pylint: disable=global-statement
+    global first  # pylint: disable=global-statement
     params = None
-    first = True
     validate = False
     if len(sys.argv) > 4:
         first = sys.argv[1] == '0'
@@ -51,7 +52,8 @@ def ingest(debug=False):
     return params, datapackage, resource_iterator
 
 
-def spew(dp, resources_iterator):
+# pylint: disable=too-many-branches
+def spew(dp, resources_iterator, stats=None):
     files = [sys.stdout]
 
     cache_filename = ''
@@ -77,6 +79,23 @@ def spew(dp, resources_iterator):
                     f.write(line+'\n')
                 # logging.error('WROTE')
                 row_count += 1
+
+        aggregated_stats = {}
+        if not first:
+            stats_line = sys.stdin.readline().strip()
+            if stats_line != b'':
+                try:
+                    aggregated_stats = json.loads(stats_line)
+                except json.JSONDecodeError:
+                    logging.error('Failed to parse stats: %r', stats_line)
+        if stats is not None:
+            aggregated_stats.update(stats)
+        stats_json = json.dumps(aggregated_stats,
+                                cls=CommonJSONEncoder,
+                                ensure_ascii=True)
+        for f in files:
+            f.write('\n'+stats_json+'\n')
+
     except BrokenPipeError:
         logging.error('Output pipe disappeared!')
         sys.stderr.close()

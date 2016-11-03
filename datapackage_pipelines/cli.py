@@ -26,12 +26,13 @@ def serve():
     app.run(host='0.0.0.0', debug=True, port=5000)
 
 
-@cli.command(help="""Run a pipeline by pipeline-id.
-Use 'all' for running all pipelines, or 'dirty' for running just the dirty ones.""")
+@cli.command()
 @click.argument('pipeline_id')
 @click.option('--use-cache/--no-use-cache', default=True)
 def run(pipeline_id, use_cache):
-    """Execute a single pipeline"""
+    """Run a pipeline by pipeline-id.
+Use 'all' for running all pipelines,
+or 'dirty' for running just the dirty ones."""
     try:
         for _pipeline_id, pipeline_details, pipeline_cwd, dirty, errors \
                 in pipelines():
@@ -43,6 +44,7 @@ def run(pipeline_id, use_cache):
                                      pipeline_details['pipeline'],
                                      pipeline_cwd,
                                      use_cache=use_cache)
+
     except KeyboardInterrupt:
         pass
     finally:

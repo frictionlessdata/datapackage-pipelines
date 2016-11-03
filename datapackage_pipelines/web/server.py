@@ -59,7 +59,7 @@ def badge(pipeline_id):
     status_text = pipeline_status.get('message')
     success = pipeline_status.get('success')
     if success is True:
-        record_count = pipeline_status.get('record_count')
+        record_count = pipeline_status.get('stats', {}).get('total_row_count')
         if record_count is not None:
             status_text += ' (%d records)' % record_count
         status_color = 'brightgreen'

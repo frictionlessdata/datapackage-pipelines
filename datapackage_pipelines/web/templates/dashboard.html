@@ -21,6 +21,17 @@
     <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
+    <style>
+        .tooltip-inner {
+            max-width: 600px;
+            text-align: left;
+        }
+        .affix {
+            top: 0px;
+            overflow-y: scroll;
+            max-height: 100%;
+        }
+    </style>
 </head>
 <body>
 <nav class="navbar navbar-default">
@@ -80,63 +91,91 @@
 <div class="container-fluid">
     <ul class="nav nav-tabs" role="tablist">
         {% for category in categories %}
-        <li role="presentation"><a href="#state-{{category[0]}}" aria-controls="{{category[0]}}" role="tab" data-toggle="tab">{{category[1]}} ({{category[3]}})</a></li>
+        <li role="presentation" class="{%if category[0]=='REGISTERED'%}active{%endif%}"><a href="#state-{{category[0]}}" aria-controls="{{category[0]}}" role="tab" data-toggle="tab">{{category[1]}} ({{category[3]}})</a></li>
         {% endfor %}
     </ul>
     <div class="tab-content">
         {% for category in categories %}
-        <div role="tabpanel" class="tab-pane active" id="state-{{category[0]}}">
-            {% for status in category[2] %}
+        <div role="tabpanel" class="tab-pane {%if category[0]=='REGISTERED'%}active{%endif%}" id="state-{{category[0]}}">
             <div class="row">
-                <div class="col-md-12">
-                    <div class="panel panel-{{ status.class }}">
-                        <div class="panel-heading">
-                            <h1 class="panel-title">{{ status.id }}
-                                <small>{{ status.message }}</small>
-                            </h1>
-                        </div>
-                        <div class="panel-body">
-                            <!--<a role="button" data-toggle="collapse" data-target="#log-{{ status.slug }}" href="#"><strong>Last Log:</strong></a>-->
-                            <!--<pre class="collapse" id="log-{{ status.slug }}">{{ status.reason }}</pre>-->
-                            <div class="row">
-                                <div class="col-sm-1">
-                                    <ul class="nav nav-pills nav-stacked" role="tablist">
-                                        <li role="presentation" class="active"><a href="#status-{{status.slug}}" aria-controls="status" role="tab" data-toggle="tab">Status</a></li>
-                                        <li role="presentation"><a href="#pipeline-{{status.slug}}" aria-controls="pipeline-{{status.id}}" role="tab" data-toggle="tab">Pipeline</a></li>
-                                        <li role="presentation"><a href="#source-{{status.slug}}" aria-controls="source" role="tab" data-toggle="tab">Source</a></li>
-                                        <li role="presentation"><a href="#log-{{status.slug}}" aria-controls="log" role="tab" data-toggle="tab">Log</a></li>
-                                    </ul>
+                <div class="col-md-3">
+                    <div data-spy="affix" >
+                        {% for status in category[2] %}
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div>
+                                    <br/>
+                                    <small>{{ '/'.join(status.id.split('/')[1:-1]) }}</small>
                                 </div>
-                                <div class="col-sm-11">
-                                    <!-- Tab panes -->
-                                    <div class="tab-content">
-                                        <div role="tabpanel" class="tab-pane active" id="status-{{status.slug}}">
-                                            <dl class="dl-horizontal">
-                                                <dt>Last Run triggered by:</dt><dd>{{ status.trigger }}</dd>
-                                                <dt>Last Run started at:</dt><dd>{{ status.started }}</dd>
-                                                <dt>Last Completion:</dt><dd>{{ status.ended }}</dd>
-                                                <dt>Last Success:</dt><dd>{{ status.last_success }}</dd>
-                                            </dl>
-                                        </div>
-                                        <div role="tabpanel" class="tab-pane" id="pipeline-{{status.slug}}">
-                                            <pre>{{ yamlize(status.pipeline) }}</pre>
-                                        </div>
-                                        <div role="tabpanel" class="tab-pane" id="source-{{status.slug}}">
-                                            <pre>{{ yamlize(status.source) }}</pre>
-                                        </div>
-                                        <div role="tabpanel" class="tab-pane" id="log-{{status.slug}}">
-                                            <pre>{{ status.reason }}</pre>
-                                        </div>
-                                    </div>
+                                <div>
+                                    <i class="glyphicon glyphicon-info-sign"
+                                       data-toggle="tooltip" data-placement="right" data-html="true"
+                                       data-container="body"
+                                       data-title="<pre style='font-size:70%'>{{ yamlize(status.stats)}}</pre>"></i>
+                                    <a href="#anchor-{{status.slug}}">
+                                        {{ status.id.split('/')[-1] }}
+                                    </a>
                                 </div>
                             </div>
-
                         </div>
-
+                        {% endfor %}
+                        <br/>
                     </div>
                 </div>
+                <div class="col-md-9">
+                    {% for status in category[2] %}
+                    <div class="row" id="anchor-{{status.slug}}">
+                        <div class="col-md-12">
+                            <div class="panel panel-{{ status.class }}">
+                                <div class="panel-heading">
+                                    <h1 class="panel-title">{{ status.id }}
+                                        <small>{{ status.message }}</small>
+                                    </h1>
+                                </div>
+                                <div class="panel-body">
+                                    <!--<a role="button" data-toggle="collapse" data-target="#log-{{ status.slug }}" href="#"><strong>Last Log:</strong></a>-->
+                                    <!--<pre class="collapse" id="log-{{ status.slug }}">{{ status.reason }}</pre>-->
+                                    <div class="row">
+                                        <div class="col-sm-1">
+                                            <ul class="nav nav-pills nav-stacked" role="tablist">
+                                                <li role="presentation" class="active"><a href="#status-{{status.slug}}" aria-controls="status" role="tab" data-toggle="tab">Status</a></li>
+                                                <li role="presentation"><a href="#pipeline-{{status.slug}}" aria-controls="pipeline-{{status.id}}" role="tab" data-toggle="tab">Pipeline</a></li>
+                                                <li role="presentation"><a href="#source-{{status.slug}}" aria-controls="source" role="tab" data-toggle="tab">Source</a></li>
+                                                <li role="presentation"><a href="#log-{{status.slug}}" aria-controls="log" role="tab" data-toggle="tab">Log</a></li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-sm-11">
+                                            <!-- Tab panes -->
+                                            <div class="tab-content">
+                                                <div role="tabpanel" class="tab-pane active" id="status-{{status.slug}}">
+                                                    <dl class="dl-horizontal">
+                                                        <dt>Last Run triggered by:</dt><dd>{{ status.trigger }}</dd>
+                                                        <dt>Last Run started at:</dt><dd>{{ status.started }}</dd>
+                                                        <dt>Last Completion:</dt><dd>{{ status.ended }}</dd>
+                                                        <dt>Last Success:</dt><dd>{{ status.last_success }}</dd>
+                                                    </dl>
+                                                </div>
+                                                <div role="tabpanel" class="tab-pane" id="pipeline-{{status.slug}}">
+                                                    <pre>{{ yamlize(status.pipeline) }}</pre>
+                                                </div>
+                                                <div role="tabpanel" class="tab-pane" id="source-{{status.slug}}">
+                                                    <pre>{{ yamlize(status.source) }}</pre>
+                                                </div>
+                                                <div role="tabpanel" class="tab-pane" id="log-{{status.slug}}">
+                                                    <pre>{{ status.reason }}</pre>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
-            {% endfor %}
         </div>
         {% endfor %}
     </div>
@@ -145,6 +184,18 @@
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <!-- Latest compiled and minified JavaScript -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+        integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+        crossorigin="anonymous"></script>
+
+<script>
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+        $('[data-spy="affix"]').each(function() {
+            $(this).attr('data-offset-top', $(this).offset().top);
+        })
+    })
+
+</script>
 </body>
 </html>

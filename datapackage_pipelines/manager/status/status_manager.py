@@ -55,7 +55,7 @@ class PipelineStatus(object):
         running = self.data.get('state') == 'RUNNING'
         updating = (cur_time - self.data.get('updated', 0)) < 60
         if running and not updating:
-            self.set_idle(False, None, None, None, True)
+            self.set_idle(False, force=True)
         return self.data.get('state') == 'RUNNING'
 
     def set_running(self, trigger, log):
@@ -79,10 +79,15 @@ class PipelineStatus(object):
         })
         self.save()
 
-    def set_idle(self, success, log, cache_hash, record_count, force=False):
+    # pylint: disable=too-many-arguments
+    def set_idle(self, success,
+                 log=None, cache_hash=None, stats=None, force=False):
         if self.data['state'] not in {'RUNNING'}:
             logging.error('set_idle: bad state %s', self.data['state'])
             return
+
+        if stats is None:
+            stats = {}
 
         cur_time = time.time()
         if force or self.check_running():
@@ -94,7 +99,7 @@ class PipelineStatus(object):
                 self.data.update({
                     'last_success': self.data['ended'],
                     'cache_hash': cache_hash,
-                    'record_count': record_count,
+                    'stats': stats,
                 })
                 self.set_state('SUCCEEDED')
             else:
@@ -148,9 +153,9 @@ class StatusManager(object):
     def running(self, _id, trigger=None, log=None):
         PipelineStatus(self.backend, _id).set_running(trigger, log)
 
-    def idle(self, _id, success, reason, cache_hash, record_count):
+    def idle(self, _id, success, reason, cache_hash, stats):
         PipelineStatus(self.backend, _id)\
-            .set_idle(success, reason, cache_hash, record_count)
+            .set_idle(success, reason, cache_hash, stats)
 
     def register(self, _id, cache_hash, pipeline=(), source=None, errors=()):
         return PipelineStatus(self.backend, _id)\

@@ -38,17 +38,19 @@ async def dequeue_errors(queue, out):
             out.pop(0)
 
 
-async def count_lines(infile):
+async def collect_stats(infile):
     reader = asyncio.StreamReader()
     reader_protocol = asyncio.StreamReaderProtocol(reader)
     transport, _ = await asyncio.get_event_loop() \
         .connect_read_pipe(lambda: reader_protocol, infile)
     count = 0
     dp = None
+    stats = None
     while True:
         line = await reader.readline()
         if line == b'':
             break
+        stats = line
         if dp is None:
             try:
                 dp = json.loads(line.decode('ascii'))
@@ -59,11 +61,14 @@ async def count_lines(infile):
     transport.close()
 
     if dp is None or count == 0:
-        return 0
+        return {}
 
-    # 1 for the datapackage, 1 for the last '' line and 1 per resource
-    count = count - 1 - len(dp.get('resources', []))
-    return count
+    try:
+        stats = json.loads(stats.decode('ascii'))
+    except JSONDecodeError:
+        stats = {}
+
+    return stats
 
 
 def create_process(args, cwd, wfd, rfd):
@@ -145,7 +150,9 @@ async def construct_process_pipeline(pipeline_steps, pipeline_cwd, errors):
             asyncio.ensure_future(enqueue_errors(step, process, error_queue))
         )
 
-    error_collectors.append(asyncio.ensure_future(count_lines(os.fdopen(rfd))))
+    error_collectors.append(
+        asyncio.ensure_future(collect_stats(os.fdopen(rfd)))
+    )
 
     def wait_for_finish(_error_collectors,
                         _error_queue,
@@ -220,7 +227,7 @@ async def async_execute_pipeline(pipeline_id,
                        trigger,
                        '\n'.join(errors))
 
-    line_count = await stop_error_collecting()
+    stats = await stop_error_collecting()
 
     cache_hash = ''
     if len(pipeline_steps) > 0:
@@ -230,7 +237,13 @@ async def async_execute_pipeline(pipeline_id,
                 success,
                 '\n'.join(errors),
                 cache_hash,
-                line_count)
+                stats)
+
+    if stats is not None:
+        logging.info('RESULT for %s:\n%s',
+                     pipeline_id, json.dumps(stats, indent=2))
+
+    return stats
 
 
 def execute_pipeline(pipeline_id,
@@ -248,7 +261,7 @@ def execute_pipeline(pipeline_id,
                                                      trigger,
                                                      use_cache))
     try:
-        loop.run_until_complete(pipeline_task)
+        return loop.run_until_complete(pipeline_task)
     except KeyboardInterrupt:
         logging.info("Caught keyboard interrupt. Cancelling tasks...")
         pipeline_task.cancel()

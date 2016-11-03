@@ -29,6 +29,8 @@ def transform_row(row, fields):
     return dict((k, transform_value(v, fields[k]['type']))
                 for k, v in row.items())
 
+stats = {}
+
 
 def rows_processor(_rows, _csv_file, _zip_file, _writer, _fields, _schema):
     for row in _rows:
@@ -40,6 +42,7 @@ def rows_processor(_rows, _csv_file, _zip_file, _writer, _fields, _schema):
                 logging.error('Bad value %r for field %s', v, k)
                 raise
         _writer.writerow(transformed_row)
+        stats['total_row_count'] += 1
         yield row
     filename = _csv_file.name
     _csv_file.close()
@@ -49,6 +52,7 @@ def rows_processor(_rows, _csv_file, _zip_file, _writer, _fields, _schema):
 
 
 def resource_processor(_res_iter, zip_file):
+    stats['total_row_count'] = 0
     for rows in _res_iter:
         schema = rows.spec['schema']
 
@@ -65,5 +69,6 @@ def resource_processor(_res_iter, zip_file):
         yield rows_processor(rows, csv_file, zip_file,
                              csv_writer, fields, schema)
 
-spew(datapackage, resource_processor(res_iter, out_file))
+stats['dataset-name'] = datapackage.get('name', '<unknown>')
+spew(datapackage, resource_processor(res_iter, out_file), stats)
 out_file.close()
