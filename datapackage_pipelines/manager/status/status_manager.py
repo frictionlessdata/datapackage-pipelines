@@ -44,6 +44,7 @@ class PipelineStatus(object):
 
     def set_state(self, state):
         self.data['state'] = state
+        self.data['dirty'] = False
         self.data.update(self.STATES[state])
 
     def check_running(self):
@@ -118,6 +119,7 @@ class PipelineStatus(object):
         self.data.update({
             'pipeline': pipeline,
             'source': source,
+            'dirty': False
         })
         if len(errors) > 0:
             self.data.update({
@@ -128,6 +130,7 @@ class PipelineStatus(object):
         else:
             if self.data.get('state') == 'INIT':
                 self.set_state('REGISTERED')
+            self.data['dirty'] = dirty
 
         self.backend.register_pipeline_id(self.pipeline_id)
         self.save()

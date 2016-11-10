@@ -91,7 +91,7 @@
 <div class="container-fluid">
     <ul class="nav nav-tabs" role="tablist">
         {% for category in categories %}
-        <li role="presentation" class="{%if category[0]=='REGISTERED'%}active{%endif%}"><a href="#state-{{category[0]}}" aria-controls="{{category[0]}}" role="tab" data-toggle="tab">{{category[1]}} ({{category[3]}})</a></li>
+        <li role="presentation" class="{%if category[0]=='REGISTERED'%}active{%endif%}"><a href="#state-{{category[0]}}" aria-controls="{{category[0]}}" role="tab" data-toggle="tab">{{category[1]}} ({{category[4]}})</a></li>
         {% endfor %}
     </ul>
     <div class="tab-content">
@@ -100,7 +100,7 @@
             <div class="row">
                 <div class="col-md-3">
                     <div data-spy="affix" >
-                        {% for status in category[2] %}
+                        {% for status in category[3] %}
                         <div class="row">
                             <div class="col-xs-12">
                                 <div>
@@ -123,7 +123,7 @@
                     </div>
                 </div>
                 <div class="col-md-9">
-                    {% for status in category[2] %}
+                    {% for status in category[3] %}
                     <div class="row" id="anchor-{{status.slug}}">
                         <div class="col-md-12">
                             <div class="panel panel-{{ status.class }}">

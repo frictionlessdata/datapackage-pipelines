@@ -34,15 +34,24 @@ def main():
                             }[pipeline.get('state', 'INIT')]
 
         pipeline['slug'] = slugify.slugify(pipeline['id'])
+
+    def state_and_not_dirty(state, p):
+        return p.get('state') == state and not p.get('dirty')
+
+    def state_or_dirty(state, p):
+        return p.get('state') == state or p.get('dirty')
+
     categories = [
-        ['REGISTERED', 'Waiting to run'],
-        ['INVALID', 'Failed validation'],
-        ['RUNNING', 'Running'],
-        ['SUCCEEDED', 'Successful Execution'],
-        ['FAILED', 'Failed Execution']
+        ['REGISTERED', 'Waiting to run', state_or_dirty],
+        ['INVALID', 'Failed validation', state_and_not_dirty],
+        ['RUNNING', 'Running', state_and_not_dirty],
+        ['SUCCEEDED', 'Successful Execution', state_and_not_dirty],
+        ['FAILED', 'Failed Execution', state_and_not_dirty]
     ]
     for item in categories:
-        item.append([p for p in statuses if p.get('state') == item[0]])
+        item.append([p for p in statuses
+                     if item[2](item[0], p)
+                     ])
         item.append(len(item[-1]))
     return render_template('dashboard.html',
                            categories=categories,
