@@ -10,12 +10,10 @@ for target, sources in column_aliases.items():
     if sources is not None:
         for source in sources:
             if source in column_mapping:
-                logging.error('Duplicate appearance of %s', source)
-            assert source not in column_mapping
+                raise RuntimeError('Duplicate appearance of %s' % source)
             column_mapping[source] = target
     if target in column_mapping:
-        logging.error('Duplicate appearance of %s', target)
-    assert target not in column_mapping
+        raise RuntimeError('Duplicate appearance of %s' % target)
     column_mapping[target] = target
 
 resource_name = params.get('resource-name', 'concat')
