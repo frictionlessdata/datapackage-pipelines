@@ -128,7 +128,7 @@ class PipelineStatus(object):
             })
             self.set_state('INVALID')
         else:
-            if self.data.get('state') == 'INIT':
+            if self.data.get('state') in {'INIT', 'INVALID'}:
                 self.set_state('REGISTERED')
             self.data['dirty'] = dirty
 
