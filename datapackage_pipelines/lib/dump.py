@@ -2,6 +2,7 @@ import os
 import zipfile
 import csv
 import json
+import re
 import tempfile
 import logging
 
@@ -17,8 +18,9 @@ out_file = zipfile.ZipFile(out_filename, 'w')
 
 for resource in datapackage['resources']:
     resource['encoding'] = 'utf-8'
-    _, extension = os.path.splitext(resource['path'])
-    resource['path'] = resource['path'].replace(extension, '.csv')
+    extension = os.path.splitext(resource['path'])[1].lstrip('.')
+    pattern = '{}$'.format(extension)
+    resource['path'] = re.sub(pattern, 'csv', resource['path'])
 
 out_file.writestr('datapackage.json',
                   json.dumps(datapackage, ensure_ascii=True))
