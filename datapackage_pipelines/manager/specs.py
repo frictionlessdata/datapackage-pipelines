@@ -83,6 +83,7 @@ def validate_required_keys(obj, keys, abspath, errors):
                       .format(required_key, abspath)
             errors.append(('Missing Parameter', message))
 
+
 # pylint: disable=too-many-locals
 def validate_specs():
 
@@ -105,7 +106,7 @@ def validate_specs():
                                abspath,
                                errors)
 
-        pipeline = pipeline_details['pipeline']
+        pipeline = pipeline_details.get('pipeline', [])
 
         try:
             for step in pipeline:

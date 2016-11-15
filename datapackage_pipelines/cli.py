@@ -41,7 +41,7 @@ or 'dirty' for running just the dirty ones."""
                         (pipeline_id == 'all') or
                         (pipeline_id == 'dirty' and dirty)):
                     execute_pipeline(_pipeline_id,
-                                     pipeline_details['pipeline'],
+                                     pipeline_details.get('pipeline', []),
                                      pipeline_cwd,
                                      use_cache=use_cache)
 
