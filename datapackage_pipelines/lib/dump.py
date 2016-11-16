@@ -18,9 +18,8 @@ out_file = zipfile.ZipFile(out_filename, 'w')
 
 for resource in datapackage['resources']:
     resource['encoding'] = 'utf-8'
-    extension = os.path.splitext(resource['path'])[1].lstrip('.')
-    pattern = '{}$'.format(extension)
-    resource['path'] = re.sub(pattern, 'csv', resource['path'])
+    basename, extension = os.path.splitext(resource['path'])
+    resource['path'] = basename + '.csv'
 
 out_file.writestr('datapackage.json',
                   json.dumps(datapackage, ensure_ascii=True))
