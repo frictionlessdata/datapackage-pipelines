@@ -83,7 +83,7 @@ def spew(dp, resources_iterator, stats=None):
         aggregated_stats = {}
         if not first:
             stats_line = sys.stdin.readline().strip()
-            if stats_line != b'':
+            if len(stats_line) > 0:
                 try:
                     aggregated_stats = json.loads(stats_line)
                 except json.JSONDecodeError:

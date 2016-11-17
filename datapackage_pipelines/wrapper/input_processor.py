@@ -5,6 +5,7 @@ import decimal
 import logging
 
 import datapackage
+import sys
 from jsontableschema.exceptions import InvalidCastError
 
 from jsontableschema.model import SchemaModel
@@ -85,7 +86,7 @@ def process_input(infile, validate=False, debug=False):
 
     dp_json = infile.readline().strip()
     if dp_json == '':
-        raise ValueError('Missing input')
+        sys.exit(-3)
     dp = json.loads(dp_json)
     resources = dp.get('resources', [])
     original_resources = copy.deepcopy(resources)

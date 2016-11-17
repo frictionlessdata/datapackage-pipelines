@@ -4,8 +4,9 @@ import logging
 
 import itertools
 import requests
+import tabulator
 
-from jsontableschema.model import SchemaModel
+from jsontableschema import Schema
 
 from datapackage_pipelines.wrapper import ingest, spew
 
@@ -13,26 +14,17 @@ from datapackage_pipelines.wrapper import ingest, spew
 def _reader(opener, _url):
     yield None
     filename = os.path.basename(_url)
-    _schema, _headers, _csv_reader = opener()
+    _schema, _headers, _reader = opener()
+    num_headers = len(_headers)
     i = 0
-    for i, row in enumerate(_csv_reader):
+    for i, row in enumerate(_reader):
 
         row = [x.strip() for x in row]
-        if len(row) == 0:
-            # response.iter_lines() might emit an empty string here and there
-            # if the delimiter is more than one byte:
-            #       https://github.com/kennethreitz/requests/pull/2431
-            continue
         values = set(row)
         if len(values) == 1 and '' in values:
             # In case of empty rows, just skip them
             continue
-        output = dict(
-            (header, _schema.cast(header, value))
-            for header, value
-            in zip(_headers, row)
-            if _schema.has_field(header)
-        )
+        output = dict(zip(_headers, _schema.cast_row(row[:num_headers])))
         yield output
 
         i += 1
@@ -43,34 +35,35 @@ def _reader(opener, _url):
     logging.info('%s: TOTAL %d rows', filename, i)
 
 
-def _null_remover(iterator):
-    for line in iterator:
-        if line == '':
+def dedupe(headers):
+    _dedupped_headers = []
+    for hdr in headers:
+        if len(hdr.strip()) == 0:
             continue
-        if '\x00' in line:
-            continue
-        yield line
+        if hdr in _dedupped_headers:
+            i = 0
+            deduped_hdr = hdr
+            while deduped_hdr in _dedupped_headers:
+                i += 1
+                deduped_hdr = '%s_%s' % (hdr, i)
+            hdr = deduped_hdr
+        _dedupped_headers.append(hdr)
+    return _dedupped_headers
 
 
-def csv_stream_reader(_resource, _url, _encoding=None):
+def stream_reader(_resource, _url, _encoding=None):
     def get_opener(__url, __encoding):
         def opener():
-            if __url.startswith('file://'):
-                response = open(__url[7:], encoding=__encoding)
-            else:
-                response = requests.get(__url, stream=True)
-                if __encoding is not None:
-                    response.encoding = __encoding
-                response = response.iter_lines(decode_unicode=True)
-            _csv_reader = csv.reader(_null_remover(response))
-            _headers = next(_csv_reader)
+            _stream = tabulator.Stream(__url, headers=1, encoding=__encoding)
+            _stream.open()
+            _headers = dedupe(_stream.headers)
             _schema = _resource.get('schema')
             if _schema is not None:
-                _schema = SchemaModel(_schema)
-            return _schema, _headers, _csv_reader
+                _schema = Schema(_schema)
+            return _schema, _headers, _stream
         return opener
 
-    schema, headers, csv_reader = get_opener(url, _encoding)()
+    schema, headers, stream = get_opener(url, _encoding)()
     if schema is None:
         schema = {
             'fields': [
@@ -79,7 +72,9 @@ def csv_stream_reader(_resource, _url, _encoding=None):
                 ]
         }
         _resource['schema'] = schema
-    del csv_reader
+
+    stream.close()
+    del stream
 
     return itertools\
         .islice(
@@ -95,14 +90,14 @@ new_resource_iterators = []
 for resource in datapackage['resources']:
     if 'path' in resource:
         new_resource_iterators.append(next(res_iter))
-    elif 'url' in resource and resource.get('mediatype') == 'text/csv':
+    elif 'url' in resource:
         url = resource['url']
         basename = os.path.basename(resource['url'])
         path = os.path.join('data', basename)
         del resource['url']
         resource['path'] = path
         encoding = resource.get('encoding')
-        rows = csv_stream_reader(resource, url, encoding)
+        rows = stream_reader(resource, url, encoding)
         new_resource_iterators.append(rows)
 
 spew(datapackage, new_resource_iterators)
