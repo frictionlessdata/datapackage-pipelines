@@ -63,11 +63,14 @@ def spew(dp, resources_iterator, stats=None):
         cache_filename = os.path.join('.cache', cache)
         files.append(gzip.open(cache_filename+'.ongoing', 'wt'))
 
+    expected_resources = len(list(filter(lambda x:x.get('path') is not None, dp.get('resources', []))))
     row_count = 0
     try:
         for f in files:
             f.write(json.dumps(dp, ensure_ascii=True)+'\n')
+        num_resources = 0
         for res in resources_iterator:
+            num_resources += 1
             for f in files:
                 f.write('\n')
             for rec in res:
@@ -79,6 +82,10 @@ def spew(dp, resources_iterator, stats=None):
                     f.write(line+'\n')
                 # logging.error('WROTE')
                 row_count += 1
+        if num_resources != expected_resources:
+            logging.error('Expected to see %d resource(s) but spewed %d',
+                          expected_resources, num_resources)
+            assert(num_resources == expected_resources)
 
         aggregated_stats = {}
         if not first:
