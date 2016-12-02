@@ -51,19 +51,21 @@ def dedupe(headers):
     return _dedupped_headers
 
 
-def stream_reader(_resource, _url, _encoding=None):
-    def get_opener(__url, __encoding):
+def stream_reader(_resource, _url):
+    def get_opener(__url, __resource):
         def opener():
-            _stream = tabulator.Stream(__url, headers=1, encoding=__encoding)
+            _params = dict(x for x in __resource.items() if x[0] not in {'path', 'name', 'schema'})
+            logging.error('PPPP %r', _params)
+            _stream = tabulator.Stream(__url, headers=1, **_params)
             _stream.open()
             _headers = dedupe(_stream.headers)
-            _schema = _resource.get('schema')
+            _schema = __resource.get('schema')
             if _schema is not None:
                 _schema = Schema(_schema)
             return _schema, _headers, _stream
         return opener
 
-    schema, headers, stream = get_opener(url, _encoding)()
+    schema, headers, stream = get_opener(url, _resource)()
     if schema is None:
         schema = {
             'fields': [
@@ -79,7 +81,7 @@ def stream_reader(_resource, _url, _encoding=None):
     return itertools\
         .islice(
             _reader(
-                get_opener(_url, _encoding),
+                get_opener(_url, _resource),
                 _url),
             1, None)
 
@@ -96,8 +98,7 @@ for resource in datapackage['resources']:
         path = os.path.join('data', basename)
         del resource['url']
         resource['path'] = path
-        encoding = resource.get('encoding')
-        rows = stream_reader(resource, url, encoding)
+        rows = stream_reader(resource, url)
         new_resource_iterators.append(rows)
 
 spew(datapackage, new_resource_iterators)
