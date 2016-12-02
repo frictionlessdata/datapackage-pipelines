@@ -54,7 +54,7 @@ def dedupe(headers):
 def stream_reader(_resource, _url):
     def get_opener(__url, __resource):
         def opener():
-            _params = dict(x for x in __resource.items() if x[0] not in {'path', 'name', 'schema'})
+            _params = dict(x for x in __resource.items() if x[0] not in {'path', 'name', 'schema', 'mediatype'})
             logging.error('PPPP %r', _params)
             _stream = tabulator.Stream(__url, headers=1, **_params)
             _stream.open()
