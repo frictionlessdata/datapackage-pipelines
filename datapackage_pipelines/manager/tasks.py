@@ -228,6 +228,8 @@ async def async_execute_pipeline(pipeline_id,
                        '\n'.join(errors))
 
     stats = await stop_error_collecting()
+    if success is False:
+        stats = None
 
     cache_hash = ''
     if len(pipeline_steps) > 0:
@@ -239,11 +241,7 @@ async def async_execute_pipeline(pipeline_id,
                 cache_hash,
                 stats)
 
-    if stats is not None:
-        logging.info('RESULT for %s:\n%s',
-                     pipeline_id, json.dumps(stats, indent=2))
-
-    return stats
+    return success, stats
 
 
 def execute_pipeline(pipeline_id,

@@ -50,7 +50,8 @@ def find_source_specs(dirpath, filenames):
                     for pipeline_id, schedule, steps in spec:
                         pipeline_details = {
                             'schedule': {'crontab': schedule},
-                            'pipeline': steps
+                            'pipeline': steps,
+                            'cache': True
                         }
                         pipeline_id = os.path.join(dirpath, pipeline_id)
                         yield abspath, pipeline_id, \

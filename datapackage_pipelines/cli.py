@@ -1,4 +1,5 @@
 import click
+import logging
 
 from .manager import execute_pipeline, finalize
 from .manager.status import status
@@ -34,16 +35,26 @@ def run(pipeline_id, use_cache):
 Use 'all' for running all pipelines,
 or 'dirty' for running just the dirty ones."""
     try:
+        results = []
         for _pipeline_id, pipeline_details, pipeline_cwd, dirty, errors \
                 in pipelines():
             if len(errors) == 0:
                 if ((_pipeline_id == pipeline_id) or
                         (pipeline_id == 'all') or
                         (pipeline_id == 'dirty' and dirty)):
-                    execute_pipeline(_pipeline_id,
-                                     pipeline_details.get('pipeline', []),
-                                     pipeline_cwd,
-                                     use_cache=use_cache)
+                    success, stats = \
+                        execute_pipeline(_pipeline_id,
+                                         pipeline_details.get('pipeline', []),
+                                         pipeline_cwd,
+                                         use_cache=use_cache)
+                    results.append((_pipeline_id, success, stats))
+
+        logging.info('RESULTS:')
+        for pipeline_id, success, stats in results:
+            logging.info('%s: %s %s',
+                         'SUCCESS' if success else 'FAILURE',
+                         pipeline_id,
+                         repr(stats) if stats is not None else '')
 
     except KeyboardInterrupt:
         pass
