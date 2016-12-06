@@ -183,7 +183,7 @@ async def async_execute_pipeline(pipeline_id,
 
     status.running(pipeline_id, trigger, '')
 
-    logging.info("RUNNING %s:", pipeline_id)
+    logging.info("RUNNING %s", pipeline_id)
 
     if use_cache:
         pipeline_steps = find_caches(pipeline_steps, pipeline_cwd)

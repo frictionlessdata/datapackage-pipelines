@@ -2,7 +2,7 @@ def arg_to_step(arg):
     if isinstance(arg, str):
         return {'run': arg}
     else:
-        return dict(zip(['run', 'parameters'], arg))
+        return dict(zip(['run', 'parameters', 'cache'], arg))
 
 
 def steps(*args):

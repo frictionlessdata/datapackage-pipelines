@@ -19,7 +19,7 @@ def _reader(opener, _url):
     i = 0
     for i, row in enumerate(_reader):
 
-        row = [x.strip() for x in row]
+        row = [str(x).strip() for x in row]
         values = set(row)
         if len(values) == 1 and '' in values:
             # In case of empty rows, just skip them
@@ -38,7 +38,7 @@ def _reader(opener, _url):
 def dedupe(headers):
     _dedupped_headers = []
     for hdr in headers:
-        if len(hdr.strip()) == 0:
+        if hdr is None or len(hdr.strip()) == 0:
             continue
         if hdr in _dedupped_headers:
             i = 0
