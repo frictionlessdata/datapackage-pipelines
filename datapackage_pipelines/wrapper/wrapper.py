@@ -93,6 +93,7 @@ def spew(dp, resources_iterator, stats=None):
             if len(stats_line) > 0:
                 try:
                     aggregated_stats = json.loads(stats_line)
+                    assert(aggregated_stats is None or type(aggregated_stats) is dict)
                 except json.JSONDecodeError:
                     logging.error('Failed to parse stats: %r', stats_line)
         if stats is not None:
