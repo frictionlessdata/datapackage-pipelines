@@ -1,0 +1,42 @@
+albanian-treasury:
+  schedule:
+    crontab: '0 * * * *'
+  pipeline:
+    -
+      run: simple_remote_source
+      parameters:
+        resources:
+          -
+            url: "https://raw.githubusercontent.com/openspending/fiscal-data-package-demos/master/al-treasury-spending/data/treasury.csv"
+            schema:
+              fields:
+                -
+                  name: "Date executed"
+                  type: date
+                  osType: date:generic
+                -
+                  name: "Value"
+                  type: number
+                  osType: value
+                -
+                  name: "Supplier"
+                  type: string
+                  osType: supplier:generic:name
+    -
+      run: model
+    -
+      run: metadata
+      parameters:
+        metadata:
+          name: 'al-treasury-spending'
+          title: 'Albania Treasury Service'
+          granularity: transactional
+          countryCode: AL
+          homepage: 'http://spending.data.al/en/treasuryservice/list/year/2014/inst_code/1005001'
+
+    -
+      run: downloader
+    -
+      run: dump
+      parameters:
+          out-file: al-treasury-spending.zip

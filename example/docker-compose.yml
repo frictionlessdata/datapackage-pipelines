@@ -1,0 +1,10 @@
+version: '2'
+services:
+  pipeline:
+    build: .
+    command: sh -c "cd /src && pwd && dpp run ./albanian-treasury"
+    ports:
+      - 5000:5000
+    volumes:
+      - ./:/src
+#    user: $UID
