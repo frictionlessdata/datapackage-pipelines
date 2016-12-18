@@ -59,7 +59,7 @@ setup(
     description='{{ DESCRIPTION }}',
     author='Open Knowledge Foundation',
     author_email='info@okfn.org',
-    url='https://github.com/frictionlessdat/datapackage-pipelines',
+    url='https://github.com/frictionlessdata/datapackage-pipelines',
     license='MIT',
     keywords=[
         'data',
