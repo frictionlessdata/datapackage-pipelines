@@ -49,6 +49,8 @@ def rows_processor(_rows, _csv_file, _zip_file, _writer, _fields, _schema):
                 raise
         _writer.writerow(transformed_row)
         stats['total_row_count'] += 1
+        if stats['total_row_count'] % 1000 == 0:
+            logging.info('Dumped %d rows', stats['total_row_count'])
         yield row
     filename = _csv_file.name
     _csv_file.close()
