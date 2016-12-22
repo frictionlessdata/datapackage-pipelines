@@ -37,6 +37,7 @@ def _reader(opener, _url):
 
 def dedupe(headers):
     _dedupped_headers = []
+    headers = list(map(str, headers))
     for hdr in headers:
         if hdr is None or len(hdr.strip()) == 0:
             continue
