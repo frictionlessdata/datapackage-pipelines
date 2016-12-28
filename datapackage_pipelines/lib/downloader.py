@@ -1,9 +1,7 @@
 import os
-import csv
 import logging
 
 import itertools
-import requests
 import tabulator
 
 from jsontableschema import Schema
@@ -52,12 +50,24 @@ def dedupe(headers):
     return _dedupped_headers
 
 
+def row_skipper(rows_to_skip):
+    def _func(extended_rows):
+        for number, headers, row in extended_rows:
+            if number > rows_to_skip:
+                yield (number-rows_to_skip, headers, row)
+    return _func
+
+
 def stream_reader(_resource, _url):
     def get_opener(__url, __resource):
         def opener():
             _params = dict(headers=1)
-            _params.update(dict(x for x in __resource.items() if x[0] not in {'path', 'name', 'schema', 'mediatype'}))
-            _stream = tabulator.Stream(__url, **_params)
+            _params.update(
+                dict(x for x in __resource.items()
+                     if x[0] not in {'path', 'name', 'schema', 'mediatype', 'skip_rows'}))
+            skip_rows = __resource.get('skip_rows', 0)
+            _stream = tabulator.Stream(__url, **_params,
+                                       post_parse=[row_skipper(skip_rows)])
             _stream.open()
             _headers = dedupe(_stream.headers)
             _schema = __resource.get('schema')
