@@ -1,8 +1,8 @@
-import json
 import logging
 
 import redis
 
+from ...utilities.extended_json import json
 
 class RedisBackend(object):
 

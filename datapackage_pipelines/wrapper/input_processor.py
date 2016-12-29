@@ -1,7 +1,5 @@
-import datetime
-import json
+from ..utilities.extended_json import json
 import copy
-import decimal
 import logging
 
 import datapackage
@@ -9,34 +7,6 @@ import sys
 from jsontableschema.exceptions import InvalidCastError
 
 from jsontableschema.model import SchemaModel
-
-
-class CommonJSONDecoder(json.JSONDecoder):
-    """
-    Common JSON Encoder
-    json.loads(myString, cls=CommonJSONEncoder)
-    """
-
-    @classmethod
-    def object_hook(cls, obj):  # pylint: disable=method-hidden
-        if 'type{decimal}' in obj:
-            try:
-                return decimal.Decimal(obj['type{decimal}'])
-            except decimal.InvalidOperation:
-                pass
-        if 'type{date}' in obj:
-            try:
-                return datetime.datetime \
-                    .strptime(obj["type{date}"], '%Y-%m-%d') \
-                    .date()
-            except ValueError:
-                pass
-
-        return obj
-
-    def __init__(self, **kwargs):
-        kwargs['object_hook'] = self.object_hook
-        super(CommonJSONDecoder, self).__init__(**kwargs)
 
 
 # pylint: disable=too-few-public-methods, too-many-arguments
@@ -49,19 +19,23 @@ class ResourceIterator(object):
         self.validate = validate
         self.infile = infile
         self.debug = debug
+        self.stopped = False
 
     def __iter__(self):
         return self
 
     def __next__(self):
+        if self.stopped:
+            raise StopIteration()
         if self.debug:
             logging.error('WAITING')
         line = self.infile.readline().strip()
         if self.debug:
             logging.error('INGESTING: %r', line)
         if line == '':
+            self.stopped = True
             raise StopIteration()
-        line = json.loads(line, cls=CommonJSONDecoder)
+        line = json.loads(line)
         if self.validate:
             for k, v in line.items():
                 try:

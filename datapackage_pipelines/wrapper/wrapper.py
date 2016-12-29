@@ -1,10 +1,8 @@
 import gzip
 import sys
 import os
-import json
 import logging
-import decimal
-import datetime
+from ..utilities.extended_json import json
 
 from .input_processor import process_input
 
@@ -14,20 +12,6 @@ def processor():
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(levelname)-8s:"+processor()+":%(message)s")
-
-
-class CommonJSONEncoder(json.JSONEncoder):
-    """
-    Common JSON Encoder
-    json.dumps(myString, cls=CommonJSONEncoder)
-    """
-
-    def default(self, obj):     # pylint: disable=method-hidden
-
-        if isinstance(obj, decimal.Decimal):
-            return {'type{decimal}': str(obj)}
-        elif isinstance(obj, datetime.date):
-            return {'type{date}': str(obj)}
 
 
 cache = ''
@@ -75,7 +59,6 @@ def spew(dp, resources_iterator, stats=None):
                 f.write('\n')
             for rec in res:
                 line = json.dumps(rec,
-                                  cls=CommonJSONEncoder,
                                   ensure_ascii=True)
                 # logging.error('SPEWING: {}'.format(line))
                 for f in files:
@@ -99,7 +82,6 @@ def spew(dp, resources_iterator, stats=None):
         if stats is not None:
             aggregated_stats.update(stats)
         stats_json = json.dumps(aggregated_stats,
-                                cls=CommonJSONEncoder,
                                 ensure_ascii=True)
         for f in files:
             f.write('\n'+stats_json+'\n')

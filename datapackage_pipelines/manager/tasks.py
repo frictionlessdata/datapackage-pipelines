@@ -1,12 +1,12 @@
 import os
 import sys
-import json
 from json.decoder import JSONDecodeError
 import logging
 
 import asyncio
 from concurrent.futures import CancelledError
 
+from ..utilities.extended_json import json
 from .status import status
 from .specs import resolve_executor
 

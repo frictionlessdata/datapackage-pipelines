@@ -1,9 +1,9 @@
-import json
 import os
 import hashlib
 
 import yaml
 
+from ..utilities.extended_json import json
 from .resolver import resolve_executor, resolve_generator
 from .status import status
 
