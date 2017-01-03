@@ -31,7 +31,9 @@ INSTALL_REQUIRES = [
     'flask',
     'os-gobble',
     'click',
-    'awesome-slugify'
+    'awesome-slugify',
+    'flask-cors',
+    'flask-jsonpify'
 ]
 LINT_REQUIRES = [
     'pylint',

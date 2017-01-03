@@ -1,13 +1,16 @@
 import datetime
 
 from flask import Flask, render_template, abort, redirect
+from flask_cors import CORS
+from flask_jsonpify import jsonify
+
 import yaml
 import slugify
 
 from ..manager.status import status
 
 app = Flask(__name__)
-
+CORS(app)
 
 def datestr(x):
     return str(datetime.datetime.fromtimestamp(x))
@@ -56,6 +59,26 @@ def main():
     return render_template('dashboard.html',
                            categories=categories,
                            yamlize=yamlize)
+
+
+@app.route("/api/<field>/<path:pipeline_id>")
+def pipeline_api(field, pipeline_id):
+    fields = {
+        'log': 'reason',
+        'pipeline': 'pipeline',
+        'source': 'source'
+    }
+    field = fields.get(field)
+    if not pipeline_id.startswith('./'):
+        pipeline_id = './' + pipeline_id
+    pipeline_status = status.get_status(pipeline_id)
+    if pipeline_status is None or field is None:
+        abort(404)
+    ret = pipeline_status[field]
+    if field != 'reason':
+        ret = yamlize(ret)
+    ret = {'text': ret}
+    return jsonify(ret)
 
 
 @app.route("/badge/<path:pipeline_id>")

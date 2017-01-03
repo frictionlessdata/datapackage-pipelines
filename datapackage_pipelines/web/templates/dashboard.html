@@ -133,8 +133,6 @@
                                     </h1>
                                 </div>
                                 <div class="panel-body">
-                                    <!--<a role="button" data-toggle="collapse" data-target="#log-{{ status.slug }}" href="#"><strong>Last Log:</strong></a>-->
-                                    <!--<pre class="collapse" id="log-{{ status.slug }}">{{ status.reason }}</pre>-->
                                     <div class="row">
                                         <div class="col-sm-1">
                                             <ul class="nav nav-pills nav-stacked" role="tablist">
@@ -155,14 +153,26 @@
                                                         <dt>Last Success:</dt><dd>{{ status.last_success }}</dd>
                                                     </dl>
                                                 </div>
-                                                <div role="tabpanel" class="tab-pane" id="pipeline-{{status.slug}}">
-                                                    <pre>{{ yamlize(status.pipeline) }}</pre>
+                                                <div role="tabpanel"
+                                                     class="tab-pane"
+                                                     id="pipeline-{{status.slug}}"
+                                                     data-field="pipeline"
+                                                     data-pipeline="{{status.id}}"
+                                                >
                                                 </div>
-                                                <div role="tabpanel" class="tab-pane" id="source-{{status.slug}}">
-                                                    <pre>{{ yamlize(status.source) }}</pre>
+                                                <div role="tabpanel"
+                                                     class="tab-pane"
+                                                     id="source-{{status.slug}}"
+                                                     data-field="source"
+                                                     data-pipeline="{{status.id}}"
+                                                >
                                                 </div>
-                                                <div role="tabpanel" class="tab-pane" id="log-{{status.slug}}">
-                                                    <pre>{{ status.reason }}</pre>
+                                                <div role="tabpanel"
+                                                     class="tab-pane"
+                                                     id="log-{{status.slug}}"
+                                                     data-field="log"
+                                                     data-pipeline="{{status.id}}"
+                                                >
                                                 </div>
                                             </div>
                                         </div>
@@ -195,6 +205,23 @@
             $(this).attr('data-offset-top', $(this).offset().top);
         })
     })
+
+    $('[role=tabpanel]').on('shown.bs.tab', function(e) {
+      var control = $(e.target);
+      var tabContents = $(control.attr('href'));
+      var gotData = tabContents.attr('data-full');
+      if (gotData) return;
+      var field = tabContents.attr('data-field');
+      if (!field) return;
+      var pipeline_id = tabContents.attr('data-pipeline');
+      $.get('api/'+field+'/'+pipeline_id, function(data) {
+        contents = data.text;
+        contents = '<pre>' + contents + '</pre>';
+        tabContents.html(contents);
+        tabContents.attr('data-full', true);
+      }, 'json');
+      console.log(field, pipeline_id);
+    });
 
 </script>
 </body>

@@ -73,6 +73,7 @@ def spew(dp, resources_iterator, stats=None):
         aggregated_stats = {}
         if not first:
             stats_line = sys.stdin.readline().strip()
+            logging.error('GOT %r', stats_line)
             if len(stats_line) > 0:
                 try:
                     aggregated_stats = json.loads(stats_line)
