@@ -10,7 +10,9 @@ import slugify
 from ..manager.status import status
 
 app = Flask(__name__)
+app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 CORS(app)
+
 
 def datestr(x):
     return str(datetime.datetime.fromtimestamp(x))
@@ -77,6 +79,7 @@ def pipeline_api(field, pipeline_id):
     ret = pipeline_status[field]
     if field != 'reason':
         ret = yamlize(ret)
+    ret = ret.split('\n')
     ret = {'text': ret}
     return jsonify(ret)
 

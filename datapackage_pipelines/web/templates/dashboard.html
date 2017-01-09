@@ -215,8 +215,10 @@
       if (!field) return;
       var pipeline_id = tabContents.attr('data-pipeline');
       $.get('api/'+field+'/'+pipeline_id, function(data) {
-        contents = data.text;
-        contents = '<pre>' + contents + '</pre>';
+        text = data.text;
+        contents = '<pre>';
+        for (i = 0 ; i < text.length ; i++) contents += text[i] + '\n';
+        contents = contents + '</pre>';
         tabContents.html(contents);
         tabContents.attr('data-full', true);
       }, 'json');
