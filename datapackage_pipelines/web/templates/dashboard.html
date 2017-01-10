@@ -200,11 +200,11 @@
 
 <script>
     $(function () {
-        $('[data-toggle="tooltip"]').tooltip()
+        $('[data-toggle="tooltip"]').tooltip();
         $('[data-spy="affix"]').each(function() {
             $(this).attr('data-offset-top', $(this).offset().top);
         })
-    })
+    });
 
     $('[role=tabpanel]').on('shown.bs.tab', function(e) {
       var control = $(e.target);

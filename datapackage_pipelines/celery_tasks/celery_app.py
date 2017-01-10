@@ -20,7 +20,8 @@ for pipeline_id, pipeline_details, pipeline_cwd, dirty, errors \
             'args': (pipeline_id,
                      pipeline_details['pipeline'],
                      pipeline_cwd,
-                     'schedule')
+                     'schedule',
+                     0)
         }
         CELERY_SCHEDULE[pipeline_id] = entry
 

@@ -107,6 +107,13 @@ class PipelineStatus(object):
                 self.set_state('FAILED')
         self.save()
 
+    def set_queued(self):
+        cur_time = time.time()
+        self.data.update({
+            'queued': cur_time,
+        })
+        self.save()
+
     def register(self, cache_hash, pipeline, source, errors):
 
         self.check_running()
@@ -163,6 +170,11 @@ class StatusManager(object):
     def register(self, _id, cache_hash, pipeline=(), source=None, errors=()):
         return PipelineStatus(self.backend, _id)\
                 .register(cache_hash, pipeline, source, errors)
+
+    def queued(self, _id):
+        ps = PipelineStatus(self.backend, _id)
+        ps.set_queued()
+        return ps
 
     def initialize(self):
         self.backend.reset()

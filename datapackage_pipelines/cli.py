@@ -48,6 +48,8 @@ or 'dirty' for running just the dirty ones."""
                                          pipeline_cwd,
                                          use_cache=use_cache)
                     results.append((_pipeline_id, success, stats))
+                    if _pipeline_id == pipeline_id:
+                        break
 
         logging.info('RESULTS:')
         for pipeline_id, success, stats in results:
