@@ -81,3 +81,6 @@ target/
 .idea/
 datapackage-pipelines.iml
 celerybeat-schedule
+
+# Examples
+example/al-treasury-spending.zip

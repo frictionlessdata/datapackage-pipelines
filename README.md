@@ -7,56 +7,16 @@ A modular framework for a stream-processing ETL based on Data Packages
 
 ## QUICK START
 
+1. Install Docker
+2. Copy files from [examples directory](examples/)
+3. Cd to examples directory
+4. Run `docker-compose up` to download data from Albanian Treasury and create `al-treasury-spending.zip` file
+
+### dpp Commands
+
+Commands in the Docker interactive mode:
+
 ```
-# Install from PyPi
-$ pip install datapackage-pipelines
-
-# The pipeline definition
-$ cat > pipeline-spec.yaml
-albanian-treasury:
-  schedule:
-    crontab: '0 * * * *'
-  pipeline:
-    -
-      run: simple_remote_source
-      parameters:
-        resources:
-          -
-            url: "https://raw.githubusercontent.com/openspending/fiscal-data-package-demos/master/al-treasury-spending/data/treasury.csv"
-            schema:
-              fields:
-                -
-                  name: "Date executed"
-                  type: date
-                  osType: date:generic
-                -
-                  name: "Value"
-                  type: number
-                  osType: value
-                -
-                  name: "Supplier"
-                  type: string
-                  osType: supplier:generic:name
-    -
-      run: model
-    -
-      run: metadata
-      parameters:
-        metadata:
-          name: 'al-treasury-spending'
-          title: 'Albania Treasury Service'
-          granularity: transactional
-          countryCode: AL
-          homepage: 'http://spending.data.al/en/treasuryservice/list/year/2014/inst_code/1005001'
-
-    -
-      run: downloader
-    -
-      run: dump
-      parameters:
-          out-file: al-treasury-spending.zip
-^D
-
 # List Available Pipelines
 $ dpp
 Available Pipelines:
@@ -64,28 +24,11 @@ Available Pipelines:
 
 # Invoke the pipeline manually
 $ dpp run ./albanian-treasury
-INFO    :Main                            :RUNNING ./albanian-treasury:
-INFO    :Main                            :- /Users/adam/code/os/datapackage-pipelines/datapackage_pipelines/manager/../lib/simple_remote_source.py
-INFO    :Main                            :- /Users/adam/code/os/datapackage-pipelines/datapackage_pipelines/manager/../lib/model.py
-INFO    :Main                            :- /Users/adam/code/os/datapackage-pipelines/datapackage_pipelines/manager/../lib/metadata.py
-INFO    :Main                            :- /Users/adam/code/os/datapackage-pipelines/datapackage_pipelines/manager/../lib/downloader.py
-INFO    :Main                            :- /Users/adam/code/os/datapackage-pipelines/datapackage_pipelines/manager/../lib/dump.py
-INFO    :Simple_Remote_Source            :Processed 0 rows
-INFO    :Model                           :Processed 0 rows
-INFO    :Metadata                        :Processed 0 rows
-INFO    :Downloader                      :Starting new HTTPS connection (1): raw.githubusercontent.com
-DEBUG   :Downloader                      :"GET /openspending/fiscal-data-package-demos/master/al-treasury-spending/data/treasury.csv HTTP/1.1" 200 3784
-INFO    :Downloader                      :TOTAL 40 rows
-INFO    :Downloader                      :Processed 40 rows
-INFO    :Dump                            :Processed 40 rows
-INFO    :Main                            :WAITING FOR ./albanian-treasury:/Users/adam/code/os/datapackage-pipelines/datapackage_pipelines/manager/../lib/simple_remote_source.py
-INFO    :Main                            :WAITING FOR ./albanian-treasury:/Users/adam/code/os/datapackage-pipelines/datapackage_pipelines/manager/../lib/model.py
-INFO    :Main                            :WAITING FOR ./albanian-treasury:/Users/adam/code/os/datapackage-pipelines/datapackage_pipelines/manager/../lib/metadata.py
-INFO    :Main                            :WAITING FOR ./albanian-treasury:/Users/adam/code/os/datapackage-pipelines/datapackage_pipelines/manager/../lib/downloader.py
-INFO    :Main                            :WAITING FOR ./albanian-treasury:/Users/adam/code/os/datapackage-pipelines/datapackage_pipelines/manager/../lib/dump.py
-INFO    :Main                            :DONE ./albanian-treasury: [0, 0, 0, 0, 0]
+```
 
-# Examine Results
+### Examine Results
+
+```
 $ unzip -t al-treasury-spending.zip
 Archive:  al-treasury-spending.zip
     testing: datapackage.json         OK
@@ -93,89 +36,22 @@ Archive:  al-treasury-spending.zip
 No errors detected in compressed data of al-treasury-spending.zip.
 
 $ unzip -p al-treasury-spending.zip datapackage.json | json_pp
-{
-   "name" : "al-treasury-spending",
-   "granularity" : "transactional",
-   "homepage" : "http://spending.data.al/en/treasuryservice/list/year/2014/inst_code/1005001",
-   "countryCode" : "AL",
-   "resources" : [
-      {
-         "schema" : {
-            "fields" : [
-               {
-                  "slug" : "Date_executed",
-                  "title" : "Date executed",
-                  "type" : "date",
-                  "format" : "fmt:%Y-%m-%d",
-                  "osType" : "date:generic",
-                  "conceptType" : "date",
-                  "name" : "Date executed"
-               },
-               {
-                  "type" : "number",
-                  "decimalChar" : ".",
-                  "slug" : "Value",
-                  "conceptType" : "value",
-                  "format" : "default",
-                  "osType" : "value",
-                  "name" : "Value",
-                  "title" : "Value",
-                  "groupChar" : ","
-               },
-               {
-                  "title" : "Supplier",
-                  "slug" : "Supplier",
-                  "name" : "Supplier",
-                  "format" : "default",
-                  "osType" : "supplier:generic:name",
-                  "type" : "string",
-                  "conceptType" : "supplier"
-               }
-            ],
-            "primaryKey" : [
-               "Date executed"
-            ]
-         },
-         "path" : "data/treasury.csv"
-      }
-   ],
-   "title" : "Albania Treasury Service",
-   "model" : {
-      "measures" : {
-         "Value" : {
-            "source" : "Value",
-            "title" : "Value"
-         }
-      },
-      "dimensions" : {
-         "supplier" : {
-            "attributes" : {
-               "Supplier" : {
-                  "title" : "Supplier",
-                  "source" : "Supplier"
-               }
-            },
-            "primaryKey" : [
-               "Supplier"
-            ],
-            "dimensionType" : "entity"
-         },
-         "date" : {
-            "dimensionType" : "datetime",
-            "primaryKey" : [
-               "Date_executed"
-            ],
-            "attributes" : {
-               "Date_executed" : {
-                  "title" : "Date executed",
-                  "source" : "Date executed"
-               }
-            }
-         }
-      }
-   }
-}
 ```
+
+### Development: changing processor
+
+In the `pipeline-spec.yaml` you'll see various processors which are Python modules. E.g. `model` processor module is found in the `model.py` file.
+
+Add some debug log lines and rerun `docker-compose up` to experiment:
+
+```
+import logging
+...
+logging.info('Hello from the model processor')
+
+```
+
+
 
 ## Documentation
 
