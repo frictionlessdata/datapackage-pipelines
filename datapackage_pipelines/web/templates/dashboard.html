@@ -201,8 +201,9 @@
 <script>
     $(function () {
         $('[data-toggle="tooltip"]').tooltip();
+        var top = $('[data-spy="affix"]:first').offset().top;
         $('[data-spy="affix"]').each(function() {
-            $(this).attr('data-offset-top', $(this).offset().top);
+            $(this).attr('data-offset-top', top);
         })
     });
 

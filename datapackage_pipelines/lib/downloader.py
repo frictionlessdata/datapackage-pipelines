@@ -12,6 +12,7 @@ from datapackage_pipelines.wrapper import ingest, spew
 def _reader(opener, _url):
     yield None
     filename = os.path.basename(_url)
+    logging.info('%s: OPENING %s', filename, _url)
     _schema, _headers, _reader = opener()
     num_headers = len(_headers)
     i = 0
