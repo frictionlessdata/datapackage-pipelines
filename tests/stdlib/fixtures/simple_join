@@ -1,0 +1,95 @@
+join
+--
+{
+    "source": {
+        "name": "got-characters",
+        "key": "House of {house}",
+        "delete": true
+    },
+    "target": {
+        "name": "got-houses",
+        "key": "{house}"
+    },
+    "fields": {
+        "max_age": {
+            "name": "age",
+            "aggregate": "max"
+        },
+        "avg_age": {
+            "name": "age",
+            "aggregate": "avg"
+        },
+        "representative": {
+            "name": "first_name"
+        },
+        "number_of_characters": {
+            "aggregate": "count"
+        }
+    },
+    "full": false
+}
+--
+{
+    "name": "test",
+    "resources": [
+        {
+            "name": "got-characters",
+            "path": "characters.csv",
+            "schema": {
+                "fields": [
+                    {"name": "first_name", "type": "string"},
+                    {"name": "last_name", "type": "string"},
+                    {"name": "house", "type": "string"},
+                    {"name": "age", "type": "number"}
+                ]
+            }
+        },
+        {
+            "name": "got-houses",
+            "path": "houses.csv",
+            "schema": { "fields": [
+                {"name": "house", "type": "string"}
+            ]}
+        }
+    ]
+}
+--
+{"first_name": "Tyrion", "house": "Lannister", "last_name": "Lannister", "age": 27}
+{"first_name": "Jaime", "house": "Lannister", "last_name": "Lannister", "age": 34}
+{"first_name": "Cersei", "house": "Lannister", "last_name": "Lannister", "age": 34}
+{"first_name": "Jon", "house": "Stark", "last_name": "Snow", "age": 17}
+{"first_name": "Sansa", "house": "Stark", "last_name": "Stark", "age": 14}
+{"first_name": "Arya", "house": "Stark", "last_name": "Stark", "age": 11}
+{"first_name": "Bran", "house": "Stark", "last_name": "Stark", "age": 10}
+{"first_name": "Rickon", "house": "Stark", "last_name": "Stark", "age": 5}
+{"first_name": "Daenerys", "house": "Targaryen", "last_name": "Targaryen", "age": 16}
+
+{"house": "House of Lannister"}
+{"house": "House of Greyjoy"}
+{"house": "House of Stark"}
+{"house": "House of Targaryen"}
+{"house": "House of Martell"}
+{"house": "House of Tyrell"}
+--
+{
+    "name": "test",
+    "resources": [
+        {
+            "name": "got-houses",
+            "path": "houses.csv",
+            "schema": { "fields": [
+                {"name": "house", "type": "string"},
+                {"name": "avg_age", "type": "number"},
+                {"name": "max_age", "type": "number"},
+                {"name": "number_of_characters", "type": "number"},
+                {"name": "representative", "type": "string"}
+            ]}
+        }
+    ]
+}
+--
+{"avg_age": 31.666666666666668, "house": "House of Lannister", "max_age": 34, "number_of_characters": 3, "representative": "Cersei"}
+{"avg_age": 11.4, "house": "House of Stark", "max_age": 17, "number_of_characters": 5, "representative": "Rickon"}
+{"avg_age": 16.0, "house": "House of Targaryen", "max_age": 16, "number_of_characters": 1, "representative": "Daenerys"}
+
+{}

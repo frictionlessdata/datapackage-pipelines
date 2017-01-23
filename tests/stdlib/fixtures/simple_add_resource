@@ -1,0 +1,24 @@
+add_resource
+--
+{
+    "name": "my-spiffy-resource",
+    "url": "http://not.existent.com"
+}
+--
+{
+    "name": "test",
+    "resources": []
+}
+--
+--
+{
+    "name": "test",
+    "resources": [
+        {
+            "name": "my-spiffy-resource",
+            "url": "http://not.existent.com"
+        }
+    ]
+}
+--
+{}

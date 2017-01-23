@@ -13,7 +13,7 @@ CELERY_SCHEDULE = {}
 
 for pipeline_id, pipeline_details, pipeline_cwd, dirty, errors \
         in pipelines():
-    if len(errors) == 0:
+    if len(errors) == 0 and 'schedule' in pipeline_details:
         entry = {
             'task': TASK_NAME,
             'schedule': crontab(*pipeline_details['schedule']),

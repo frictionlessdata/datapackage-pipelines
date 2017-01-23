@@ -1,0 +1,25 @@
+add_metadata
+--
+{
+    "title": "Moshe",
+    "sources": {
+        "web": "http://google.com"
+    }
+}
+--
+{
+    "name": "test",
+    "resources": []
+}
+--
+--
+{
+    "name": "test",
+    "title": "Moshe",
+    "sources": {
+        "web": "http://google.com"
+    },
+    "resources": []
+}
+--
+{}

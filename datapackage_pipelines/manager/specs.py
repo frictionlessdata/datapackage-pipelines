@@ -102,7 +102,7 @@ def validate_specs():
             errors.append(('Duplicate Pipeline Id', message))
 
         validate_required_keys(pipeline_details,
-                               ['pipeline', 'schedule'],
+                               ['pipeline'],
                                abspath,
                                errors)
 
@@ -132,10 +132,6 @@ def validate_specs():
         if 'crontab' in schedule:
             schedule = schedule['crontab'].split()
             pipeline_details['schedule'] = schedule
-        else:
-            errors.append(('No Schedule',
-                           "Couldn't find valid schedule at {}"
-                           .format(abspath)))
 
         dirty = status.register(pipeline_id, cache_hash,
                                 pipeline=pipeline_details,

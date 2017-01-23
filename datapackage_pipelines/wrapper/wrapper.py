@@ -30,7 +30,7 @@ def ingest(debug=False):
         cache = sys.argv[4]
 
     if first:
-        return params, None, None
+        return params, {'name': '_', 'resources': []}, []
 
     datapackage, resource_iterator = process_input(sys.stdin, validate, debug)
     return params, datapackage, resource_iterator
@@ -51,7 +51,7 @@ def spew(dp, resources_iterator, stats=None):
     row_count = 0
     try:
         for f in files:
-            f.write(json.dumps(dp, ensure_ascii=True)+'\n')
+            f.write(json.dumps(dp, sort_keys=True, ensure_ascii=True)+'\n')
         num_resources = 0
         for res in resources_iterator:
             num_resources += 1
@@ -59,6 +59,7 @@ def spew(dp, resources_iterator, stats=None):
                 f.write('\n')
             for rec in res:
                 line = json.dumps(rec,
+                                  sort_keys=True,
                                   ensure_ascii=True)
                 # logging.error('SPEWING: {}'.format(line))
                 for f in files:
@@ -73,7 +74,6 @@ def spew(dp, resources_iterator, stats=None):
         aggregated_stats = {}
         if not first:
             stats_line = sys.stdin.readline().strip()
-            logging.error('GOT %r', stats_line)
             if len(stats_line) > 0:
                 try:
                     aggregated_stats = json.loads(stats_line)
@@ -83,6 +83,7 @@ def spew(dp, resources_iterator, stats=None):
         if stats is not None:
             aggregated_stats.update(stats)
         stats_json = json.dumps(aggregated_stats,
+                                sort_keys=True,
                                 ensure_ascii=True)
         for f in files:
             f.write('\n'+stats_json+'\n')
@@ -92,7 +93,8 @@ def spew(dp, resources_iterator, stats=None):
         sys.stderr.close()
         sys.exit(1)
 
-    logging.info('Processed %d rows', row_count)
+    if row_count > 0:
+        logging.info('Processed %d rows', row_count)
 
     for f in files:
         f.close()

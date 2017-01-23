@@ -40,9 +40,9 @@ Under the hood `tox` powered by `py.test` and `coverage` configured in `tox.ini`
 It's already installed into your environment and could be used separately with more fine-grained control
 as described in documentation - https://testrun.org/tox/latest/.
 
-For example to check subset of tests against Python 2 environment with increased verbosity.
+For example to check subset of tests against Python 3 environment with increased verbosity.
 All positional arguments and options after `--` will be passed to `py.test`:
 
 ```
-tox -e py27 -- -v tests/<path>
+tox -e py35 -- -v tests/<path>
 ```

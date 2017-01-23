@@ -236,7 +236,7 @@ async def async_execute_pipeline(pipeline_id,
         stats = None
 
     cache_hash = ''
-    if len(pipeline_steps) > 0:
+    if use_cache and len(pipeline_steps) > 0:
         cache_hash = pipeline_steps[-1]['_cache_hash']
 
     status.idle(pipeline_id,
