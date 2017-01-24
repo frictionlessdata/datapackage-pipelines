@@ -22,9 +22,11 @@ todo:
 
 - [x] make schedule not mandatory
 
-- [ ] docker image + auto build + execution snippet
+- [x] docker image + auto build + execution snippet
 
 - [x] example sample output 
+
+- [ ] linting
 
       ​
 
@@ -127,7 +129,13 @@ INFO :Main:SUCCESS: ./worldbank-co2-emissions
 Alternatively, you could use our docker image:
 
 ```shell
-$ docker run frictionlessdata/datapackage-pipelines -v .:/ 
+$ docker run -v `pwd`:/pipelines:rw \
+        frictionlessdata/datapackage-pipelines
+<available-pipelines>
+
+$ docker run -v `pwd`:/pipelines:rw \
+       frictionlessdata/datapackage-pipelines run ./worldbank-co2-emissions
+<execution-logs>
 ```
 
 And browse to `<your-docker-machine's-ip-address>:8000` to see the execution progress.
@@ -500,6 +508,8 @@ _Parameters_:
 - `out-path` - Name of the output path where `datapackage.json` will be stored.
 
   This path will be created if it doesn't exist, as well as internal data-package paths.
+
+  If omitted, then `.` (the current directory) will be assumed.
 
 ## Custom Processors
 
@@ -886,6 +896,15 @@ $ python -m celery worker -B -A datapackage_pipelines.app
 ```
 
 Running this server will start by executing all "dirty" tasks, and continue by executing tasks based on their schedules.
+
+As a shortcut for starting the scheduler and the dashboard (see below), you can use a prebuilt _Docker_ image:
+
+```bash
+$ docker run -v `pwd`:/pipelines:rw -p 5000:5000 \
+		frictionlessdata/datapackage-pipelines server
+```
+
+And then browse to `http://<docker machine's IP address>:5000/` to see the current execution status dashboard.
 
 ## Pipeline Dashboard
 

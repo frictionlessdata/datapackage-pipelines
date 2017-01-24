@@ -19,3 +19,14 @@ worldbank-co2-emissions:
       run: dump.to_zip
       parameters:
           out-file: co2-emisonss-wb.zip     
+    -
+      run: dump.to_path
+      parameters:
+          out-path: co2-emisonss-wb
+    -
+      run: dump.to_sql
+      parameters:
+          tables:
+            co2_emisonss_wb:
+              resource-name: global-data
+
