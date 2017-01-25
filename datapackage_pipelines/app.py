@@ -1,5 +1,4 @@
 import logging
-import time
 
 from .manager import pipelines
 from .manager.status import status

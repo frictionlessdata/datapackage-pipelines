@@ -2,34 +2,6 @@
 
 [![Travis](https://img.shields.io/travis/frictionlessdata/datapackage-pipelines/master.svg)](https://travis-ci.org/frictionlessdata/datapackage-pipelines) [![Coveralls](http://img.shields.io/coveralls/frictionlessdata/datapackage-pipelines.svg?branch=master)](https://coveralls.io/r/frictionlessdata/datapackage-pipelines?branch=master)
 
-todo:
-
-- [x] dump to zip 
-
-- [ ] dump to path
-
-- [ ] dump to sql
-
-- [x] redis environment variable
-
-- [x] processor path env variable
-
-- [x] join
-
-- [x] concat
-
-- [ ] high level wrapper
-
-- [x] make schedule not mandatory
-
-- [x] docker image + auto build + execution snippet
-
-- [x] example sample output 
-
-- [ ] linting
-
-      ​
-
 ## The Basics
 
 ### What is it?
@@ -295,7 +267,7 @@ _Parameters_:
   - `name` - name of the resource
   - `path` - path in the data-package for this file.
 
-  If omitted, the target resource will receive the name `concat` and will be saved at `data/concat.csv` in the datapacakge.
+  If omitted, the target resource will receive the name `concat` and will be saved at `data/concat.csv` in the datapackage.
 
 - `fields` - Mapping of fields between the sources and the target, so that the keys are the _target_ field names, and values are lists of _source_ field names.
 
@@ -528,7 +500,7 @@ The high-level API is quite useful for most processor kinds:
 ```python
 from datapackage_pipelines.wrapper import process
 
-def modify_datapackage(datapacakge, parameters, stats):
+def modify_datapackage(datapackage, parameters, stats):
     # Do something with datapackage
     return datapackage
 
@@ -571,8 +543,8 @@ The high level API consists of one method, `process` which takes two functions:
 # Add license information
 from datapackage_pipelines.wrapper import process
 
-def modify_datapackage(datapacakge, parameters, stats):
-    datapackage['license'] = 'MIT'
+def modify_datapackage(datapackage, parameters, stats):
+    datapackage['license'] = 'CC-BY-SA'
     return datapackage
 
 process(modify_datapackage=modify_datapackage)
@@ -583,7 +555,7 @@ process(modify_datapackage=modify_datapackage)
 # Column name and value are taken from the processor's parameters
 from datapackage_pipelines.wrapper import process
 
-def modify_datapackage(datapacakge, parameters, stats):
+def modify_datapackage(datapackage, parameters, stats):
     datapackage['resources'][0]['schema']['fields'].append({
       'name': parameters['column-name'],
       'type': 'string'
@@ -593,7 +565,7 @@ def modify_datapackage(datapacakge, parameters, stats):
 def process_row(row, row_index, resource_descriptor, resource_index, parameters, stats):
     if resource_index == 0:
         row[parameters['column-name']] = parameters['value']
-    yield row
+    return row
 
 process(modify_datapackage=modify_datapackage,
         process_row=process_row)
@@ -603,7 +575,7 @@ process(modify_datapackage=modify_datapackage,
 # Row counter
 from datapackage_pipelines.wrapper import process
 
-def modify_datapackage(datapacakge, parameters, stats):
+def modify_datapackage(datapackage, parameters, stats):
     stats['row-count'] = 0
     return datapackage
 

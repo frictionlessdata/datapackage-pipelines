@@ -1,3 +1,4 @@
+import os
 from jsontableschema_sql import Storage
 from sqlalchemy import create_engine
 
@@ -8,11 +9,18 @@ class SQLDumper(DumperBase):
 
     def initialize(self, parameters):
         table_to_resource = parameters['tables']
-        self.engine = create_engine(parameters['engine'])
+        engine = parameters.get('engine', 'env://DPP_DB_ENGINE')
+        if engine.startswith('env://'):
+            engine = os.environ.get(engine[6:])
+            assert engine is not None
+        self.engine = create_engine(engine)  # pylint: disable=attribute-defined-outside-init
 
         for k, v in table_to_resource.items():
             v['table-name'] = k
-        self.converted_resources = dict((v['resource-name'], v) for v in table_to_resource.values())
+
+        # pylint: disable=attribute-defined-outside-init
+        self.converted_resources = \
+            dict((v['resource-name'], v) for v in table_to_resource.values())
 
     def handle_resource(self, resource, spec, parameters, datapackage):
         resource_name = spec['name']

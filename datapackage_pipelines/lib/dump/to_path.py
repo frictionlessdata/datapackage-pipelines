@@ -1,6 +1,5 @@
 import os
 import shutil
-import logging
 
 from datapackage_pipelines.lib.dump.dumper_base import CSVDumper
 
@@ -8,7 +7,7 @@ from datapackage_pipelines.lib.dump.dumper_base import CSVDumper
 class PathDumper(CSVDumper):
 
     def initialize(self, params):
-        self.out_path = params.get('out-path', '.')
+        self.out_path = params.get('out-path', '.')   # pylint: disable=attribute-defined-outside-init
         PathDumper.__makedirs(self.out_path)
 
     def write_file_to_output(self, filename, path):

@@ -14,7 +14,12 @@ worldbank-co2-emissions:
         format: xls
         headers: 4
     -
-      run: stream_remote_resources      
+      run: stream_remote_resources
+    -
+      run: add_constant
+      parameters:
+         column-name: the_constant
+         value: the value
     -
       run: dump.to_zip
       parameters:

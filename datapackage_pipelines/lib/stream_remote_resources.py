@@ -67,7 +67,8 @@ def stream_reader(_resource, _url):
             _params = dict(headers=1)
             _params.update(
                 dict(x for x in __resource.items()
-                     if x[0] not in {'path', 'name', 'schema', 'mediatype', 'skip_rows'}))
+                     if x[0] not in {'path', 'name', 'schema',
+                                     'mediatype', 'skip_rows'}))
             skip_rows = __resource.get('skip_rows', 0)
             _stream = tabulator.Stream(__url, **_params,
                                        post_parse=[row_skipper(skip_rows)])
@@ -112,7 +113,8 @@ for resource in datapackage['resources']:
         new_resource_iterator.append(next(resource_iterator))
     else:
         url = resource.get('url', path)
-        assert url is not None, 'Resource should have at least on "url" or "path" property'
+        assert url is not None, \
+            'Resource should have at least on "url" or "path" property'
 
         name = resource['name']
         if not resources.match(name):

@@ -266,7 +266,7 @@ def execute_pipeline(pipeline_id,
         return loop.run_until_complete(pipeline_task)
     except KeyboardInterrupt:
         logging.info("Caught keyboard interrupt. Cancelling tasks...")
-        pipeline_task.cancel()
+        pipeline_task.cancel() # pylint: disable=no-member
         loop.run_forever()
         logging.info("Caught keyboard interrupt. DONE!")
         raise KeyboardInterrupt()

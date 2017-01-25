@@ -2,19 +2,24 @@ import sqlite3
 import json
 
 
-class Sqlite3Dict(object):
+class Sqlite3Dict(object):  # pylint: disable=too-few-public-methods
     def __init__(self, filename):
         self.filename = filename
         conn = sqlite3.connect(self.filename)
         cursor = conn.cursor()
-        cursor.execute('''CREATE TABLE IF NOT EXISTS d (_key text, _value text)''')
+        cursor.execute(
+            '''CREATE TABLE IF NOT EXISTS d (_key text, _value text)'''
+        )
         conn.commit()
         conn.close()
 
     def __getitem__(self, key):
         conn = sqlite3.connect(self.filename)
         cursor = conn.cursor()
-        result = cursor.execute('SELECT _value from d where _key=?', (key,)).fetchone()
+        result = cursor.execute(
+            'SELECT _value from d where _key=?',
+            (key,)
+        ).fetchone()
         conn.close()
         if result is not None:
             return json.loads(result[0])
@@ -56,4 +61,4 @@ class SqliteBackend(object):
 
     def all_statuses(self):
         all_ids = sorted(self.db[self.ALL_PIPELINES_KEY])
-        return [db[_id] for _id in all_ids]
+        return [self.db[_id] for _id in all_ids]

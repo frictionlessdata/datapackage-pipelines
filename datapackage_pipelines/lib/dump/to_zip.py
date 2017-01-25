@@ -8,7 +8,7 @@ class ZipDumper(CSVDumper):
 
     def initialize(self, params):
         out_filename = open(params['out-file'], 'wb')
-        self.zip_file = zipfile.ZipFile(out_filename, 'w')
+        self.zip_file = zipfile.ZipFile(out_filename, 'w')  # pylint: disable=attribute-defined-outside-init
 
     def write_file_to_output(self, filename, path):
         self.zip_file.write(filename, arcname=path,

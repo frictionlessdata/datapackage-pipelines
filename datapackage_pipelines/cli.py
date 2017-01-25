@@ -1,5 +1,5 @@
-import click
 import logging
+import click
 
 from .manager import execute_pipeline, finalize
 from .manager.status import status
@@ -38,18 +38,19 @@ or 'dirty' for running just the dirty ones."""
         results = []
         for _pipeline_id, pipeline_details, pipeline_cwd, dirty, errors \
                 in pipelines():
-            if len(errors) == 0:
-                if ((_pipeline_id == pipeline_id) or
-                        (pipeline_id == 'all') or
-                        (pipeline_id == 'dirty' and dirty)):
-                    success, stats = \
-                        execute_pipeline(_pipeline_id,
-                                         pipeline_details.get('pipeline', []),
-                                         pipeline_cwd,
-                                         use_cache=use_cache)
-                    results.append((_pipeline_id, success, stats))
-                    if _pipeline_id == pipeline_id:
-                        break
+            if len(errors) != 0:
+                continue
+            if ((_pipeline_id == pipeline_id) or
+                    (pipeline_id == 'all') or
+                    (pipeline_id == 'dirty' and dirty)):
+                success, stats = \
+                    execute_pipeline(_pipeline_id,
+                                     pipeline_details.get('pipeline', []),
+                                     pipeline_cwd,
+                                     use_cache=use_cache)
+                results.append((_pipeline_id, success, stats))
+                if _pipeline_id == pipeline_id:
+                    break
 
         logging.info('RESULTS:')
         for pipeline_id, success, stats in results:

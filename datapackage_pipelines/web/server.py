@@ -55,8 +55,7 @@ def main():
     ]
     for item in categories:
         item.append([p for p in statuses
-                     if item[2](item[0], p)
-                     ])
+                     if item[2](item[0], p)])
         item.append(len(item[-1]))
     return render_template('dashboard.html',
                            categories=categories,

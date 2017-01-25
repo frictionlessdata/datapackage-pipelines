@@ -1,7 +1,5 @@
 import itertools
 
-import logging
-
 from datapackage_pipelines.wrapper import ingest, spew
 from datapackage_pipelines.utilities.resource_matcher import ResourceMatcher
 
@@ -109,9 +107,10 @@ def new_resource_iterator(resource_iterator_):
     while True:
         resource_ = next(resource_iterator_)
         if sources.match(resource_.spec['name']):
-            resource_chain = itertools.chain([resource_],
-                                             itertools.islice(resource_iterator_,
-                                                              num_concatenated-1))
+            resource_chain = \
+                itertools.chain([resource_],
+                                itertools.islice(resource_iterator_,
+                                                 num_concatenated-1))
             yield concatenator(resource_chain)
         else:
             yield resource_

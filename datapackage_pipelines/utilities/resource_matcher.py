@@ -1,16 +1,17 @@
 import re
 
-class ResourceMatcher(object):
+
+class ResourceMatcher(object): # pylint: disable=too-few-public-methods
 
     def __init__(self, resources):
         self.resources = resources
         if resources is None:
             self.resources = None
-        elif type(self.resources) is str:
+        elif isinstance(self.resources, str):
             self.resources = re.compile('^' + self.resources + '$')
             self.re = True
         else:
-            assert type(self.resources) is list
+            assert isinstance(self.resources, list)
             self.re = False
 
     def match(self, name):
