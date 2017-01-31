@@ -1,5 +1,5 @@
 import sqlite3
-import json
+from ...utilities.extended_json import json
 
 
 class Sqlite3Dict(object):  # pylint: disable=too-few-public-methods

@@ -7,7 +7,7 @@ parameters, datapackage, resource_iterator = ingest()
 
 sources = ResourceMatcher(parameters.get('sources'))
 
-target = parameters['target']
+target = parameters.get('target', {})
 if 'name' not in target:
     target['name'] = 'concat'
 if 'path' not in target:
