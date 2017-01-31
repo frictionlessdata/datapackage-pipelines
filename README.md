@@ -1,373 +1,783 @@
-# datapackage-pipelines
+# Datapackage Pipelines
 
-A modular framework for a stream-processing ETL based on Data Packages
+[![Travis](https://img.shields.io/travis/frictionlessdata/datapackage-pipelines/master.svg)](https://travis-ci.org/frictionlessdata/datapackage-pipelines) [![Coveralls](http://img.shields.io/coveralls/frictionlessdata/datapackage-pipelines.svg?branch=master)](https://coveralls.io/r/frictionlessdata/datapackage-pipelines?branch=master)
 
-[![Travis](https://img.shields.io/travis/frictionlessdata/datapackage-pipelines/master.svg)](https://travis-ci.org/frictionlessdata/datapackage-pipelines)
-[![Coveralls](http://img.shields.io/coveralls/frictionlessdata/datapackage-pipelines.svg?branch=master)](https://coveralls.io/r/frictionlessdata/datapackage-pipelines?branch=master)
+## The Basics
 
-## QUICK START
+### What is it?
 
-```
-# Install from PyPi
-$ pip install datapackage-pipelines
+`datapackage-pipelines` is a framework for declarative stream-processing of tabular data. It is built upon the concepts and tooling of the Frictionless Data project.
 
-# The pipeline definition
-$ cat > pipeline-spec.yaml
-albanian-treasury:
-  schedule:
-    crontab: '0 * * * *'
+### Pipelines
+
+The basic concept in this framework is the pipeline. 
+
+A pipeline has a list of processing steps, and it generates a single *data package* as its output. Each step is executed in a _processor_ and consists of the following stages:
+
+- **Modify the data package descriptor** - For example: add metadata, add or remove resources, change resources' data schema etc.
+- **Process resources** - Each row of each resource is processed sequentially. The processor can drop rows, add new ones or modify their contents.
+- **Return stats** - If necessary, the processor can report a dictionary of data which will be returned to the user when the pipeline execution terminates. This can be used, for example, for calculating quality measures for the processed data.
+
+Not every processor needs to do all of these. In fact, you would often find each processing step doing only one of these.
+
+### `pipeline-spec.yaml` file
+
+Pipelines are defined in a declarative way, and not in code. One or more pipelines can be defined in a `pipeline-spec.yaml` file. This file specifies the list of processors (referenced by name) and the execution parameters for each of the processors.
+
+Here's an example of a `pipeline-spec.yaml` file:
+
+```yaml
+worldbank-co2-emissions:
   pipeline:
     -
-      run: simple_remote_source
+      run: add_metadata
       parameters:
-        resources:
-          -
-            url: "https://raw.githubusercontent.com/openspending/fiscal-data-package-demos/master/al-treasury-spending/data/treasury.csv"
-            schema:
-              fields:
-                -
-                  name: "Date executed"
-                  type: date
-                  osType: date:generic
-                -
-                  name: "Value"
-                  type: number
-                  osType: value
-                -
-                  name: "Supplier"
-                  type: string
-                  osType: supplier:generic:name
+        name: 'co2-emissions'
+        title: 'CO2 emissions (metric tons per capita)'
+        homepage: 'http://worldbank.org/'
     -
-      run: model
-    -
-      run: metadata
+      run: add_resource
       parameters:
-        metadata:
-          name: 'al-treasury-spending'
-          title: 'Albania Treasury Service'
-          granularity: transactional
-          countryCode: AL
-          homepage: 'http://spending.data.al/en/treasuryservice/list/year/2014/inst_code/1005001'
+        name: 'global-data'
+        url: "http://api.worldbank.org/v2/en/indicator/EN.ATM.CO2E.PC?downloadformat=excel"
+        format: xls
+        headers: 4
+    -
+      run: stream_remote_resources
+      cache: True
+    -
+      run: dump.to_zip
+      parameters:
+          out-file: co2-emisonss-wb.zip     
+```
 
-    -
-      run: downloader
-    -
-      run: dump
-      parameters:
-          out-file: al-treasury-spending.zip
-^D
+In this example we see one pipeline called `worldbank-co2-emissions`. Its pipeline consists of 4 steps:
 
-# List Available Pipelines
+- `metadata`: This is a library processor  (see below), which modifies the data-package's descriptor (in our case: the initial, empty descriptor) - adding `name`, `title` and other properties to the datapackage.
+- `add_resource`: This is another library processor, which adds a single resource to the data-package.
+  This resource has a `name` and a `url`, pointing to the remote location of the data.
+- `stream_remote_resources`: This processor will convert remote resources (like the one we defined in the 1st step) to local resources, streaming the data to processors further down the pipeline (see more about streaming below).
+- `dump.to_zip`: Create a zipped and validated data-pacakage with the provided file name.
+
+### Mechanics 
+
+An important aspect of how the pipelines are run is the fact that data is passed in streams from one processor to another. If we get "technical" here, then each processor is run in its own dedicated process, where the datapackage is read from its `stdin` and output to its `stdout`. The important thing to note here is that no processor holds the entire data set at any point. 
+
+This limitation is by design - to keep the memory and disk requirements of each processor limited and independent of the dataset size.
+
+### Quick Start
+
+First off, create a `pipeline-spec.yaml` file in your current directory. You can take the above file if you just want to try it out.
+
+Then, you can either install `datapackage-pipelines` locally:
+
+```shell
+$ pip install datapackage-pipelines
+
 $ dpp
 Available Pipelines:
-- ./albanian-treasury
+- ./worldbank-co2-emissions (*)
 
-# Invoke the pipeline manually
-$ dpp run ./albanian-treasury
-INFO    :Main                            :RUNNING ./albanian-treasury:
-INFO    :Main                            :- /Users/adam/code/os/datapackage-pipelines/datapackage_pipelines/manager/../lib/simple_remote_source.py
-INFO    :Main                            :- /Users/adam/code/os/datapackage-pipelines/datapackage_pipelines/manager/../lib/model.py
-INFO    :Main                            :- /Users/adam/code/os/datapackage-pipelines/datapackage_pipelines/manager/../lib/metadata.py
-INFO    :Main                            :- /Users/adam/code/os/datapackage-pipelines/datapackage_pipelines/manager/../lib/downloader.py
-INFO    :Main                            :- /Users/adam/code/os/datapackage-pipelines/datapackage_pipelines/manager/../lib/dump.py
-INFO    :Simple_Remote_Source            :Processed 0 rows
-INFO    :Model                           :Processed 0 rows
-INFO    :Metadata                        :Processed 0 rows
-INFO    :Downloader                      :Starting new HTTPS connection (1): raw.githubusercontent.com
-DEBUG   :Downloader                      :"GET /openspending/fiscal-data-package-demos/master/al-treasury-spending/data/treasury.csv HTTP/1.1" 200 3784
-INFO    :Downloader                      :TOTAL 40 rows
-INFO    :Downloader                      :Processed 40 rows
-INFO    :Dump                            :Processed 40 rows
-INFO    :Main                            :WAITING FOR ./albanian-treasury:/Users/adam/code/os/datapackage-pipelines/datapackage_pipelines/manager/../lib/simple_remote_source.py
-INFO    :Main                            :WAITING FOR ./albanian-treasury:/Users/adam/code/os/datapackage-pipelines/datapackage_pipelines/manager/../lib/model.py
-INFO    :Main                            :WAITING FOR ./albanian-treasury:/Users/adam/code/os/datapackage-pipelines/datapackage_pipelines/manager/../lib/metadata.py
-INFO    :Main                            :WAITING FOR ./albanian-treasury:/Users/adam/code/os/datapackage-pipelines/datapackage_pipelines/manager/../lib/downloader.py
-INFO    :Main                            :WAITING FOR ./albanian-treasury:/Users/adam/code/os/datapackage-pipelines/datapackage_pipelines/manager/../lib/dump.py
-INFO    :Main                            :DONE ./albanian-treasury: [0, 0, 0, 0, 0]
-
-# Examine Results
-$ unzip -t al-treasury-spending.zip
-Archive:  al-treasury-spending.zip
-    testing: datapackage.json         OK
-    testing: data/treasury.csv        OK
-No errors detected in compressed data of al-treasury-spending.zip.
-
-$ unzip -p al-treasury-spending.zip datapackage.json | json_pp
-{
-   "name" : "al-treasury-spending",
-   "granularity" : "transactional",
-   "homepage" : "http://spending.data.al/en/treasuryservice/list/year/2014/inst_code/1005001",
-   "countryCode" : "AL",
-   "resources" : [
-      {
-         "schema" : {
-            "fields" : [
-               {
-                  "slug" : "Date_executed",
-                  "title" : "Date executed",
-                  "type" : "date",
-                  "format" : "fmt:%Y-%m-%d",
-                  "osType" : "date:generic",
-                  "conceptType" : "date",
-                  "name" : "Date executed"
-               },
-               {
-                  "type" : "number",
-                  "decimalChar" : ".",
-                  "slug" : "Value",
-                  "conceptType" : "value",
-                  "format" : "default",
-                  "osType" : "value",
-                  "name" : "Value",
-                  "title" : "Value",
-                  "groupChar" : ","
-               },
-               {
-                  "title" : "Supplier",
-                  "slug" : "Supplier",
-                  "name" : "Supplier",
-                  "format" : "default",
-                  "osType" : "supplier:generic:name",
-                  "type" : "string",
-                  "conceptType" : "supplier"
-               }
-            ],
-            "primaryKey" : [
-               "Date executed"
-            ]
-         },
-         "path" : "data/treasury.csv"
-      }
-   ],
-   "title" : "Albania Treasury Service",
-   "model" : {
-      "measures" : {
-         "Value" : {
-            "source" : "Value",
-            "title" : "Value"
-         }
-      },
-      "dimensions" : {
-         "supplier" : {
-            "attributes" : {
-               "Supplier" : {
-                  "title" : "Supplier",
-                  "source" : "Supplier"
-               }
-            },
-            "primaryKey" : [
-               "Supplier"
-            ],
-            "dimensionType" : "entity"
-         },
-         "date" : {
-            "dimensionType" : "datetime",
-            "primaryKey" : [
-               "Date_executed"
-            ],
-            "attributes" : {
-               "Date_executed" : {
-                  "title" : "Date executed",
-                  "source" : "Date executed"
-               }
-            }
-         }
-      }
-   }
-}
+$ dpp run ./worldbank-co2-emissions
+INFO :Main:RUNNING ./worldbank-co2-emissions
+INFO :Main:- lib/add_metadata.py
+INFO :Main:- lib/add_resource.py
+INFO :Main:- lib/stream_remote_resources.py
+INFO :Main:- lib/dump/to_zip.py
+INFO :Main:DONE lib/add_metadata.py
+INFO :Main:DONE lib/add_resource.py
+INFO :Main:stream_remote_resources: OPENING http://api.worldbank.org/v2/en/indicator/EN.ATM.CO2E.PC?downloadformat=excel
+INFO :Main:stream_remote_resources: TOTAL 264 rows
+INFO :Main:stream_remote_resources: Processed 264 rows
+INFO :Main:DONE lib/stream_remote_resources.py
+INFO :Main:dump.to_zip: INFO :Main:Processed 264 rows
+INFO :Main:DONE lib/dump/to_zip.py
+INFO :Main:RESULTS:
+INFO :Main:SUCCESS: ./worldbank-co2-emissions 
+					{'dataset-name': 'co2-emissions', 'total_row_count': 264}
 ```
 
-## Documentation
+(Requirements: _Python 3.5_ or higher)
 
-This framework is intended for running predefined processing steps on sources of tabular data.
-These steps (or 'processors') can be extraction steps (e.g. web scrapers), transformation steps or loading steps (e.g. dump to file).
+Alternatively, you could use our docker image:
 
-A combination of these processors in a specific order is called a 'pipeline'. 
-Each pipeline has a separate schedule, which dictates when it should be run.
+```shell
+$ docker run -v `pwd`:/pipelines:rw \
+        frictionlessdata/datapackage-pipelines
+<available-pipelines>
 
-Pipelines are independent (i.e. a pipeline does not depend on another pipeline), 
-but the processors that compose the pipeline can be shared among pipelines, as part of a common library.  
-
-All processing in this framework is done by processing the streams of data, row by row. At no point the entire data-set
-is loaded into memory. This allows efficient processing in terms of memory usage as well as truly parallel execution
-of all processing steps, making use of your machine's CPU effectively.
-
-## Running Instructions
-
-Running instructions are stored in files named `pipeline-spec.yaml`. 
-
-Each one of these files is a YAML file which contains instructions for fetching one or more FDPs. For example, such a 
-file might look like this:
-
-```
-albonian-spending:
-    schedule:
-        cron: '3 0 * * *'
-    pipeline:
-        - 
-            run: fetch-albonian-fiscal-data
-            parameters:
-                kind: 'expenditures'
-        -   
-            run: translate-codelists
-        -
-            run: normalize-dates
-albonian-budget:
-    schedule:
-        cron: '0 0 7 1 *'
-    pipeline:
-        - 
-            run: fetch-albonian-fiscal-data
-            parameters:
-                kind: 'budget'
-        -   
-            run: translate-codelists
+$ docker run -v `pwd`:/pipelines:rw \
+       frictionlessdata/datapackage-pipelines run ./worldbank-co2-emissions
+<execution-logs>
 ```
 
-**What do we have here?**
+### The Command Line Interface - `dpp`
 
-Two running instructions for two separate data packages - one fetching the Albonian spending data and another fetching 
-its budget data. You can see that the pipelines are very similar, and are based on the same building blocks: 
- `fetch-albonian-fiscal-data`, `translate-codelists` and `normalize-dates`. The differences between the two are 
- - their schedules: spending data is fetched on a daily basis, whilst budgets are fetched on January 7th every year 
-        (Albonian government officials adhere to very precise publishing dates)
- - the running parameters for the `fetch-albonian-fiscal-data` executor are different - 
- so that code is reused and controlled via running parameters
- - the pipeline for spending data has an extra step (`normalize-dates`)
- 
-**Spec:**
+Running a pipeline from the command line is done using the `dpp` tool.
 
-This YAML file is basically a mapping between *Pipeline IDs* to their specs. Task IDs are the way we reference the
-pipeline in various places so choose wisely.
+Running `dpp` without any argument, will show the list of available pipelines. This is done by scanning the current directory and its subdirectories, searching for `pipeline-spec.yaml` files and extracting the list of pipeline specificiations described within.
 
-A pipeline spec has two keys:
- - `schedule`: can have one sub-key, which can currently be only `crontab`. The value for the former is a standard
-    `crontab` schedule row.
- - `pipeline`: a list of steps, each is an object with the following properties:
-    - `run`: the name of the executor - a Python script which will perform the step's actions.
-        This script is searched in:
-        - the current directory (read: where the running instructions file is located), 
-        - in paths specified in the `DATAPIPELINES_PROCESSOR_PATH` environment variable,
-        - in extensions (see below),
-        - or in the common lib of executors.
-        (in this order)
-        Relative paths can be specified with the 'dot-notation': `a.b` is referring to script `b` in directory `a`; 
-        `...c.d.e` will look for `../../c/d/e.py`.
-    - `parameters`: running parameters which the executor will receive when invoked.
-    - `validate`: should data be validated prior to entering this executor. Data validation is done using the JSON table
-        schema which is embedded in the resource definition.
-     
-## Processors
+Each pipeline has an identifier, composed of the path to the `pipeline-spec.yaml` file and the name of the pipeline, as defined withing that description file.
 
-Processors are Python scripts with a simple API, based on their standard input & standard output streams (as well as
-  command line parameters).
+In order to run a pipeline, you use `dpp run <pipeline-id>`. 
 
-All processors output a tabular data package to the standard output. This is done in the following way:
- - The first line printed to `stdout` must be the contents of the `datapackage.json` - that is, a JSON object without
-  any newlines.
- - After that first line, tabular data files can be appended (we don't support any other kind of files ATM).
-   Each tabular data file must be printed out in the following way:
-     - First line must always be an empty line (that is, just a single newline character).
-     - Subsequent lines contain the contents of the data rows of the file (i.e. no header row or other chaff)
-     - Each row in the file must be printed as a single-line JSON encoded object, which maps the header names to values
-     
-Processors will receive an tabular data package in the exact same format in their stdin 
-(Except the first processor in the pipeline, which will receive nothing in its stdin).
+You can also use `dpp run all` for running all pipelines and `dpp run dirty` to run the just the _dirty_ pipelines (more on that later on).
 
-Parameters are passed as a JSON encoded string in the first command line argument of the executor.
+## Deeper look into pipelines
 
-Files should appear in the same order as the resources defined in the FDP. Only data for local files is expected - 
- remote resources can just be ignored.
-      
-### Why JSON and not CSV?
+### Processor Resolution
 
-Well, for a multitude of reasons:
- - JSON encoding is not dependent on locale settings of the executing machine
- - JSON has better type indication: strings vs. numbers vs. booleans vs. missing values (with time and date values as 
-  the only exception)
- - JSON is easier to work with in Python
- 
-*What about time and dates, then?* 
-Just use their string representation and make sure that the JSON Table Schema contains the correct format definition
- for that field.
- 
-The framework will take these JSONs and convert them to proper CSV files before uploading - with a correct dialect, 
-encoding and locale info.
+As previously seen, processors are referenced by name.
 
-## Developing Executors
+This name is, in fact, the name of a Python script containing the processing code (minus the `.py` extension). When trying to find where is the actual code that needs to be executed, the processor resolver will search in these predefined locations:
 
-To avoid boilerplate, the `ingest` and `spew` utility functions for executors can come in handy:
+- First of all, it will try to find a custom processor with that name in the directory of the `pipeline-spec.yaml` file. 
+  Processor names support the dot notation, so you could write `mycode.custom_processor` and it will try to find a processor named `custom_processor.py` in the `mycode` directory, in the same path as the pipeline spec file. 
+  For this specific resolving phase, if you would write `..custom_processor` it will try to find that processor in the parent directory of the pipeline spec file.
+  (read on for instructions on how to write custom processors)
+- In case the processor name looks like `myplugin.somename`, it will try to find a processor named `somename` in the `myplugin` plugin. That is - it will see if there's an installed plugin which is called `myplugin`, and if so, whether that plugin publishes a processor called `somename` (more on plugins below).
+- If no processor was found until this point, it will try to search for this processor in the processor search path. The processor search path is taken from the environment variable `DPP_PROCESSOR_PATH`. Each of the `:` separated paths in the path is considered as a possible starting point for resolving the processor.
+- Finally, it will try to find that processor in the Standard Processor Library which is bundled with this package.
+
+### Caching
+
+By setting the `cached` property on a specific pipeline step to `True`, this step's output will be stored on disk (in the `.cache` directory, in the same location as the `pipeline-spec.yaml` file). 
+
+Rerunning the pipeline will make use of that cache, thus avoiding the execution of the cached step and its precursors. 
+
+Internally, a hash is calculated for each step in the pipeline - which is based on the processor's code, it parameters and the hash of its predecessor. If a cache file exists with exactly the same hash as a specific step, then we can remove it (and its predecessors) and use that cache file as an input to the pipeline
+
+This way, the cache becomes invalid in case the code or execution parameters changed (either for the cached processor or in any of the preceding processors). 
+
+### Dirty tasks and keeping state
+
+The cache hash is also used for seeing if a pipeline is "dirty". When a pipeline completes executing successfully, `dpp` stores the cache hash along with the pipeline id. If the stored hash is different than the currently calculated hash, it means that either the code or the execution parameters were modified, and that the pipeline needs to be re-run.
+
+`dpp` works with two storage backends. For running locally, it uses a python _sqlite DB_ to store the current state of each running task, including the last result and cache hash. The state DB file is stored in a file named `.dpp.db` in the same directory that `dpp` is being run from.
+
+For other installations, especially ones using the task scheduler, it is recommended to work with the _Redis_ backend. In order to enable the Redis connection, simply set the `DPP_REDIS_HOST` environment variable to point to a running Redis instance.
+
+### Validating
+
+Each processor's input is automatically validated for correctness:
+
+- The datapackage is always validated before being passed to a processor, so there's no possibility for a processor to modify a datapackage in a way that renders it invalid.
+
+- Data is not validated against its respective JSON Table Schema, unless explicitly requested by setting the `validate` flag to True in the step's info.
+  This is done for two main reasons:
+
+  - Performace wise, validating the data in every step is very CPU instensive
+  - In some cases you modify the schema in one step and the data in another, so you would only like to validate the data once all the changes were made
+
+  In any case, all the `dump.to_*` standard processors validata their input data, regardless of the `validate` flag - so in case you're using them, your data validity is covered.
+
+## The Standard Processor Library
+
+A few built in processors are provided with the library.
+
+### ***`add_resource`***
+
+Adds a new remote tabular resource to the data-package. 
+
+_Parameters_:
+
+You should provide the `name` and `url` attributes, and other optional attributes as defined in the [spec]([http://specs.frictionlessdata.io/data-packages/#resource-information).
+
+Parameters are basically arguments that are passed to a `tabulator.Stream` instance (see the [API](https://github.com/frictionlessdata/tabulator-py#api-reference)).
+
+You may also provide a schema here, or use the default schema generated by the `stream_remote_resources` processor.
+
+*Example*:
+
+```yaml
+- run: add_resource
+  parameters: 
+    url: http://example.com/my-excel-file.xlsx
+    sheet: 1
+    headers: 2
+- run: add_resources
+  parameters:
+    url: http://example.com/my-csv-file.csv
+	encoding: "iso-8859-2"
+```
+
+### ***`add_metadata`***
+
+Adds meta-data to the data-package.
+
+_Parameters_:
+
+Any allowed property (according to the [spec]([http://specs.frictionlessdata.io/data-packages/#metadata)) can be provided here.
+
+*Example*:
+
+```yaml
+- run: add_metadata
+  parameters: 
+    name: routes-to-mordor
+    license: CC-BY-SA-4
+    author: Frodo Baggins <frodo@shire.me>
+    contributors:
+      - samwise gamgee <samwise1992@yahoo.com>
+```
+
+### ***`stream_remote_resources`***
+
+Converts remote resources to streamed resources.
+
+Remote resources are ones that link to a remote data source, but are not processed by the pipeline and are kept as-is.
+
+Streamed resources are ones that can be processed by the pipeline, and their output is saved as part of the resulting datapackage.
+
+_Parameters_:
+
+- `resources` - Which resources to stream. Can be:
+
+  - List of strings, interpreted as resource names to stream
+  - String, interpreted as a regular expression to be used to match resource names
+
+  If omitted, all resources in datapackage are streamed.
+
+*Example*:
+
+```yaml
+- run: stream_remote_resources
+  parameters: 
+    resources: ['2014-data', '2015-data']
+- run: stream_remote_resources
+  parameters: 
+    resources: '201[67]-data'
+```
+
+### ***`concatenate`***
+
+Concatenates a number of streamed resources and converts them to a single resource.
+
+_Parameters_:
+
+- `sources` - Which resources to concatenate. Same sematics as `resources` in `stream_remote_resources`.
+
+  If omitted, all resources in datapackage are concatenated.
+
+  Resources to concatenate must appear in consecutive order within the data-package.
+
+- `target` - Target resource to hold the concatenated data. Should define at least the following properties:
+
+  - `name` - name of the resource
+  - `path` - path in the data-package for this file.
+
+  If omitted, the target resource will receive the name `concat` and will be saved at `data/concat.csv` in the datapackage.
+
+- `fields` - Mapping of fields between the sources and the target, so that the keys are the _target_ field names, and values are lists of _source_ field names.
+
+  This mapping is used to create the target resources schema.
+
+  Note that the target field name is _always_ assumed to be mapped to itself.
+
+*Example*:
+
+```yaml
+- run: concatenate
+  parameters: 
+    target:
+      name: multi-year-report
+      path: data/multi-year-report.csv
+    sources: 'report-year-20[0-9]{2}'
+    fields:
+      activity: []
+      amount: ['2009_amount', 'Amount', 'AMOUNT [USD]', '$$$']    
+```
+
+In this example we concatenate all resources that look like `report-year-<year>`, and output them to the `multi-year-report` resource.
+
+The output contains two fields:
+
+- `activity` , which is called `activity` in all sources
+- `amount`, which has varying names in different resources (e.g. `Amount`, `2009_amount`, `amount` etc.)
+
+### ***`join`***
+
+Joins two streamed resources. 
+
+"Joining" in our case means taking the *target* resource, and adding fields to each of its rows by looking up data in the _source_ resource. 
+
+_Parameters_:
+
+- `source` - information regarding the _source_ resource
+  - `name` - name of the resource
+  - `key` - One of
+    - List of field names which should be used as the lookup key
+    - String, which would be interpreted as a Python format string used to form the key (e.g. `{<field_name_1>}:{field_name_2}`)
+  - `delete` - delete from data-package after joining (`False` by default)
+- `target` - Target resource to hold the concatenated data. Should define at least the following properties:
+  - `name` - as in `source`
+  - `key` - as in `source`
+- `fields` - mapping of fields from the source resource to the target resource. 
+  Keys should be field names in the target resource.
+  Values can define two attributes:
+  - `name` - field name in the source (by default is the same as the target field name)
+
+  - `aggregate` - aggregation strategy (how to handle multiple _source_ rows with the same key). Can take the following options: 
+    - `sum` - summarise aggregated values. 
+      For numeric values it's the arithmetic sum, for strings the concatenation of strings and for other types will error.
+
+    - `avg` - calculate the average of aggregated values.
+
+      For numeric values it's the arithmetic average and for other types will err.
+
+    - `max` - calculate the maximum of aggregated values.
+
+      For numeric values it's the arithmetic maximum, for strings the dictionary maximum and for other types will error.
+
+    - `min` - calculate the minimum of aggregated values.
+
+      For numeric values it's the arithmetic minimum, for strings the dictionary minimum and for other types will error.
+
+    - `first` - take the first value encountered
+
+    - `last` - take the last value encountered
+
+    - `count` - count the number of occurances of a specific key
+      For this method, specifying `name` is not required. In case it is specified, `count` will count the number of non-null values for that source field.
+
+    - `any` - pick any value.
+
+    By default, `aggregate` takes the `any` value.
+
+  If neither `name` or `aggregate` need to be specified, the mapping can map to the empty object `{}` or to `null`.
+- `full`  - Boolean,
+  - If `True` (the default), failed lookups in the source will result in "null" values at the source.
+  - if `False`, failed lookups in the source will result in dropping the row from the target.
+
+_Important: the "source" resource **must** appear before the "target" resource in the data-package_
+
+*Examples*:
+
+```yaml
+- run: join
+  parameters: 
+    source:
+      name: world_population
+      key: ["country_code"]
+      delete: yes
+    target:
+      name: country_gdp_2015
+      key: ["CC"]
+    fields:
+      population:
+        name: "census_2015"        
+    full: true
+```
+
+The above example aims to create a package containing the GDP and Population of each country in the world.
+
+We have one resource (`world_population`) with data that looks like:
+
+| country_code | country_name   | census_2000 | census_2015 |
+| ------------ | -------------- | ----------- | ----------- |
+| UK           | United Kingdom | 58857004    | 64715810    |
+| ...          |                |             |             |
+
+And another resource (`country_gdp_2015`) with data that looks like:
+
+| CC   | GDP (£m) | Net Debt (£m) |
+| ---- | -------- | ------------- |
+| UK   | 1832318  | 1606600       |
+| ...  |          |               |
+
+The `join` command will match rows in both datasets based on the `country_code` / `CC` fields, and then copying the value in the `census_2015` field into a new `population` field.
+
+The resulting data package will have the `world_population` resource removed and the `country_gdp_2015` resource looking like:
+
+| CC   | GDP (£m) | Net Debt (£m) | population |
+| ---- | -------- | ------------- | ---------- |
+| UK   | 1832318  | 1606600       | 64715810   |
+| ...  |          |               |            |
+
+
+
+A more complex example:
+
+```yaml
+- run: join
+  parameters: 
+    source:
+      name: screen_actor_salaries
+      key: "{production} ({year})"
+    target:
+      name: mgm_movies
+      key: "{title}"
+    fields:
+      num_actors:
+        aggregate: 'count'
+      average_salary:
+        name: salary
+        aggregate: 'avg'
+      total_salaries:
+        name: salary
+        aggregate: 'sum'
+    full: false
+```
+
+This example aims to analyse salaries for screen actors in the MGM studios.
+
+Once more, we have one resource (`screen_actor_salaries`) with data that looks like:
+
+| year | production                  | actor             | salary   |
+| ---- | --------------------------- | ----------------- | -------- |
+| 2016 | Vertigo 2                   | Mr. T             | 15000000 |
+| 2016 | Vertigo 2                   | Robert Downey Jr. | 7000000  |
+| 2015 | The Fall - Resurrection     | Jeniffer Lawrence | 18000000 |
+| 2015 | Alf - The Return to Melmack | The Rock          | 12000000 |
+| ...  |                             |                   |          |
+
+And another resource (`mgm_movies`) with data that looks like:
+
+| title                     | director      | producer     |
+| ------------------------- | ------------- | ------------ |
+| Vertigo 2 (2016)          | Lindsay Lohan | Lee Ka Shing |
+| iRobot - The Movie (2018) | Mr. T         | Mr. T        |
+| ...                       |               |              |
+
+The `join` command will match rows in both datasets based on the movie name and production year. Notice how we overcome incompatible fields by using different key patterns.
+
+The resulting dataset could look like:
+
+| title            | director      | producer     | num_actors | average_salary | total_salaries |
+| ---------------- | ------------- | ------------ | ---------- | -------------- | -------------- |
+| Vertigo 2 (2016) | Lindsay Lohan | Lee Ka Shing | 2          | 11000000       | 22000000       |
+| ...              |               |              |            |                |                |
+
+### ***`dump.to_zip`***
+
+Saves the datapackage to a zipped archive.
+
+_Parameters_:
+
+- `out-file` - Name of the output file where the zipped data will be stored
+
+### ***`dump.to_sql`***
+
+Saves the datapackage to a zipped archive.
+
+_Parameters_:
+
+- `engine` - Connection string for connecting to the SQL Database (URL syntax)
+  Also supports `env://<environment-variable>`, which indicates that the connection string should be fetched from the indicated environment variable.
+  If not specified, assumes a default of `env://DPP_DB_ENGINE`
+- `tables` - Mapping between resources and DB tables. Keys are table names, values are objects with the following attributes:
+  - `resource-name` - name of the resource that should be dumped to the table
+  - `update` - Boolean (defaults to `False`), indicating whether table should be rewritten or updated
+  - `indexes` - TBD
+
+### ***`dump.to_path`***
+
+Saves the datapackage to a zipped archive.
+
+_Parameters_:
+
+- `out-path` - Name of the output path where `datapackage.json` will be stored.
+
+  This path will be created if it doesn't exist, as well as internal data-package paths.
+
+  If omitted, then `.` (the current directory) will be assumed.
+
+## Custom Processors
+
+It's quite reasonable that for any non-trivial processing task, you might encounter a problem that cannot be solved using the standard library processors.
+
+For that you might need to write your own processor - here's how it's done.
+
+There are two APIs for writing processors - the high level API and the low level API.
+
+**Important**: due to the way that pipeline execution is implemented, you **cannot** `print` from within a processor. In case you need to debug, _only_ use the `logging` module to print out anything you need.
+
+### High Level Processor API
+
+The high-level API is quite useful for most processor kinds:
 
 ```python
+from datapackage_pipelines.wrapper import process
 
-from executor_util import ingest, spew
+def modify_datapackage(datapackage, parameters, stats):
+    # Do something with datapackage
+    return datapackage
 
-if __name__=="__main__":
-  params, fdp, resource_iterator = ingest()
-  
-  # do something with fdp
-  # ...
-  
-  def resource_processor(row_iterator):
-    resource_spec = row_iterator.spec
-    # you can modify the resource if needed here
-    for row in row_iterator:
-      # do something with row
-      # ...
-      yield row
-      
-  spew(fdp, (process_resource(r) for r in resource_iterator))
-  
+def process_row(row, row_index, 
+                resource_descriptor, resource_index,
+                parameters, stats):
+    # Do something with row
+    return row
+
+process(modify_datapackage=modify_datapackage,
+        process_row=process_row)
 ```
 
-## Extensions
+The high level API consists of one method, `process` which takes two functions:
 
-You can define extensions to this framework, by creating Python packages names `datapackage_pipelines_<extension-name>`.
+- `modify_datapackage` - which makes changes (if necessary) to the data-package descriptor, e.g. adds metadata, adds resources, modifies resources' schema etc.
 
-Extensions provide two things:
-- Processor packs: processors defined under the `processors` directory in the extension package can be accessed as 
-  `<extension-name>.<processor-name>`.
-- Source templates, which provide a method for creating standard pipelines based on common parameters.
+  Can also be used for initialization code when needed.
 
-The directory structure of a sample extension package would be:
+  It has these arguments:
+
+  - `datapackage` is the current data-package descriptor that needs to be modified.
+    The modified data-package descriptor needs to be returned.
+  - `parameters` is a dict containing the processor's parameters, as provided in the `pipeline-spec.yaml` file.
+  - `stats` is a dict which should be modified in order to collect metrics and measurements in the process (e.g. validation checks, row count etc.)
+
+- `process_row` - which modifies a single row in the stream. It receives these arguments:
+  - `row` is a dictionary containing the row to process
+  - `row_index` is the index of the row in the resource
+  - `resource_descriptor` is the descriptor object of the current resource being processed
+  - `resource_index` is the index of the resource in the data-package
+  - `parameters` is a dict containing the processor's parameters, as provided in the `pipeline-spec.yaml` file.
+  - `stats` is a dict which should be modified in order to collect metrics and measurements in the process (e.g. validation checks, row count etc.)
+
+  and yields zero or more processed rows.
+
+#### A few examples
+
+```python
+# Add license information
+from datapackage_pipelines.wrapper import process
+
+def modify_datapackage(datapackage, parameters, stats):
+    datapackage['license'] = 'CC-BY-SA'
+    return datapackage
+
+process(modify_datapackage=modify_datapackage)
 ```
-datapackage_pipelines_ml/
-  processors/
-    svm.py
-    neural_network.py
-  __init__.py
-  generator.py
-  schema.json
+
+```python
+# Add new column with constant value to first resource
+# Column name and value are taken from the processor's parameters
+from datapackage_pipelines.wrapper import process
+
+def modify_datapackage(datapackage, parameters, stats):
+    datapackage['resources'][0]['schema']['fields'].append({
+      'name': parameters['column-name'],
+      'type': 'string'
+    })
+    return datapackage
+
+def process_row(row, row_index, resource_descriptor, resource_index, parameters, stats):
+    if resource_index == 0:
+        row[parameters['column-name']] = parameters['value']
+    return row
+
+process(modify_datapackage=modify_datapackage,
+        process_row=process_row)
 ```
 
-In this case, after installing `datapackage_pipelines_ml` package, 
-the `ml.svm` will be available to use in a pipeline. 
+```python
+# Row counter
+from datapackage_pipelines.wrapper import process
 
-## Source Templates
+def modify_datapackage(datapackage, parameters, stats):
+    stats['row-count'] = 0
+    return datapackage
 
-Source templates is a way to generate processing pipelines based on user provided parameters.
-  
-When `dpp` is used, it scans for `pipeline-spec.yml` files for existing pipelines.
-Along with them, it also tries to find files calles `<extension-name>.source-spec.yml`. 
-In our example above, we will try to find files named `ml.source-spec.yml`. 
+def process_row(row, row_index, resource_descriptor, resource_index, parameters, stats):
+    stats['row-count'] += 1
+    return row
 
-Once found, it will try to validate them. If validated, they will be 
-used as input to a generator logic that produces the details of one or more pipelines.
-  
-Both the validation and generation are done using the `Generator` class, which must be available
-in the module when imported (i.e. `datapackage_pipelines_ml.Generator`). 
-This class must inherit from `datapackage_pipelines.generators.GeneratorBase`, and implement
-two methods:
-- `get_schema()` - should return a valid JSON schema file for validating source templates.
-- `generate_pipeline(source)` - should return a list of tuples: `(pipeline_id, schedule, steps)`
+process(modify_datapackage=modify_datapackage,
+        process_row=process_row)
+```
 
-Sample `generator.py` file:
+### Low Level Processor API
+
+In some cases, the high-level API might be too restricting. In these cases you should consider using the low-level API.
+
+```python
+from datapackage_pipelines.wrapper import ingest, spew
+
+parameters, datapackage, resource_iterator = ingest()
+
+# Initialisation code, if needed
+
+# Do stuff with datapackage
+# ...
+
+stats = {}
+
+# and resources:
+def new_resource_iterator(resource_iterator_):
+    def resource_processor(resource_):
+        # resource_.spec is the resource descriptor
+        for row in resource_:
+            # Do something with row
+            # Perhaps collect some stats here as well
+            yield row
+    for resource in resource_iterator_:
+        yield resource_processor(resource)
+        
+spew(datapackage, new_resource_iterator(resource_iterator), stats)
+```
+
+The above code snippet shows the structure of most low-level processors.
+
+We always start with callng `ingest()` - this method gives us the execution parameters, the data-package descriptor (as outputed from the previous step) and an iterator on all streamed resources' rows.
+
+We finish the processing by calling `spew()`, which sends the processed data to the next processor in the pipeline. `spew` receives a modified data-package descriptor, a (possibly new) iterator on the resources and a stats object which will be added to stats from previous steps and returned to the user upon completion of the pipeline.
+
+#### A more in-depth explanation
+
+`spew` writes the data it receives in the following order:
+
+- First, the `datapackage` parameter is written to the stream. 
+  This means that all modifications to the data-package descriptor must be done _before_ `spew` is called.
+  One common pitfall is to modify the data-package descriptor inside the resource iterator - try to avoid that, as the descriptor that the next processor will receive will be wrong.
+- Then it starts iterating on the resources. For each resource, it iterates on its rows and writes each row to the stream.
+  This iteration process eventually causes an iteration on the original resource iterator (the one that's returned from `ingest`). In turn, this causes the process' input stream to be read. Because of the way buffering in operating systems work, "slow" processors will read their input slowly, causing the ones before them to sleep on IO while their more CPU intensive counterparts finish their processing. "quick" processors will not work aimlessly, but instead will either sleep while waiting for incoming data or while waiting for their output buffer to drain. 
+  What is achieved here is that all rows in the data are processed more or less at the same time, and that no processor works too "far ahead" on rows that might fail in subsequent processing steps.
+- Finally, the stats are written to the stream. This means that stats can be modified during the iteration, and only the value after the iteration finishes will be used.
+
+#### A few examples
+
+We'll start with the same processors from above, now implented with the low level API.
+
+```python
+# Add license information
+from datapackage_pipelines.wrapper import ingest, spew
+
+_, datapackage, resource_iterator = ingest()
+datapackage['license'] = 'MIT'
+spew(datapackage, resource_iterator)
+```
+
+```python
+# Add new column with constant value to first resource
+# Column name and value are taken from the processor's parameters
+from datapackage_pipelines.wrapper import ingest, spew
+
+parameters, datapackage, resource_iterator = ingest()
+
+datapackage['resources'][0]['schema']['fields'].append({
+   'name': parameters['column-name'],
+   'type': 'string'
+})
+
+def new_resource_iterator(resource_iterator_):
+    def resource_processor(resource_):
+        for row in resource_:
+	        row[parameters['column-name']] = parameters['value']
+            yield row
+
+    first_resource = next(resource_iterator_)
+    yield(resource_processor(first_resource))
+    
+    for resource in resource_iterator_:
+        yield resource
+
+spew(datapackage, new_resource_iterator(resource_iterator))
+```
+
+```python
+# Row counter
+from datapackage_pipelines.wrapper import ingest, spew
+
+_, datapackage, resource_iterator = ingest()
+
+stats = {'row-count': 0}
+
+def new_resource_iterator(resource_iterator_):
+    def resource_processor(resource_):
+        for row in resource_:
+		    stats['row-count'] += 1
+            yield row
+
+    for resource in resource_iterator_:
+        yield resource_processor(resource)
+
+spew(datapackage, new_resource_iterator(resource_iterator), stats)
+```
+
+This next example shows how to implement a simple web scraper. Although not strictly required, web scrapers are usually the first processor in a pipeline. Therefore, they can ignore the incoming data-package and resource iterator, as there's no previous processor generating data:
+
+```python
+# Web Scraper
+import requests
+from datapackage_pipelines.wrapper import ingest, spew
+
+parameters, _, _ = ingest()
+
+host = parameters['ckan-instance']
+package_list_api = 'https://{host}/api/3/action/package_list'
+package_show_api = 'https://{host}/api/3/action/package_show'
+
+def scrape_ckan(host_):
+    all_packages = requests.get(package_list_api.format(host=host_))\
+                           .json()\
+                           .get('result', [])
+    for package_id in all_packages:
+      params = dict(id=package_id)
+      package_info = requests.get(package_show_api.format(host=host_),
+                                  params=params)\
+                             .json()\
+                             .get('result')
+      if result is not None:
+        yield dict(
+            package_id=package_id,
+            author=package_info.get('author'),
+            title=package_info.get('title'),
+        )
+
+datapackage = {
+  'resources': [
+    {
+      'name': 'package-list',
+      'schema': {
+        'fields': [
+          {'name': 'package_id', 'type': 'string'},
+          {'name': 'author',     'type': 'string'},
+          {'name': 'title',      'type': 'string'},
+        ]
+      }
+    }
+  ]
+}
+
+spew(datapackage, [scrape_ckan(host)])
+```
+
+In this example we can see that the initial datapackage is generated from scratch, and the resource iterator is in fact a scraper, yielding rows as they are received from the CKAN instance API.
+
+## Plugins and Source Descriptors
+
+When writing pipelines in a specific problem domain, one might discover that the processing pipelines that are developed follow a certain pattern. Scraping, or fetching source data tends to be similar to one another. Processing, data cleaning, validation are often the same.
+
+In order to ease maintenance and avoid boilerplate, a _`datapackage-pipelines` **plugin**_. 
+
+Plugins are Python modules named `datapackage-pipelines-<plugin-name>`. Plugins can provide two facilities:
+
+- Processor packs - you can pack processors revolving a certain theme or for a specific purpose in a plugin. Any processor `foo` residing under the `datapackage-pipelines-<plugin-name>.processors` module can be used from within a pipeline as `<plugin-name>.foo`.
+- Pipeline templates - if the class `Generator` exists in the `datapackage-pipelines-<plugin-name>.generator` module, it will be used to generate pipeline based on templates - which we call "source descriptors".
+
+### Source Descriptors
+
+A source descriptor is a yaml file containing information which is used to create a full pipeline.
+
+`dpp` will look for files named `<plugin-name>.source-description.yaml` , and will treat them as input for the pipeline generating code - which should be implemented in a class called `Generator` in the `datapackage-pipelines-<plugin-name>` module in `generator.py`.
+
+This class should inherit from `GeneratorBase` and should implement two methods:
+
+- `generate_pipeline` - which receives the source description and returns a list of pipeline steps
+- `get_schema` - which should return a JSON Schema for validating the source description's structrure
+
+#### Example
+
+Let's assume we write a `datapackage-pipelines-ckan` plugin, used to pull data out of [CKAN](https://ckan.org) instances.
+
+Here's how such a hypothetical generator would look like:
+
 ```python
 import os
 import json
 
 from datapackage_pipelines.generators import \
-    GeneratorBase, SCHEDULE_DAILY, slugify, steps
+    GeneratorBase, slugify, steps, SCHEDULE_MONTHLY
 
 SCHEMA_FILE = os.path.join(os.path.dirname(__file__), 'schema.json')
 
@@ -380,32 +790,98 @@ class Generator(GeneratorBase):
 
     @classmethod
     def generate_pipeline(cls, source):
-        schedule = SCHEDULE_DAILY
-        pipeline_id = slugify(source['title']).lower()
-    
-        if source['kind'] == 'svm':
-            yield pipeline_id, schedule, steps(
-                ('svm', source['svm-parameters'])
-            )
-        elif source['kind'] == 'neural-network':
-            yield pipeline_id, schedule, steps(
-                ('neural_network', source['nn-parameters'])
-            )
+        pipeline_id = dataset_name = slugify(source['name'])
+        host = source['ckan-instance']
+        action = source['data-kind']
+        
+        if action == 'package-list':            
+          schedule = SCHEDULE_MONTHLY
+          yield pipeline_id, schedule, steps(*[
+                  ('ckan.scraper',
+                   {
+                       'ckan-instance': host
+                   }),
+                  ('metadata', {
+                      'name': dataset_name  
+                  }),
+                  ('dump_to_zip',
+                   {
+                       'out-file': 'ckan-datapackage.zip'
+                   })
+                  ]
+          )
 ```
- 
-## Running the Datapackage-Pipeline Deamon
 
+In this case, if we store a `ckan.source-description.yaml` file looking like this:
+
+```yaml
+ckan-instance: example.com
+name: example-com-list-of-packages
+data-kind: package-list
 ```
+
+Then when running `dpp` we will see an available pipeline named `./example-com-list-of-packages`
+
+This pipeline would internally be composed of 3 steps: `ckan.scraper`, `metadata` and `dump.to_zip`.
+
+#### Validating Source Descriptors
+
+Source descriptors can have any structure that best matches the parameter domain of the output pipelines. However, it must have a consistent structure, backed by a JSON Schema file. In our case, the Schema might look like this:
+
+```json
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "name":          { "type": "string" },
+    "ckan-instance": { "type": "string" },
+    "data-kind":     { "type": "string" }
+  },
+  "required": [ "name", "ckan-instance", "data-kind" ]
+}
+```
+
+`dpp` will ensure that source descriptor files conform to that schema before attempting to convert them into pipelines using the `Generator` class.
+
+## Running on a schedule
+
+`datapackage-pipelines` comes with a celery integration, allowing for pipelines to be run at specific times via a `crontab` like syntax.
+
+In order to enable that, you simply add a `schedule` section to your `pipeline-spec.yaml` file (or return a schedule from the generator class, see above), like so:
+
+```yaml
+co2-information-cdiac:
+  pipeline:
+    -
+		...
+  schedule:
+    crontab: '0 * * * *'          
+```
+
+In this example, this pipeline is set to run every hour, on the hour.
+
+To run the celery deamon, use `celery`'s command line interface to run `datapackage_pipelines.app`. Here's one way to do it:
+
+```shell
 $ python -m celery worker -B -A datapackage_pipelines.app
 ```
 
-Will run all pipelines based on their defined schedule using `celery`.
+Running this server will start by executing all "dirty" tasks, and continue by executing tasks based on their schedules.
 
+As a shortcut for starting the scheduler and the dashboard (see below), you can use a prebuilt _Docker_ image:
 
-## Contributing
+```bash
+$ docker run -v `pwd`:/pipelines:rw -p 5000:5000 \
+		frictionlessdata/datapackage-pipelines server
+```
 
-Please read the contribution guideline:
+And then browse to `http://<docker machine's IP address>:5000/` to see the current execution status dashboard.
 
-[How to Contribute](CONTRIBUTING.md)
+## Pipeline Dashboard
 
-Thanks!
+When installed on a server or running using the task scheduler, it's often very hard to know exactly what's running and what's the status of each pipeline.
+
+To make things easier, you can spin up the web dashboard which provides an overview of each pipeline's status, its basic info and the result of it latest execution.
+
+To start the web server run `dpp serve` from the command line and browse to http://localhost:5000
+

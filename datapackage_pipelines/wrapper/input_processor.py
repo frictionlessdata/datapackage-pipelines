@@ -1,12 +1,12 @@
-from ..utilities.extended_json import json
+import sys
 import copy
 import logging
 
 import datapackage
-import sys
 from jsontableschema.exceptions import InvalidCastError
-
 from jsontableschema.model import SchemaModel
+
+from ..utilities.extended_json import json
 
 
 # pylint: disable=too-few-public-methods, too-many-arguments

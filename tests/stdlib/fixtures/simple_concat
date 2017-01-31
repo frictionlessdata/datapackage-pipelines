@@ -1,0 +1,88 @@
+concatenate
+--
+{
+    "sources": ["concat-a", "concat-b", "concat-c"],
+    "target": {"name": "target"},
+    "fields": {
+        "t1": ["a1", "b1", "c1"],
+        "t2": ["a2", "b2", "c2"],
+        "c3": ["a3", "b3"],
+        "d4": null,
+        "e5": []
+    }
+}
+--
+{
+    "name": "test",
+    "resources": [
+        {
+            "name": "concat-a",
+            "path": "concat-a.csv",
+            "schema": { "fields": [
+                {"name": "a1", "type": "string"},
+                {"name": "a2", "type": "string"},
+                {"name": "a3", "type": "string"}
+            ]}
+        },
+        {
+            "name": "concat-b",
+            "path": "concat-b.csv",
+            "schema": { "fields": [
+                {"name": "b1", "type": "string"},
+                {"name": "b2", "type": "string"},
+                {"name": "b3", "type": "string"}
+            ]}
+        },
+        {
+            "name": "concat-c",
+            "path": "concat-c.csv",
+            "schema": { "fields": [
+                {"name": "c1", "type": "string"},
+                {"name": "c2", "type": "string"},
+                {"name": "c3", "type": "string"}
+            ]}
+        }
+    ]
+}
+--
+{"a1":"a11","a2":"a21","a3":"a31"}
+{"a1":"a12","a2":"a22","a3":"a32"}
+{"a1":"a13","a2":"a23","a3":"a33"}
+
+{"b1":"b11","b2":"b21","b3":"b31"}
+{"b1":"b12","b2":"b22","b3":"b32"}
+{"b1":"b13","b2":"b23","b3":"b33"}
+
+{"c1":"c11","c2":"c21","c3":"c31"}
+{"c1":"c12","c2":"c22","c3":"c32"}
+{"c1":"c13","c2":"c23","c3":"c33"}
+--
+{
+    "name": "test",
+    "resources": [
+        {
+            "name": "target",
+            "path": "data/target.csv",
+            "mediatype": "text/csv",
+            "schema": { "fields": [
+                {"name": "t1", "type": "string"},
+                {"name": "t2", "type": "string"},
+                {"name": "c3", "type": "string"},
+                {"name": "d4", "type": "string"},
+                {"name": "e5", "type": "string"}
+            ], "primaryKey": []}
+        }
+    ]
+}
+--
+{"t1":"a11","t2":"a21","c3":"a31","d4":"","e5":""}
+{"t1":"a12","t2":"a22","c3":"a32","d4":"","e5":""}
+{"t1":"a13","t2":"a23","c3":"a33","d4":"","e5":""}
+{"t1":"b11","t2":"b21","c3":"b31","d4":"","e5":""}
+{"t1":"b12","t2":"b22","c3":"b32","d4":"","e5":""}
+{"t1":"b13","t2":"b23","c3":"b33","d4":"","e5":""}
+{"t1":"c11","t2":"c21","c3":"c31","d4":"","e5":""}
+{"t1":"c12","t2":"c22","c3":"c32","d4":"","e5":""}
+{"t1":"c13","t2":"c23","c3":"c33","d4":"","e5":""}
+
+{}

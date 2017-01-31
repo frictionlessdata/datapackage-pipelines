@@ -2,11 +2,13 @@ import os
 import logging
 
 import itertools
+
 import tabulator
 
 from jsontableschema import Schema
 
 from datapackage_pipelines.wrapper import ingest, spew
+from datapackage_pipelines.utilities.resource_matcher import ResourceMatcher
 
 
 def _reader(opener, _url):
@@ -65,7 +67,8 @@ def stream_reader(_resource, _url):
             _params = dict(headers=1)
             _params.update(
                 dict(x for x in __resource.items()
-                     if x[0] not in {'path', 'name', 'schema', 'mediatype', 'skip_rows'}))
+                     if x[0] not in {'path', 'name', 'schema',
+                                     'mediatype', 'skip_rows'}))
             skip_rows = __resource.get('skip_rows', 0)
             _stream = tabulator.Stream(__url, **_params,
                                        post_parse=[row_skipper(skip_rows)])
@@ -98,19 +101,32 @@ def stream_reader(_resource, _url):
             1, None)
 
 
-params, datapackage, res_iter = ingest()
+parameters, datapackage, resource_iterator = ingest()
 
-new_resource_iterators = []
+resources = ResourceMatcher(parameters.get('resources'))
+
+new_resource_iterator = []
 for resource in datapackage['resources']:
-    if 'path' in resource:
-        new_resource_iterators.append(next(res_iter))
-    elif 'url' in resource:
-        url = resource['url']
+
+    path = resource.get('path')
+    if path is not None and '://' not in path:
+        new_resource_iterator.append(next(resource_iterator))
+    else:
+        url = resource.get('url', path)
+        assert url is not None, \
+            'Resource should have at least on "url" or "path" property'
+
+        name = resource['name']
+        if not resources.match(name):
+            continue
+
         basename = os.path.basename(resource['url'])
         path = os.path.join('data', basename)
-        del resource['url']
         resource['path'] = path
-        rows = stream_reader(resource, url)
-        new_resource_iterators.append(rows)
+        if 'url' in resource:
+            del resource['url']
 
-spew(datapackage, new_resource_iterators)
+        rows = stream_reader(resource, url)
+        new_resource_iterator.append(rows)
+
+spew(datapackage, new_resource_iterator)

@@ -56,6 +56,7 @@ def _loads(*args, **kwargs):
     return _json.loads(*args, **kwargs)
 
 
-class json(object):
+class json(object): # pylint: disable=too-few-public-methods
     dumps = _dumps
     loads = _loads
+    JSONDecodeError = _json.JSONDecodeError

@@ -3,7 +3,7 @@ import os
 import time
 
 from .backend_redis import RedisBackend
-from .backend_shelve import ShelveBackend
+from .backend_sqlite import SqliteBackend
 
 
 class PipelineStatus(object):
@@ -155,7 +155,7 @@ class StatusManager(object):
 
     def __init__(self, host=None, port=6379):
         redis = RedisBackend(host, port)
-        self.backend = redis if redis.is_init() else ShelveBackend()
+        self.backend = redis if redis.is_init() else SqliteBackend()
 
     def is_running(self, _id):
         return PipelineStatus(self.backend, _id).check_running()
@@ -185,4 +185,4 @@ class StatusManager(object):
     def all_statuses(self):
         return self.backend.all_statuses()
 
-status = StatusManager(os.environ.get('DATAPIPELINES_REDIS_HOST'))
+status = StatusManager(os.environ.get('DPP_REDIS_HOST'))

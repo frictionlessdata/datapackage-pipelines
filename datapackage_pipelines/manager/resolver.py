@@ -1,7 +1,7 @@
 import logging
 import os
 
-PROCESSOR_PATH = os.environ.get('DATAPIPELINES_PROCESSOR_PATH', '').split(';')
+PROCESSOR_PATH = os.environ.get('DPP_PROCESSOR_PATH', '').split(';')
 
 
 def find_file_in_path(path, remove=0):
