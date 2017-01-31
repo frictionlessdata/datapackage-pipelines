@@ -43,7 +43,8 @@ worldbank-co2-emissions:
         format: xls
         headers: 4
     -
-      run: stream_remote_resources      
+      run: stream_remote_resources
+      cache: True
     -
       run: dump.to_zip
       parameters:
@@ -109,8 +110,6 @@ $ docker run -v `pwd`:/pipelines:rw \
        frictionlessdata/datapackage-pipelines run ./worldbank-co2-emissions
 <execution-logs>
 ```
-
-And browse to `<your-docker-machine's-ip-address>:8000` to see the execution progress.
 
 ### The Command Line Interface - `dpp`
 
