@@ -107,7 +107,7 @@ $ docker run -v `pwd`:/pipelines:rw \
 <available-pipelines>
 
 $ docker run -v `pwd`:/pipelines:rw \
-       frictionlessdata/datapackage-pipelines run ./worldbank-co2-emissions
+       frictionlessdata/datapackage-pipelines run ./samples/worldbank-co2-emissions
 <execution-logs>
 ```
 
