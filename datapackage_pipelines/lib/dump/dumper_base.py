@@ -81,6 +81,13 @@ class CSVDumper(DumperBase):
             resource['encoding'] = 'utf-8'
             basename, _ = os.path.splitext(resource['path'])
             resource['path'] = basename + '.csv'
+            resource['dialect'] = dict(
+                lineTerminator='\r\n',
+                delimiter=',',
+                doublequote=True,
+                quoteChar='"',
+                skipinitialspace=False
+            )
 
         temp_file = tempfile.NamedTemporaryFile(mode="w+", delete=False)
         json.dump(datapackage, temp_file, sort_keys=True, ensure_ascii=True)
