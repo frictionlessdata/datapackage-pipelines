@@ -31,6 +31,13 @@ dump.to_zip
             "name": "my-spiffy-resource",
             "path": "data/my-data.csv",
             "encoding": "utf-8",
+            "dialect": {
+                "delimiter": ",",
+                "doublequote": true,
+                "lineTerminator": "\r\n",
+                "quoteChar": "\"",
+                "skipinitialspace": false
+            },
             "schema": {
                 "fields": [
                     {"name": "mystring", "type": "string"},
@@ -45,4 +52,4 @@ dump.to_zip
 --
 {"mystring":"a", "mynumber": 2.0, "mydate": {"type{date}": "2016-12-31"}}
 
-{"dataset-name": "test", "total_row_count": 1}
+{"dataset_name": "test", "total_row_count": 1}

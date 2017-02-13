@@ -16,6 +16,13 @@ worldbank-co2-emissions:
     -
       run: stream_remote_resources
     -
+      run: set_types
+      parameters:
+         resources: global-data
+         types:
+           "[12][0-9]{3}":
+              type: number
+    -
       run: add_constant
       parameters:
          column-name: the_constant
