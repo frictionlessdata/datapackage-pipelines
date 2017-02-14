@@ -7,6 +7,7 @@ from datapackage_pipelines.lib.dump.dumper_base import CSVDumper
 class PathDumper(CSVDumper):
 
     def initialize(self, params):
+        super(PathDumper, self).initialize(params)
         self.out_path = params.get('out-path', '.')   # pylint: disable=attribute-defined-outside-init
         PathDumper.__makedirs(self.out_path)
 
