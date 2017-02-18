@@ -167,7 +167,29 @@ For other installations, especially ones using the task scheduler, it is recomme
 
 ### Pipeline Dependencies
 
-You can declare that a pipeline is dependent on another pipeline or datapackage. This dependency is considered when 
+You can declare that a pipeline is dependent on another pipeline or datapackage. This dependency is considered when calculating the cache hashes of a pipeline, which in turn affect the validity of cache files and the "dirty" state:
+- For pipeline dependencies, the hash of that pipeline is used in the calculation
+- For datapackage dependencies, the `hash` property in the datapackage is used in the calculation
+
+If the dependency is missing, then the pipeline is marked as 'unable to be executed'.
+  
+Declaring dependencies is done by a `dependencies` property to a pipeline definition in the `pipeline-spec.yaml` file.
+This property should contain a list of dependencies, each one is an object with the following formats:
+- A single key named `pipeline` whose value is the pipeline id to depend on
+- A single key named `datapackage` whose value is the identifier (or URL) for the datapackage to depend on
+
+Example:
+```yaml
+cat-vs-dog-populations:
+  dependencies:
+    - 
+      pipeline: ./geo/regoin-areal
+    - 
+      datapackage: http://pets.net/data/dogs-per-regoin/datapackage.json
+    - 
+      datapackage: http://pets.net/data/dogs-per-regoin
+  ...
+```
 
 ### Validating
 

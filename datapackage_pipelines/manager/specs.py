@@ -2,6 +2,7 @@ import os
 import hashlib
 
 import yaml
+import datapackage
 
 from ..utilities.extended_json import json
 from .resolver import resolve_executor, resolve_generator
@@ -20,9 +21,10 @@ def find_pipeline_specs(dirpath, filenames):
                 spec = yaml.load(spec_file.read())
                 for pipeline_id, pipeline_details in spec.items():
                     pipeline_id = os.path.join(dirpath, pipeline_id)
-                    yield abspath, pipeline_id, pipeline_details, None, None
+                    yield abspath, pipeline_id, pipeline_details, None, []
         except yaml.YAMLError as e:
-            yield abspath, dirpath, {}, None, ('Invalid Pipeline Spec', str(e))
+            yield abspath, dirpath, {}, None, \
+                  [('Invalid Pipeline Spec', str(e))]
 
 
 # pylint: disable=too-many-locals
@@ -39,7 +41,8 @@ def find_source_specs(dirpath, filenames):
         if generator is None:
             message = 'Unknown source description kind "{}" in {}'\
                       .format(module_name, fullpath)
-            yield abspath, dirpath, {}, None, ('Unknown source kind', message)
+            yield abspath, dirpath, {}, None, \
+                  [('Unknown source kind', message)]
             continue
 
         try:
@@ -54,14 +57,14 @@ def find_source_specs(dirpath, filenames):
                         }
                         pipeline_id = os.path.join(dirpath, pipeline_id)
                         yield abspath, pipeline_id, \
-                              pipeline_details, source_spec, None
+                              pipeline_details, source_spec, []
                 else:
                     message = 'Invalid source description for "{}" in {}'\
                               .format(module_name, fullpath)
                     yield abspath, dirpath, {}, \
-                          None, ('Invalid Source', message)
+                          None, [('Invalid Source', message)]
         except yaml.YAMLError as e:
-            yield abspath, dirpath, {}, None, ('Invalid Source Spec', str(e))
+            yield abspath, dirpath, {}, None, [('Invalid Source Spec', str(e))]
 
 
 def find_specs(root_dir='.'):
@@ -84,61 +87,128 @@ def validate_required_keys(obj, keys, abspath, errors):
             errors.append(('Missing Parameter', message))
 
 
-# pylint: disable=too-many-locals
+def resolve_dependencies(dependencies, all_pipeline_ids):
+    errors = []
+    cache_hash = ''
+    for dependency in dependencies:
+        if 'pipeline' in dependency:
+            pipeline_id = dependency['pipeline']
+            if pipeline_id not in all_pipeline_ids:
+                return None, None  # Defer!
+            dirty = all_pipeline_ids.get(pipeline_id)['_dirty']
+            if dirty:
+                errors.append(
+                    ('Dirty dependency',
+                     'Cannot run until all dependencies are executed')
+                )
+            pipeline_hash = all_pipeline_ids.get(pipeline_id)['_cache_hash']
+            cache_hash += pipeline_hash
+
+        elif 'datapackage' in dependency:
+            dp_id = dependency['datapackage']
+            dp = datapackage.DataPackage(dp_id)
+            if 'hash' in dp.descriptor:
+                cache_hash += dp.descriptor['hash']
+            else:
+                errors.append(('Missing dependency',
+                               "Couldn't get data from datapackage %s"
+                               % dp_id))
+        else:
+            errors.append(('Missing dependency',
+                           'Unknown dependency provided (%r)' % dependency))
+    return cache_hash, errors
+
+
+def calculate_hash(dependencies, pipeline, all_pipeline_ids):
+    cache_hash, errors = resolve_dependencies(dependencies, all_pipeline_ids)
+    if errors is None:
+        return None, None  # Defer!
+    elif len(errors) > 0:
+        return cache_hash, errors
+    for step in pipeline:
+        m = hashlib.md5()
+        m.update(cache_hash.encode('ascii'))
+        m.update(open(step['run'], 'rb').read())
+        m.update(json.dumps(step, ensure_ascii=True, sort_keys=True)
+                 .encode('ascii'))
+        cache_hash = m.hexdigest()
+        step['_cache_hash'] = cache_hash
+    return cache_hash, errors
+
+
+# pylint: disable=too-many-locals, too-many-branches
 def validate_specs():
 
-    all_pipeline_ids = set()
+    all_pipeline_ids = {}
 
-    for abspath, pipeline_id, \
-            pipeline_details, source_details, error in find_specs():
+    specs = find_specs()
+    deferred_amount = 0
+    while specs is not None:
+        deferred = []
 
-        errors = []
-        if error is not None:
-            errors.append(error)
+        for spec in specs:
 
-        if pipeline_id in all_pipeline_ids:
-            message = 'Duplicate key {0} in {1}'\
-                      .format(pipeline_id, abspath)
-            errors.append(('Duplicate Pipeline Id', message))
+            abspath, pipeline_id, pipeline_details, \
+                source_details, errors = spec
 
-        validate_required_keys(pipeline_details,
-                               ['pipeline'],
-                               abspath,
-                               errors)
+            if pipeline_id in all_pipeline_ids:
+                message = 'Duplicate key {0} in {1}'\
+                          .format(pipeline_id, abspath)
+                errors.append(('Duplicate Pipeline Id', message))
 
-        pipeline = pipeline_details.get('pipeline', [])
+            validate_required_keys(pipeline_details,
+                                   ['pipeline'],
+                                   abspath,
+                                   errors)
 
-        try:
-            for step in pipeline:
-                validate_required_keys(step, ['run'], abspath, errors)
-                executor = step['run']
-                step['name'] = executor
-                step['run'] = resolve_executor(executor, abspath)
-        except FileNotFoundError as e:
-            errors.append(('Unresolved processor', str(e)))
+            pipeline = pipeline_details.get('pipeline', [])
+            dependencies = pipeline_details.get('dependencies', [])
 
-        cache_hash = ''
-        if len(errors) == 0:
-            for step in pipeline:
-                m = hashlib.md5()
-                m.update(cache_hash.encode('ascii'))
-                m.update(open(step['run'], 'rb').read())
-                m.update(json.dumps(step, ensure_ascii=True, sort_keys=True)
-                         .encode('ascii'))
-                cache_hash = m.hexdigest()
-                step['_cache_hash'] = cache_hash
+            try:
+                for step in pipeline:
+                    if 'name' not in step:
+                        validate_required_keys(step, ['run'], abspath, errors)
+                        executor = step['run']
+                        step['name'] = executor
+                        step['run'] = resolve_executor(executor, abspath)
+            except FileNotFoundError as e:
+                errors.append(('Unresolved processor', str(e)))
 
-        schedule = pipeline_details.get('schedule', {})
-        if 'crontab' in schedule:
-            schedule = schedule['crontab'].split()
-            pipeline_details['schedule'] = schedule
+            cache_hash = ''
+            if len(errors) == 0:
+                cache_hash, hash_errors = \
+                    calculate_hash(dependencies, pipeline, all_pipeline_ids)
+                if hash_errors is None:
+                    deferred.append(spec)
+                    continue
+                errors.extend(hash_errors)
 
-        dirty = status.register(pipeline_id, cache_hash,
-                                pipeline=pipeline_details,
-                                source=source_details,
-                                errors=errors)
+            all_pipeline_ids[pipeline_id] = pipeline_details
 
-        yield pipeline_id, pipeline_details, abspath, dirty, errors
+            schedule = pipeline_details.get('schedule', {})
+            if 'crontab' in schedule:
+                schedule = schedule['crontab'].split()
+                pipeline_details['schedule'] = schedule
+
+            dirty = status.register(pipeline_id, cache_hash,
+                                    pipeline=pipeline_details,
+                                    source=source_details,
+                                    errors=errors)
+
+            pipeline_details['_cache_hash'] = cache_hash
+            pipeline_details['_dirty'] = dirty
+
+            yield pipeline_id, pipeline_details, abspath, dirty, errors
+
+        if len(deferred) > 0:
+            if len(deferred) == deferred_amount:
+                for spec in deferred:
+                    spec[-1].append(('Missing dependency',
+                                     'Failed to find pipeline dependency'))
+            deferred_amount = len(deferred)
+            specs = iter(deferred)
+        else:
+            specs = None
 
 
 def pipelines():

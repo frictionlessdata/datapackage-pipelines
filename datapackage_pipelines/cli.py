@@ -27,6 +27,27 @@ def serve():
     app.run(host='0.0.0.0', debug=True, port=5000)
 
 
+# pylint: disable=too-many-arguments
+def execute_if_needed(argument, pipeline_id, pipeline_details,
+                      dirty, errors,
+                      pipeline_cwd, use_cache):
+    if len(errors) != 0:
+        return None, False
+    if ((argument == pipeline_id) or
+            (argument == 'all') or
+            (argument == 'dirty' and dirty)):
+        success, stats = \
+            execute_pipeline(pipeline_id,
+                             pipeline_details.get('pipeline', []),
+                             pipeline_cwd,
+                             use_cache=use_cache)
+        stop = False
+        if pipeline_id == argument:
+            stop = True
+        return (pipeline_id, success, stats), stop
+    return None, False
+
+
 @cli.command()
 @click.argument('pipeline_id')
 @click.option('--use-cache/--no-use-cache', default=True)
@@ -34,22 +55,31 @@ def run(pipeline_id, use_cache):
     """Run a pipeline by pipeline-id.
 Use 'all' for running all pipelines,
 or 'dirty' for running just the dirty ones."""
-    try:
+    try: # pylint: disable=too-many-nested-blocks
         results = []
-        for _pipeline_id, pipeline_details, pipeline_cwd, dirty, errors \
-                in pipelines():
-            if len(errors) != 0:
-                continue
-            if ((_pipeline_id == pipeline_id) or
-                    (pipeline_id == 'all') or
-                    (pipeline_id == 'dirty' and dirty)):
-                success, stats = \
-                    execute_pipeline(_pipeline_id,
-                                     pipeline_details.get('pipeline', []),
-                                     pipeline_cwd,
-                                     use_cache=use_cache)
-                results.append((_pipeline_id, success, stats))
-                if _pipeline_id == pipeline_id:
+        executed = set()
+        modified = 1
+        while modified > 0:
+            modified = 0
+            for pipeline in pipelines():
+                _pipeline_id, pipeline_details, \
+                    pipeline_cwd, dirty, errors = pipeline
+
+                if _pipeline_id in executed:
+                    continue
+
+                ret, stop = \
+                    execute_if_needed(pipeline_id, _pipeline_id,
+                                      pipeline_details,
+                                      dirty, errors,
+                                      pipeline_cwd, use_cache)
+                if ret is not None:
+                    executed.add(_pipeline_id)
+                    modified += 1
+                    results.append(ret)
+
+                if stop:
+                    modified = 0
                     break
 
         logging.info('RESULTS:')
