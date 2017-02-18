@@ -33,10 +33,10 @@ dump.to_zip
             "encoding": "utf-8",
             "dialect": {
                 "delimiter": ",",
-                "doublequote": true,
+                "doubleQuote": true,
                 "lineTerminator": "\r\n",
                 "quoteChar": "\"",
-                "skipinitialspace": false
+                "skipInitialSpace": false
             },
             "schema": {
                 "fields": [

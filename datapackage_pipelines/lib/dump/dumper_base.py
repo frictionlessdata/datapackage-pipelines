@@ -84,9 +84,9 @@ class CSVDumper(DumperBase):
             resource['dialect'] = dict(
                 lineTerminator='\r\n',
                 delimiter=',',
-                doublequote=True,
+                doubleQuote=True,
                 quoteChar='"',
-                skipinitialspace=False
+                skipInitialSpace=False
             )
 
         temp_file = tempfile.NamedTemporaryFile(mode="w+", delete=False)
