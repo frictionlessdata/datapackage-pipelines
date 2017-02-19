@@ -11,8 +11,11 @@ class SQLDumper(DumperBase):
         table_to_resource = parameters['tables']
         engine = parameters.get('engine', 'env://DPP_DB_ENGINE')
         if engine.startswith('env://'):
-            engine = os.environ.get(engine[6:])
-            assert engine is not None
+            env_var = engine[6:]
+            engine = os.environ.get(env_var)
+            assert engine is not None, \
+                "Couldn't connect to DB - " \
+                "Please set your '%s' environment variable" % env_var
         self.engine = create_engine(engine)  # pylint: disable=attribute-defined-outside-init
 
         for k, v in table_to_resource.items():
