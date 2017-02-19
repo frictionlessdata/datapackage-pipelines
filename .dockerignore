@@ -1,0 +1,13 @@
+.tox/
+.git/
+.cache/
+.dpp.db
+.dppdb
+.github/
+.idea/
+build/
+datapackage_pipelines.egg-info/
+dist/
+samples/
+tests/
+

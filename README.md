@@ -110,11 +110,11 @@ INFO :Main:SUCCESS: ./worldbank-co2-emissions
 Alternatively, you could use our docker image:
 
 ```shell
-$ docker run -v `pwd`:/pipelines:rw \
+$ docker run -it -v `pwd`:/pipelines:rw \
         frictionlessdata/datapackage-pipelines
 <available-pipelines>
 
-$ docker run -v `pwd`:/pipelines:rw \
+$ docker run -it -v `pwd`:/pipelines:rw \
        frictionlessdata/datapackage-pipelines run ./worldbank-co2-emissions
 <execution-logs>
 ```
@@ -267,14 +267,14 @@ This allows to make modification to the existing schema, and usually to the defa
 
 _Parameters_:
 
-- `resources` - Which resources to modify. Can be:
+-  `resources` - Which resources to modify. Can be:
 
-  - List of strings, interpreted as resource names to stream
-  - String, interpreted as a regular expression to be used to match resource names
+   - List of strings, interpreted as resource names to stream
+   - String, interpreted as a regular expression to be used to match resource names
 
-  If omitted, all resources in datapackage are streamed.
+   If omitted, all resources in datapackage are streamed.
 
-- `types` - A map between field names and field definitions.
+-  `types` - A map between field names and field definitions.
    - _field name_ is either simply the name of a field, or a regular expression matching multiple fields.
    - _field definition_ is an object adhering to the [JSON Table Schema spec](http://specs.frictionlessdata.io/table-schema/). You can use `null` instead of an object to remove a field from the schema.
 
