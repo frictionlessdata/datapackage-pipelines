@@ -1,4 +1,5 @@
 import re
+import logging
 
 from datapackage_pipelines.wrapper import ingest, spew
 from datapackage_pipelines.utilities.resource_matcher import ResourceMatcher
@@ -47,7 +48,11 @@ def process_resource(spec, rows):
     field_names = list(map(lambda f: f['name'], schema['fields']))
     for row in rows:
         flattened_row = [row.get(name) for name in field_names]
-        flattened_row = jts.cast_row(flattened_row)
+        try:
+            flattened_row = jts.cast_row(flattened_row)
+        except:
+            logging.error('Failed to cast row %r', flattened_row)
+            raise
         row = dict(zip(field_names, flattened_row))
         yield row
 
