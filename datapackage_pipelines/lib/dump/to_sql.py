@@ -8,6 +8,7 @@ from datapackage_pipelines.lib.dump.dumper_base import DumperBase
 class SQLDumper(DumperBase):
 
     def initialize(self, parameters):
+        super(SQLDumper, self).initialize(parameters)
         table_to_resource = parameters['tables']
         engine = parameters.get('engine', 'env://DPP_DB_ENGINE')
         if engine.startswith('env://'):

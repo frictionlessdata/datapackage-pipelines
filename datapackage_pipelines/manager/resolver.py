@@ -53,8 +53,8 @@ def resolve_executor(executor, path):
                 resolvers.append(find_file_in_path([module, 'processors'], 1))
 
         resolvers.extend([
-            find_file_in_path([path])
-            for path in PROCESSOR_PATH
+            find_file_in_path([path_])
+            for path_ in PROCESSOR_PATH
         ])
         resolvers.append(find_file_in_path([os.path.dirname(__file__),
                                             '..', 'lib']))

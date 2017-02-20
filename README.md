@@ -165,6 +165,32 @@ The cache hash is also used for seeing if a pipeline is "dirty". When a pipeline
 
 For other installations, especially ones using the task scheduler, it is recommended to work with the _Redis_ backend. In order to enable the Redis connection, simply set the `DPP_REDIS_HOST` environment variable to point to a running Redis instance.
 
+### Pipeline Dependencies
+
+You can declare that a pipeline is dependent on another pipeline or datapackage. This dependency is considered when calculating the cache hashes of a pipeline, which in turn affect the validity of cache files and the "dirty" state:
+- For pipeline dependencies, the hash of that pipeline is used in the calculation
+- For datapackage dependencies, the `hash` property in the datapackage is used in the calculation
+
+If the dependency is missing, then the pipeline is marked as 'unable to be executed'.
+  
+Declaring dependencies is done by a `dependencies` property to a pipeline definition in the `pipeline-spec.yaml` file.
+This property should contain a list of dependencies, each one is an object with the following formats:
+- A single key named `pipeline` whose value is the pipeline id to depend on
+- A single key named `datapackage` whose value is the identifier (or URL) for the datapackage to depend on
+
+Example:
+```yaml
+cat-vs-dog-populations:
+  dependencies:
+    - 
+      pipeline: ./geo/regoin-areal
+    - 
+      datapackage: http://pets.net/data/dogs-per-regoin/datapackage.json
+    - 
+      datapackage: http://pets.net/data/dogs-per-regoin
+  ...
+```
+
 ### Validating
 
 Each processor's input is automatically validated for correctness:
@@ -177,7 +203,7 @@ Each processor's input is automatically validated for correctness:
   - Performace wise, validating the data in every step is very CPU instensive
   - In some cases you modify the schema in one step and the data in another, so you would only like to validate the data once all the changes were made
 
-  In any case, all the `dump.to_*` standard processors validata their input data, regardless of the `validate` flag - so in case you're using them, your data validity is covered.
+  In any case, when using the `set_types` standard processor, it will validate and transform the input data with the new types..
 
 ## The Standard Processor Library
 
@@ -261,9 +287,9 @@ _Parameters_:
 
 ### ***`set_types`***
 
-Sets data types and type options to fields in streamed resources.
+Sets data types and type options to fields in streamed resources, and make sure that the data still validates with the new types. 
 
-This allows to make modification to the existing schema, and usually to the default schema from `stream_remote_resources`.
+This allows to make modification to the existing table schema, and usually to the default schema from `stream_remote_resources`.
 
 _Parameters_:
 
