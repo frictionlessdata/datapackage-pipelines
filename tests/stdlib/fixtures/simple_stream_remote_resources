@@ -19,7 +19,7 @@ stream_remote_resources
     "resources": [
         {
             "name": "my-remote-resource",
-            "path": "data/sample.csv",
+            "path": "data/my-remote-resource.csv",
             "schema": {
                 "fields": [
                     {"name": "first_name", "type": "string"},

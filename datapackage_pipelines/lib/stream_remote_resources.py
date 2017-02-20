@@ -120,8 +120,7 @@ for resource in datapackage['resources']:
         if not resources.match(name):
             continue
 
-        basename = os.path.basename(resource['url'])
-        path = os.path.join('data', basename)
+        path = os.path.join('data', name + '.csv')
         resource['path'] = path
         if 'url' in resource:
             del resource['url']
