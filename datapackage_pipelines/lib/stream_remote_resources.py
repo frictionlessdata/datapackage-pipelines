@@ -15,7 +15,7 @@ def _reader(opener, _url):
     yield None
     filename = os.path.basename(_url)
     logging.info('%s: OPENING %s', filename, _url)
-    _schema, _headers, _reader = opener()
+    _schema, _headers, _reader, _close = opener()
     num_headers = len(_headers)
     i = 0
     for i, row in enumerate(_reader):
@@ -32,7 +32,7 @@ def _reader(opener, _url):
         if i % 10000 == 0:
             logging.info('%s: %d rows', filename, i)
             # break
-
+    _close()
     logging.info('%s: TOTAL %d rows', filename, i)
 
 
@@ -61,7 +61,7 @@ def row_skipper(rows_to_skip):
     return _func
 
 
-def stream_reader(_resource, _url):
+def stream_reader(_resource, _url, _ignore_missing):
     def get_opener(__url, __resource):
         def opener():
             _params = dict(headers=1)
@@ -72,15 +72,21 @@ def stream_reader(_resource, _url):
             skip_rows = __resource.get('skip_rows', 0)
             _stream = tabulator.Stream(__url, **_params,
                                        post_parse=[row_skipper(skip_rows)])
-            _stream.open()
-            _headers = dedupe(_stream.headers)
-            _schema = __resource.get('schema')
-            if _schema is not None:
-                _schema = Schema(_schema)
-            return _schema, _headers, _stream
+            try:
+                _stream.open()
+                _headers = dedupe(_stream.headers)
+                _schema = __resource.get('schema')
+                if _schema is not None:
+                    _schema = Schema(_schema)
+                return _schema, _headers, _stream, lambda: _stream.close()
+            except tabulator.exceptions.TabulatorException as e:
+                logging.warning("Error while opening resource from url %s: %r", _url, e)
+                if not _ignore_missing:
+                    raise
+                return {}, [], [], lambda: None
         return opener
 
-    schema, headers, stream = get_opener(url, _resource)()
+    schema, headers, stream, close = get_opener(url, _resource)()
     if schema is None:
         schema = {
             'fields': [
@@ -90,7 +96,7 @@ def stream_reader(_resource, _url):
         }
         _resource['schema'] = schema
 
-    stream.close()
+    close()
     del stream
 
     return itertools\
@@ -104,6 +110,7 @@ def stream_reader(_resource, _url):
 parameters, datapackage, resource_iterator = ingest()
 
 resources = ResourceMatcher(parameters.get('resources'))
+ignore_missing = parameters.get('ignore-missing', False)
 
 new_resource_iterator = []
 for resource in datapackage['resources']:
@@ -125,7 +132,7 @@ for resource in datapackage['resources']:
         if 'url' in resource:
             del resource['url']
 
-        rows = stream_reader(resource, url)
+        rows = stream_reader(resource, url, ignore_missing)
         new_resource_iterator.append(rows)
 
 spew(datapackage, new_resource_iterator)

@@ -103,12 +103,6 @@ fields = parameters['fields']
 full = parameters.get('full', True)
 
 
-def get_aggregator(field):
-    spec = fields[field]
-    agg = spec.get('aggregate', 'any')
-    return agg
-
-
 def indexer(resource):
     for row in resource:
         key = source_key(row)
@@ -116,10 +110,11 @@ def indexer(resource):
         if current is None:
             current = {}
         for field, spec in fields.items():
+            name = spec['name']
             curr = current.get(field)
-            agg = get_aggregator(field)
+            agg = spec['aggregate']
             if agg != 'count':
-                new = row.get(spec['name'])
+                new = row.get(name)
             else:
                 new = None
             current[field] = AGGREGATORS[agg].func(curr, new)
@@ -137,7 +132,7 @@ def process_target(resource):
                 continue
             extra = empty_extra
         extra = dict(
-            (k, AGGREGATORS[get_aggregator(k)].finaliser(v))
+            (k, AGGREGATORS[fields[k]['aggregate']].finaliser(v))
             for k, v in extra.items()
         )
         row.update(extra)
@@ -180,7 +175,13 @@ def process_datapackage(datapackage_):
             added_fields = sorted(fields.keys())
             for field in added_fields:
                 spec = fields[field]
-                agg = get_aggregator(field)
+                if spec is None:
+                    fields[field] = spec = {}
+                if 'name' not in spec:
+                    spec['name'] = field
+                if 'aggregate' not in spec:
+                    spec['aggregate'] = 'any'
+                agg = spec['aggregate']
                 data_type = AGGREGATORS[agg].dataType
                 if data_type is None:
                     source_field = \

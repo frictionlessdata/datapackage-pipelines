@@ -172,7 +172,7 @@ You can declare that a pipeline is dependent on another pipeline or datapackage.
 - For datapackage dependencies, the `hash` property in the datapackage is used in the calculation
 
 If the dependency is missing, then the pipeline is marked as 'unable to be executed'.
-  
+
 Declaring dependencies is done by a `dependencies` property to a pipeline definition in the `pipeline-spec.yaml` file.
 This property should contain a list of dependencies, each one is an object with the following formats:
 - A single key named `pipeline` whose value is the pipeline id to depend on
@@ -273,6 +273,8 @@ _Parameters_:
   - String, interpreted as a regular expression to be used to match resource names
 
   If omitted, all resources in datapackage are streamed.
+
+- `ignore-missing` - if true, then missing resources won't raise an error but will be treated as 'empty' (i.e. with zero rows). 
 
 *Example*:
 
