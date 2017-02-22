@@ -3,6 +3,7 @@ import hashlib
 
 import yaml
 import datapackage
+from datapackage.exceptions import DataPackageException
 
 from ..utilities.extended_json import json
 from .resolver import resolve_executor, resolve_generator
@@ -106,13 +107,19 @@ def resolve_dependencies(dependencies, all_pipeline_ids):
 
         elif 'datapackage' in dependency:
             dp_id = dependency['datapackage']
-            dp = datapackage.DataPackage(dp_id)
-            if 'hash' in dp.descriptor:
-                cache_hash += dp.descriptor['hash']
-            else:
+            try:
+                dp = datapackage.DataPackage(dp_id)
+                if 'hash' in dp.descriptor:
+                    cache_hash += dp.descriptor['hash']
+                else:
+                    errors.append(('Missing dependency',
+                                   "Couldn't get data from datapackage %s"
+                                   % dp_id))
+            except DataPackageException:
                 errors.append(('Missing dependency',
-                               "Couldn't get data from datapackage %s"
+                               "Couldn't open datapackage %s"
                                % dp_id))
+
         else:
             errors.append(('Missing dependency',
                            'Unknown dependency provided (%r)' % dependency))

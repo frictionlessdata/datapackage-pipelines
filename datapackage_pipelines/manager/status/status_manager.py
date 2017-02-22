@@ -116,7 +116,8 @@ class PipelineStatus(object):
 
     def register(self, cache_hash, pipeline, source, errors):
 
-        self.check_running()
+        if self.check_running():
+            return False
 
         # Is pipeline dirty?
         dirty = self.data.setdefault('cache_hash', '') != cache_hash
