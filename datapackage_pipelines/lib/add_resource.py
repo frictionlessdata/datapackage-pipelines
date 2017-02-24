@@ -1,6 +1,6 @@
 from datapackage_pipelines.wrapper import ingest, spew
 
-parameters, datapackage, _ = ingest()
+parameters, datapackage, res_iter = ingest()
 
 
 if datapackage is None:
@@ -16,4 +16,4 @@ for param in ['url', 'name']:
 
 datapackage['resources'].append(parameters)
 
-spew(datapackage, [])
+spew(datapackage, res_iter)

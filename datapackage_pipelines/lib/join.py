@@ -45,6 +45,11 @@ class DB(object):
                                 (key, value))
         self.db.commit()
 
+    def keys(self):
+        ret = self.cursor.execute('''SELECT key FROM d ORDER BY key ASC''')
+        for key in ret:
+            yield key
+
 db = DB()
 
 
@@ -86,6 +91,14 @@ AGGREGATORS = {
     'any': Aggregator(lambda curr, new: new,
                       identity,
                       None),
+    'set': Aggregator(lambda curr, new:
+                      curr.union({new}) if curr is not None else {new},
+                      list,
+                      'array'),
+    'array': Aggregator(lambda curr, new:
+                        curr + [new] if curr is not None else [new],
+                        identity,
+                        'array'),
 }
 
 parameters, datapackage, resource_iterator = ingest()
@@ -97,7 +110,11 @@ source_delete = source.get('delete', False)
 
 target = parameters['target']
 target_name = target['name']
-target_key = KeyCalc(target['key'])
+if target['key'] is not None:
+    target_key = KeyCalc(target['key'])
+else:
+    target_key = None
+deduplication = target_key is None
 
 fields = parameters['fields']
 full = parameters.get('full', True)
@@ -124,19 +141,30 @@ def indexer(resource):
 
 def process_target(resource):
     empty_extra = dict((f, None) for f in fields.keys())
-    for row in resource:
-        key = target_key(row)
-        extra = db.get(key)
-        if extra is None:
-            if not full:
-                continue
-            extra = empty_extra
-        extra = dict(
-            (k, AGGREGATORS[fields[k]['aggregate']].finaliser(v))
-            for k, v in extra.items()
-        )
-        row.update(extra)
-        yield row
+    if deduplication:
+        # just empty the iterable
+        collections.deque(indexer(resource), maxlen=0)
+        for key in db.keys():
+            row = db.get(key)
+            row = dict(
+                (k, AGGREGATORS[fields[k]['aggregate']].finaliser(v))
+                for k, v in row.items()
+            )
+            yield row
+    else:
+        for row in resource:
+            key = target_key(row)
+            extra = db.get(key)
+            if extra is None:
+                if not full:
+                    continue
+                extra = empty_extra
+            extra = dict(
+                (k, AGGREGATORS[fields[k]['aggregate']].finaliser(v))
+                for k, v in extra.items()
+            )
+            row.update(extra)
+            yield row
 
 
 def new_resource_iterator(resource_iterator_):
@@ -161,6 +189,7 @@ def process_datapackage(datapackage_):
 
     new_resources = []
     source_spec = None
+
     for resource in datapackage_['resources']:
 
         if resource['name'] == source_name:
@@ -171,7 +200,8 @@ def process_datapackage(datapackage_):
         elif resource['name'] == target_name:
             assert isinstance(source_spec, dict), \
                 "Source resource must appear before target resource"
-            target_fields = resource['schema']['fields']
+            target_fields = \
+                resource.setdefault('schema', {}).setdefault('fields', [])
             added_fields = sorted(fields.keys())
             for field in added_fields:
                 spec = fields[field]

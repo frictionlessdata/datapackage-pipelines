@@ -78,12 +78,13 @@ def stream_reader(_resource, _url, _ignore_missing):
                 _schema = __resource.get('schema')
                 if _schema is not None:
                     _schema = Schema(_schema)
-                return _schema, _headers, _stream, lambda: _stream.close()
+                return _schema, _headers, _stream, _stream.close
             except tabulator.exceptions.TabulatorException as e:
-                logging.warning("Error while opening resource from url %s: %r", _url, e)
+                logging.warning("Error while opening resource from url %s: %r",
+                                _url, e)
                 if not _ignore_missing:
                     raise
-                return {}, [], [], lambda: None
+                return None, [], [], lambda: None
         return opener
 
     schema, headers, stream, close = get_opener(url, _resource)()
@@ -132,7 +133,7 @@ for resource in datapackage['resources']:
         if 'url' in resource:
             del resource['url']
 
-        rows = stream_reader(resource, url, ignore_missing)
+        rows = stream_reader(resource, url, ignore_missing or url == "")
         new_resource_iterator.append(rows)
 
 spew(datapackage, new_resource_iterator)

@@ -275,6 +275,7 @@ _Parameters_:
   If omitted, all resources in datapackage are streamed.
 
 - `ignore-missing` - if true, then missing resources won't raise an error but will be treated as 'empty' (i.e. with zero rows). 
+  Resources with empty URLs will be treated the same (i.e. will generate an 'empty' resource).
 
 *Example*:
 
@@ -337,7 +338,7 @@ Concatenates a number of streamed resources and converts them to a single resour
 
 _Parameters_:
 
-- `sources` - Which resources to concatenate. Same sematics as `resources` in `stream_remote_resources`.
+- `sources` - Which resources to concatenate. Same semantics as `resources` in `stream_remote_resources`.
 
   If omitted, all resources in datapackage are concatenated.
 
@@ -383,6 +384,8 @@ Joins two streamed resources.
 
 "Joining" in our case means taking the *target* resource, and adding fields to each of its rows by looking up data in the _source_ resource. 
 
+A special case for the join operation is when there is no target stream, and all unique rows from the source are used to create it. This mode is called _deduplication_ mode - you simply create an empty `target` resource and use join to fill it with deduplicated rows from the source.
+
 _Parameters_:
 
 - `source` - information regarding the _source_ resource
@@ -391,9 +394,9 @@ _Parameters_:
     - List of field names which should be used as the lookup key
     - String, which would be interpreted as a Python format string used to form the key (e.g. `{<field_name_1>}:{field_name_2}`)
   - `delete` - delete from data-package after joining (`False` by default)
-- `target` - Target resource to hold the concatenated data. Should define at least the following properties:
+- `target` - Target resource to hold the joined data. Should define at least the following properties:
   - `name` - as in `source`
-  - `key` - as in `source`
+  - `key` - as in `source`, or `null` for creating the target resource and performing _deduplication_.
 - `fields` - mapping of fields from the source resource to the target resource. 
   Keys should be field names in the target resource.
   Values can define two attributes:
@@ -419,8 +422,12 @@ _Parameters_:
 
     - `last` - take the last value encountered
 
-    - `count` - count the number of occurances of a specific key
+    - `count` - count the number of occurrences of a specific key
       For this method, specifying `name` is not required. In case it is specified, `count` will count the number of non-null values for that source field.
+
+    - `set` - collect all distinct values of the aggregated field, unordered 
+    
+    - `array` - collect all values of the aggregated field, in order of appearance   
 
     - `any` - pick any value.
 
@@ -431,7 +438,7 @@ _Parameters_:
   - If `True` (the default), failed lookups in the source will result in "null" values at the source.
   - if `False`, failed lookups in the source will result in dropping the row from the target.
 
-_Important: the "source" resource **must** appear before the "target" resource in the data-package_
+_Important: the "source" resource **must** appear before the "target" resource in the data-package._
 
 *Examples*:
 
