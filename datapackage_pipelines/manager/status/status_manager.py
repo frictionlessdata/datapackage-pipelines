@@ -59,6 +59,9 @@ class PipelineStatus(object):
             self.set_idle(False, force=True)
         return self.data.get('state') == 'RUNNING'
 
+    def check_successful(self):
+        return self.data.get('state') == 'SUCCEEDED'
+
     def set_running(self, trigger, log):
         if self.data['state'] not in {'REGISTERED',
                                       'SUCCEEDED',
@@ -161,16 +164,19 @@ class StatusManager(object):
     def is_running(self, _id):
         return PipelineStatus(self.backend, _id).check_running()
 
+    def is_successful(self, _id):
+        return PipelineStatus(self.backend, _id).check_successful()
+
     def running(self, _id, trigger=None, log=None):
         PipelineStatus(self.backend, _id).set_running(trigger, log)
 
     def idle(self, _id, success, reason, cache_hash, stats):
-        PipelineStatus(self.backend, _id)\
+        PipelineStatus(self.backend, _id) \
             .set_idle(success, reason, cache_hash, stats)
 
     def register(self, _id, cache_hash, pipeline=(), source=None, errors=()):
-        return PipelineStatus(self.backend, _id)\
-                .register(cache_hash, pipeline, source, errors)
+        return PipelineStatus(self.backend, _id) \
+            .register(cache_hash, pipeline, source, errors)
 
     def queued(self, _id):
         ps = PipelineStatus(self.backend, _id)

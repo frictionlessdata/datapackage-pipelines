@@ -102,6 +102,12 @@ def resolve_dependencies(dependencies, all_pipeline_ids):
                     ('Dirty dependency',
                      'Cannot run until all dependencies are executed')
                 )
+            if not status.is_successful(pipeline_id):
+                errors.append(
+                    ('Dependency unsuccessful',
+                     'Cannot run until all dependencies are '
+                     'successfully executed')
+                )
             pipeline_hash = all_pipeline_ids.get(pipeline_id)['_cache_hash']
             cache_hash += pipeline_hash
 

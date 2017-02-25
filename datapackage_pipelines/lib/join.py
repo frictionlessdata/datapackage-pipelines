@@ -228,11 +228,12 @@ def process_datapackage(datapackage_):
             if not source_delete:
                 new_resources.append(resource)
             if deduplication:
-                resource = \
-                    process_target_resource(source_spec, {
-                                                'name': target_name,
-                                                'path': os.path.join('data', target_name + '.csv')
-                                            })
+                resource = process_target_resource(
+                    source_spec,
+                    {
+                        'name': target_name,
+                        'path': os.path.join('data', target_name + '.csv')
+                    })
                 new_resources.append(resource)
 
         elif resource['name'] == target_name:
