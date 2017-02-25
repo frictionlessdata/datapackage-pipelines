@@ -384,7 +384,8 @@ Joins two streamed resources.
 
 "Joining" in our case means taking the *target* resource, and adding fields to each of its rows by looking up data in the _source_ resource. 
 
-A special case for the join operation is when there is no target stream, and all unique rows from the source are used to create it. This mode is called _deduplication_ mode - you simply create an empty `target` resource and use join to fill it with deduplicated rows from the source.
+A special case for the join operation is when there is no target stream, and all unique rows from the source are used to create it. 
+This mode is called _deduplication_ mode - The target resource will be created and  deduplicated rows from the source will be added to it.
 
 _Parameters_:
 

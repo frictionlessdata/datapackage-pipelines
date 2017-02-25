@@ -1,3 +1,4 @@
+import os
 import json
 import sqlite3
 import tempfile
@@ -46,8 +47,9 @@ class DB(object):
         self.db.commit()
 
     def keys(self):
-        ret = self.cursor.execute('''SELECT key FROM d ORDER BY key ASC''')
-        for key in ret:
+        cursor = self.db.cursor()
+        keys = cursor.execute('''SELECT key FROM d ORDER BY key ASC''')
+        for key, in keys:
             yield key
 
 db = DB()
@@ -178,11 +180,40 @@ def new_resource_iterator(resource_iterator_):
                 collections.deque(indexer(resource), maxlen=0)
             else:
                 yield indexer(resource)
+            if deduplication:
+                yield process_target(resource)
         elif name == target_name:
             assert has_index
             yield process_target(resource)
         else:
             yield resource
+
+
+def process_target_resource(source_spec, resource):
+    target_fields = \
+        resource.setdefault('schema', {}).setdefault('fields', [])
+    added_fields = sorted(fields.keys())
+    for field in added_fields:
+        spec = fields[field]
+        if spec is None:
+            fields[field] = spec = {}
+        if 'name' not in spec:
+            spec['name'] = field
+        if 'aggregate' not in spec:
+            spec['aggregate'] = 'any'
+        agg = spec['aggregate']
+        data_type = AGGREGATORS[agg].dataType
+        if data_type is None:
+            source_field = \
+                next(filter(lambda f, spec_=spec:
+                            f['name'] == spec_['name'],
+                            source_spec['schema']['fields']))  # pylint: disable=unsubscriptable-object
+            data_type = source_field['type']
+        target_fields.append({
+            'name': field,
+            'type': data_type
+        })
+    return resource
 
 
 def process_datapackage(datapackage_):
@@ -194,37 +225,24 @@ def process_datapackage(datapackage_):
 
         if resource['name'] == source_name:
             source_spec = resource
-            if source_delete:
-                continue
+            if not source_delete:
+                new_resources.append(resource)
+            if deduplication:
+                resource = \
+                    process_target_resource(source_spec, {
+                                                'name': target_name,
+                                                'path': os.path.join('data', target_name + '.csv')
+                                            })
+                new_resources.append(resource)
 
         elif resource['name'] == target_name:
             assert isinstance(source_spec, dict), \
                 "Source resource must appear before target resource"
-            target_fields = \
-                resource.setdefault('schema', {}).setdefault('fields', [])
-            added_fields = sorted(fields.keys())
-            for field in added_fields:
-                spec = fields[field]
-                if spec is None:
-                    fields[field] = spec = {}
-                if 'name' not in spec:
-                    spec['name'] = field
-                if 'aggregate' not in spec:
-                    spec['aggregate'] = 'any'
-                agg = spec['aggregate']
-                data_type = AGGREGATORS[agg].dataType
-                if data_type is None:
-                    source_field = \
-                        next(filter(lambda f, spec_=spec:
-                                    f['name'] == spec_['name'],
-                                    source_spec['schema']['fields']))  # pylint: disable=unsubscriptable-object
-                    data_type = source_field['type']
-                target_fields.append({
-                    'name': field,
-                    'type': data_type
-                })
+            resource = process_target_resource(source_spec, resource)
+            new_resources.append(resource)
 
-        new_resources.append(resource)
+        else:
+            new_resources.append(resource)
 
     datapackage_['resources'] = new_resources
     return datapackage_

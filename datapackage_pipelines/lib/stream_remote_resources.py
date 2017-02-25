@@ -84,7 +84,7 @@ def stream_reader(_resource, _url, _ignore_missing):
                                 _url, e)
                 if not _ignore_missing:
                     raise
-                return None, [], [], lambda: None
+                return {}, [], [], lambda: None
         return opener
 
     schema, headers, stream, close = get_opener(url, _resource)()
@@ -119,10 +119,8 @@ for resource in datapackage['resources']:
     path = resource.get('path')
     if path is not None and '://' not in path:
         new_resource_iterator.append(next(resource_iterator))
-    else:
-        url = resource.get('url', path)
-        assert url is not None, \
-            'Resource should have at least on "url" or "path" property'
+    elif 'url' in resource:
+        url = resource['url']
 
         name = resource['name']
         if not resources.match(name):
@@ -130,9 +128,8 @@ for resource in datapackage['resources']:
 
         path = os.path.join('data', name + '.csv')
         resource['path'] = path
-        if 'url' in resource:
-            del resource['url']
 
+        del resource['url']
         rows = stream_reader(resource, url, ignore_missing or url == "")
         new_resource_iterator.append(rows)
 

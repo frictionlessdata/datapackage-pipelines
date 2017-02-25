@@ -54,6 +54,7 @@ def spew(dp, resources_iterator, stats=None):
     try:
         for f in files:
             f.write(json.dumps(dp, sort_keys=True, ensure_ascii=True)+'\n')
+            f.flush()
         num_resources = 0
         for res in resources_iterator:
             num_resources += 1
