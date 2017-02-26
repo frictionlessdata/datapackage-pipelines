@@ -81,7 +81,7 @@ join
                 {"name": "house", "type": "string"},
                 {"name": "avg_age", "type": "number"},
                 {"name": "max_age", "type": "number"},
-                {"name": "number_of_characters", "type": "number"},
+                {"name": "number_of_characters", "type": "integer"},
                 {"name": "representative", "type": "string"}
             ]}
         }

@@ -34,7 +34,8 @@ INSTALL_REQUIRES = [
     'click',
     'awesome-slugify',
     'flask-cors',
-    'flask-jsonpify'
+    'flask-jsonpify',
+    'cachetools'
 ]
 LINT_REQUIRES = [
     'pylint',

@@ -1,11 +1,12 @@
 import os
-import json
 import sqlite3
 import tempfile
 import collections
 
-from datapackage_pipelines.wrapper import ingest, spew
+import cachetools
 
+from datapackage_pipelines.wrapper import ingest, spew
+from datapackage_pipelines.utilities.extended_json import json
 
 # pylint: disable=too-few-public-methods
 class KeyCalc(object):
@@ -32,16 +33,17 @@ class DB(object):
         ret = self.cursor.execute('''SELECT value FROM d WHERE key=?''',
                                   (key,)).fetchone()
         if ret is None:
-            return None
+            raise KeyError()
         else:
             return json.loads(ret[0])
 
     def set(self, key, value):
         value = json.dumps(value)
-        if self.get(key) is not None:
+        try:
+            self.get(key)
             self.cursor.execute('''UPDATE d SET value=? WHERE key=?''',
                                 (value, key))
-        else:
+        except KeyError:
             self.cursor.execute('''INSERT INTO d VALUES (?, ?)''',
                                 (key, value))
         self.db.commit()
@@ -52,7 +54,37 @@ class DB(object):
         for key, in keys:
             yield key
 
-db = DB()
+
+class CachedDB(cachetools.LRUCache):  # pylint: disable=too-many-ancestors
+
+    def __init__(self):
+        super(CachedDB, self).__init__(1024, self._dbget)
+        self.db = DB()
+
+    def popitem(self):
+        key, value = super(CachedDB, self).popitem()
+        self._dbset(key, value)
+        return key, value
+
+    def _dbget(self, key):
+        value = self.db.get(key)
+        return value
+
+    def _dbset(self, key, value):
+        assert value is not None
+        self.db.set(key, value)
+
+    def sync(self):
+        for key in iter(self):
+            value = cachetools.Cache.__getitem__(self, key)
+            self._dbset(key, value)
+
+    def keys(self):
+        self.sync()
+        return self.db.keys()
+
+
+db = CachedDB()
 
 
 def identity(x):
@@ -89,13 +121,13 @@ AGGREGATORS = {
     'count': Aggregator(lambda curr, new:
                         curr+1 if curr is not None else 1,
                         identity,
-                        'number'),
+                        'integer'),
     'any': Aggregator(lambda curr, new: new,
                       identity,
                       None),
     'set': Aggregator(lambda curr, new:
                       curr.union({new}) if curr is not None else {new},
-                      list,
+                      lambda value: list(value) if value is not None else [],
                       'array'),
     'array': Aggregator(lambda curr, new:
                         curr + [new] if curr is not None else [new],
@@ -125,8 +157,9 @@ full = parameters.get('full', True)
 def indexer(resource):
     for row in resource:
         key = source_key(row)
-        current = db.get(key)
-        if current is None:
+        try:
+            current = db[key]
+        except KeyError:
             current = {}
         for field, spec in fields.items():
             name = spec['name']
@@ -135,9 +168,10 @@ def indexer(resource):
             if agg != 'count':
                 new = row.get(name)
             else:
-                new = None
-            current[field] = AGGREGATORS[agg].func(curr, new)
-        db.set(key, current)
+                new = ''
+            if new is not None:
+                current[field] = AGGREGATORS[agg].func(curr, new)
+        db[key] = current
         yield row
 
 
@@ -147,17 +181,20 @@ def process_target(resource):
         # just empty the iterable
         collections.deque(indexer(resource), maxlen=0)
         for key in db.keys():
-            row = db.get(key)
             row = dict(
-                (k, AGGREGATORS[fields[k]['aggregate']].finaliser(v))
-                for k, v in row.items()
+                (f, None) for f in fields.keys()
             )
+            row.update(dict(
+                (k, AGGREGATORS[fields[k]['aggregate']].finaliser(v))
+                for k, v in db[key].items()
+            ))
             yield row
     else:
         for row in resource:
             key = target_key(row)
-            extra = db.get(key)
-            if extra is None:
+            try:
+                extra = db[key]
+            except KeyError:
                 if not full:
                     continue
                 extra = empty_extra
