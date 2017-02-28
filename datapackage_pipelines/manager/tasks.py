@@ -183,7 +183,7 @@ async def async_execute_pipeline(pipeline_id,
 
     if status.is_running(pipeline_id):
         logging.info("ALREADY RUNNING %s, BAILING OUT", pipeline_id)
-        return
+        return False, {}
 
     status.running(pipeline_id, trigger, '')
 

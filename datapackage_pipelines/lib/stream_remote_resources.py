@@ -40,7 +40,10 @@ def dedupe(headers):
     _dedupped_headers = []
     headers = list(map(str, headers))
     for hdr in headers:
-        if hdr is None or len(hdr.strip()) == 0:
+        if hdr is None:
+            continue
+        hdr = hdr.strip()
+        if len(hdr) == 0:
             continue
         if hdr in _dedupped_headers:
             i = 0
