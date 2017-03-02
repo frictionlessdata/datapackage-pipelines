@@ -62,6 +62,9 @@ class PipelineStatus(object):
     def check_successful(self):
         return self.data.get('state') == 'SUCCEEDED'
 
+    def check_waiting(self):
+        return self.data.get('state') == 'REGISTERED'
+
     def set_running(self, trigger, log):
         if self.data['state'] not in {'REGISTERED',
                                       'SUCCEEDED',
@@ -163,6 +166,9 @@ class StatusManager(object):
 
     def is_running(self, _id):
         return PipelineStatus(self.backend, _id).check_running()
+
+    def is_waiting(self, _id):
+        return PipelineStatus(self.backend, _id).check_waiting()
 
     def is_successful(self, _id):
         return PipelineStatus(self.backend, _id).check_successful()
