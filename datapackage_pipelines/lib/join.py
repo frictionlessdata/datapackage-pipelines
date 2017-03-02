@@ -186,7 +186,7 @@ def process_target(resource):
             )
             row.update(dict(
                 (k, AGGREGATORS[fields[k]['aggregate']].finaliser(v))
-                for k, v in db._dbget(key).items()
+                for k, v in db.db.get(key).items()
             ))
             yield row
     else:
