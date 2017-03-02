@@ -8,7 +8,7 @@ import jsontableschema
 parameters, datapackage, resource_iterator = ingest()
 
 resources = ResourceMatcher(parameters.get('resources'))
-types = parameters.get('types')
+types = parameters.get('types', {})
 
 
 def match_fields(field_name_re, expected):
