@@ -7,10 +7,11 @@ from ..manager.tasks import execute_pipeline
 from ..manager.status import status
 
 
-def trigger_dirties():
+def trigger_dirties(run_all=False):
     for pipeline_id, pipeline_details, pipeline_cwd, dirty, errors \
             in pipelines():
-        if dirty and len(errors) == 0 and status.is_waiting(pipeline_id):
+        if dirty and len(errors) == 0 and \
+                (run_all or status.is_waiting(pipeline_id)):
             logging.info('Executing DIRTY task %s', pipeline_id)
             pipeline_status = status.queued(pipeline_id)
             execute_pipeline_task.delay(pipeline_id,
@@ -35,5 +36,5 @@ def execute_pipeline_task(pipeline_id,
                              trigger,
                              False)
 
-        if success:
-            trigger_dirties()
+#        if success:
+#            trigger_dirties()

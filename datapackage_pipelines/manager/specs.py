@@ -150,7 +150,7 @@ def calculate_hash(dependencies, pipeline, all_pipeline_ids):
 
 
 # pylint: disable=too-many-locals, too-many-branches
-def validate_specs():
+def validate_specs(do_register=True):
 
     all_pipeline_ids = {}
 
@@ -203,13 +203,15 @@ def validate_specs():
                 schedule = schedule['crontab'].split()
                 pipeline_details['schedule'] = schedule
 
-            dirty = status.register(pipeline_id, cache_hash,
-                                    pipeline=pipeline_details,
-                                    source=source_details,
-                                    errors=errors)
+            dirty = True
+            if do_register or status.is_waiting(pipeline_id):
+                dirty = status.register(pipeline_id, cache_hash,
+                                        pipeline=pipeline_details,
+                                        source=source_details,
+                                        errors=errors)
+                pipeline_details['_dirty'] = dirty
 
             pipeline_details['_cache_hash'] = cache_hash
-            pipeline_details['_dirty'] = dirty
 
             yield pipeline_id, pipeline_details, abspath, dirty, errors
 
@@ -226,3 +228,7 @@ def validate_specs():
 
 def pipelines():
     return validate_specs()
+
+
+def pipelines_no_register():
+    return validate_specs(do_register=False)

@@ -63,7 +63,7 @@ class PipelineStatus(object):
         return self.data.get('state') == 'SUCCEEDED'
 
     def check_waiting(self):
-        return self.data.get('state') == 'REGISTERED'
+        return self.data.get('state') in {'REGISTERED', 'INVALID'}
 
     def set_running(self, trigger, log):
         if self.data['state'] not in {'REGISTERED',
