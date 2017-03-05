@@ -548,7 +548,7 @@ _Parameters_:
 
 ### ***`dump.to_sql`***
 
-Saves the datapackage to a zipped archive.
+Saves the datapackage to an SQL database.
 
 _Parameters_:
 
@@ -557,12 +557,21 @@ _Parameters_:
   If not specified, assumes a default of `env://DPP_DB_ENGINE`
 - `tables` - Mapping between resources and DB tables. Keys are table names, values are objects with the following attributes:
   - `resource-name` - name of the resource that should be dumped to the table
-  - `update` - Boolean (defaults to `False`), indicating whether table should be rewritten or updated
+  - `mode` - How data should be written to the DB.   
+    Possible values:
+      - `rewrite` (the default) - rewrite the table, all previous data (if any) will be deleted.
+      - `append` - write new rows without changing already existing data.
+      - `update` - update the table based on a set of "update keys". 
+        For each new row, see if there already an existing row in the DB which can be updated (that is, an existing row
+        with the same values in all of the update keys). 
+        If so - update the rest of the columns in the existing row. Otherwise - insert a new row to the DB.
+  - `update_keys` - Only applicable for the `update` mode. A list of field names that should be used to check for row existence.
+        If left unspecified, will use the schema's `primaryKey` as default.
   - `indexes` - TBD
 
 ### ***`dump.to_path`***
 
-Saves the datapackage to a zipped archive.
+Saves the datapackage to a filesystem path.
 
 _Parameters_:
 

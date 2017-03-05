@@ -25,6 +25,7 @@ class SQLDumper(DumperBase):
         # pylint: disable=attribute-defined-outside-init
         self.converted_resources = \
             dict((v['resource-name'], v) for v in table_to_resource.values())
+        self.mode = parameters.get('mode', 'rewrite')
 
     def handle_resource(self, resource, spec, parameters, datapackage):
         resource_name = spec['name']
@@ -34,9 +35,17 @@ class SQLDumper(DumperBase):
             converted_resource = self.converted_resources[resource_name]
             table_name = converted_resource['table-name']
             storage = Storage(self.engine, prefix=table_name)
-            if '' in storage.buckets:
+            if self.mode == 'rewrite' and '' in storage.buckets:
                 storage.delete('')
-            storage.create('', spec['schema'])
-            return storage.write('', resource, keyed=True, as_generator=True)
+            if '' not in storage.buckets:
+                storage.create('', spec['schema'])
+            update_keys = None
+            if self.mode == 'update':
+                update_keys = parameters.get('update_keys')
+                if update_keys is None:
+                    update_keys = spec['schema'].get('primaryKey', [])
+            return storage.write('', resource,
+                                 keyed=True, as_generator=True,
+                                 update_keys=update_keys)
 
 SQLDumper()()

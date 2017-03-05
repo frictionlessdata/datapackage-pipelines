@@ -26,7 +26,7 @@ INSTALL_REQUIRES = [
     'requests',
     'datapackage',
     'jsontableschema',
-    'jsontableschema-sql',
+    'jsontableschema-sql>=0.6,<1.0',
     'pyyaml',
     'redis',
     'sqlalchemy',
