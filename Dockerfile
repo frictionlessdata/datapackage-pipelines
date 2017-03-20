@@ -11,7 +11,7 @@ RUN apk --update --no-cache --virtual=build-dependencies add build-base python3-
     mkdir -p /var/redis && chmod 775 /var/redis && chown redis.redis /var/redis
 
 EXPOSE 5000
-
+WORKDIR /pipelines/
 ENTRYPOINT ["/dpp/docker/run.sh"]
 
 

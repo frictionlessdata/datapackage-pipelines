@@ -1,5 +1,4 @@
 #!/bin/sh
-cd /pipelines 
 if [ "$1" = "server" ]; then 
     export DPP_REDIS_HOST=127.0.0.1
     echo "Starting Server"
