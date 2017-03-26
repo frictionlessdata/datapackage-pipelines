@@ -141,7 +141,8 @@ def calculate_hash(dependencies, pipeline, all_pipeline_ids):
     for step in pipeline:
         m = hashlib.md5()
         m.update(cache_hash.encode('ascii'))
-        m.update(open(step['run'], 'rb').read())
+        with open(step['run'], 'rb') as f:
+            m.update(f.read())
         m.update(json.dumps(step, ensure_ascii=True, sort_keys=True)
                  .encode('ascii'))
         cache_hash = m.hexdigest()
