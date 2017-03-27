@@ -11,7 +11,7 @@ class CommonJSONDecoder(_json.JSONDecoder):
     """
 
     @classmethod
-    def object_hook(cls, obj):  # pylint: disable=method-hidden
+    def object_hook(cls, obj):
         if 'type{decimal}' in obj:
             try:
                 return decimal.Decimal(obj['type{decimal}'])
@@ -38,7 +38,7 @@ class CommonJSONEncoder(_json.JSONEncoder):
     json.dumps(myString, cls=CommonJSONEncoder)
     """
 
-    def default(self, obj):     # pylint: disable=method-hidden
+    def default(self, obj):
 
         if isinstance(obj, decimal.Decimal):
             return {'type{decimal}': str(obj)}
@@ -66,7 +66,7 @@ def _load(*args, **kwargs):
     return _json.load(*args, **kwargs)
 
 
-class json(object): # pylint: disable=too-few-public-methods
+class json(object):
     dumps = _dumps
     loads = _loads
     dump = _dump

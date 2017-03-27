@@ -25,7 +25,7 @@ for target_field, source_fields in fields.items():
     if source_fields is not None:
         for source_field in source_fields:
             if source_field in field_mapping:
-                raise RuntimeError('Duplicate appearance of %s' % source_field)
+                raise RuntimeError('Duplicate appearance of %s (%r)' % (source_field, field_mapping))
             field_mapping[source_field] = target_field
 
     if target_field in field_mapping:
@@ -114,5 +114,6 @@ def new_resource_iterator(resource_iterator_):
             yield concatenator(resource_chain)
         else:
             yield resource_
+
 
 spew(datapackage, new_resource_iterator(resource_iterator))

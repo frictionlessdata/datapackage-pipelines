@@ -8,7 +8,7 @@ import cachetools
 from datapackage_pipelines.wrapper import ingest, spew
 from datapackage_pipelines.utilities.extended_json import json
 
-# pylint: disable=too-few-public-methods
+
 class KeyCalc(object):
 
     def __init__(self, key_spec):
@@ -55,7 +55,7 @@ class DB(object):
             yield key
 
 
-class CachedDB(cachetools.LRUCache):  # pylint: disable=too-many-ancestors
+class CachedDB(cachetools.LRUCache):
 
     def __init__(self):
         super(CachedDB, self).__init__(1024, self._dbget)
@@ -89,6 +89,7 @@ db = CachedDB()
 
 def identity(x):
     return x
+
 
 Aggregator = collections.namedtuple('Aggregator',
                                     ['func', 'finaliser', 'dataType'])
@@ -244,7 +245,7 @@ def process_target_resource(source_spec, resource):
             source_field = \
                 next(filter(lambda f, spec_=spec:
                             f['name'] == spec_['name'],
-                            source_spec['schema']['fields']))  # pylint: disable=unsubscriptable-object
+                            source_spec['schema']['fields']))
             data_type = source_field['type']
         target_fields.append({
             'name': field,

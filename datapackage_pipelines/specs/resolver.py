@@ -1,6 +1,8 @@
 import logging
 import os
 
+from .errors import SpecError
+
 PROCESSOR_PATH = os.environ.get('DPP_PROCESSOR_PATH', '').split(';')
 
 
@@ -40,8 +42,9 @@ def load_module(module):
         pass
 
 
-def resolve_executor(executor, path):
+def resolve_executor(step, path, errors):
 
+    executor = step['run']
     back_up, parts = convert_dot_notation(executor)
     resolvers = [find_file_in_path([path])]
     if not back_up:
@@ -64,8 +67,9 @@ def resolve_executor(executor, path):
         if location is not None:
             return location
 
-    raise FileNotFoundError("Couldn't resolve {0} at {1}"
-                            .format(executor, path))
+    message = "Couldn't resolve {0} at {1}".format(executor, path)
+    errors.append(SpecError('Unresolved processor', message))
+
 
 resolved_generators = {}
 

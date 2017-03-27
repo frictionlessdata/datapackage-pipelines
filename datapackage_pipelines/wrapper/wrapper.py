@@ -10,6 +10,7 @@ from .input_processor import process_input
 def processor():
     return "%-32s" % os.path.basename(sys.argv[0]).split('.')[0].title()
 
+
 logging.basicConfig(level=logging.DEBUG,
                     format="%(levelname)-8s:"+processor()+":%(message)s")
 
@@ -19,8 +20,8 @@ first = True
 
 
 def ingest(debug=False):
-    global cache  # pylint: disable=global-statement
-    global first  # pylint: disable=global-statement
+    global cache
+    global first
     params = None
     validate = False
     if len(sys.argv) > 4:
@@ -36,7 +37,6 @@ def ingest(debug=False):
     return params, datapackage, resource_iterator
 
 
-# pylint: disable=too-many-branches
 def spew(dp, resources_iterator, stats=None):
     files = [sys.stdout]
 
@@ -106,7 +106,7 @@ def spew(dp, resources_iterator, stats=None):
     if len(cache) > 0:
         os.rename(cache_filename+'.ongoing', cache_filename)
 
-# pylint: disable=too-many-arguments
+
 def generic_process_resource(rows,
                              spec,
                              resource_index,

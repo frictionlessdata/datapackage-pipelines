@@ -86,7 +86,6 @@ class PipelineStatus(object):
         })
         self.save()
 
-    # pylint: disable=too-many-arguments
     def set_idle(self, success,
                  log=None, cache_hash=None, stats=None, force=False):
         if self.data['state'] not in {'RUNNING'}:
@@ -197,5 +196,6 @@ class StatusManager(object):
 
     def all_statuses(self):
         return self.backend.all_statuses()
+
 
 status = StatusManager(os.environ.get('DPP_REDIS_HOST'))

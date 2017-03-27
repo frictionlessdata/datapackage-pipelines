@@ -1,9 +1,10 @@
 import logging
+
 import click
 
+from .specs import pipelines, register_all_pipelines
+from .status import status
 from .manager import execute_pipeline, finalize
-from .manager.status import status
-from .manager.specs import pipelines
 
 
 @click.group(invoke_without_command=True)
@@ -11,13 +12,14 @@ from .manager.specs import pipelines
 def cli(ctx):
     if ctx.invoked_subcommand is None:
         click.echo('Available Pipelines:')
-        for pipeline_id, _, _, dirty, errors in pipelines():
+        for spec in pipelines():
             click.echo('- {} {}{}'
-                       .format(pipeline_id,
-                               '(*)' if dirty else '',
-                               '(E)' if len(errors) > 0 else ''))
-            for short, long in errors:
-                click.echo('\t{}: {}'.format(short, long))
+                       .format(spec.pipeline_id,
+                               '(*)' if spec.dirty else '',
+                               '(E)' if len(spec.errors) > 0 else ''))
+            for error in spec.errors:
+                click.echo('\t{}: {}'.format(error.short_msg,
+                                             error.long_msg))
 
 
 @cli.command()
@@ -27,24 +29,21 @@ def serve():
     app.run(host='0.0.0.0', debug=True, port=5000)
 
 
-# pylint: disable=too-many-arguments
-def execute_if_needed(argument, pipeline_id, pipeline_details,
-                      dirty, errors,
-                      pipeline_cwd, use_cache):
-    if len(errors) != 0:
+def execute_if_needed(argument, spec, use_cache):
+    if len(spec.errors) != 0:
         return None, False
-    if ((argument == pipeline_id) or
+    if ((argument == spec.pipeline_id) or
             (argument == 'all') or
-            (argument == 'dirty' and dirty)):
+            (argument == 'dirty' and spec.dirty)):
         success, stats = \
-            execute_pipeline(pipeline_id,
-                             pipeline_details.get('pipeline', []),
-                             pipeline_cwd,
+            execute_pipeline(spec.pipeline_id,
+                             spec.pipeline_details.get('pipeline', []),
+                             spec.path,
                              use_cache=use_cache)
         stop = False
-        if pipeline_id == argument:
+        if spec.pipeline_id == argument:
             stop = True
-        return (pipeline_id, success, stats), stop
+        return (spec.pipeline_id, success, stats), stop
     return None, False
 
 
@@ -55,26 +54,22 @@ def run(pipeline_id, use_cache):
     """Run a pipeline by pipeline-id.
 Use 'all' for running all pipelines,
 or 'dirty' for running just the dirty ones."""
-    try: # pylint: disable=too-many-nested-blocks
+    register_all_pipelines()
+    try:
         results = []
         executed = set()
         modified = 1
         while modified > 0:
             modified = 0
-            for pipeline in pipelines():
-                _pipeline_id, pipeline_details, \
-                    pipeline_cwd, dirty, errors = pipeline
+            for spec in pipelines():
 
-                if _pipeline_id in executed:
+                if spec.pipeline_id in executed:
                     continue
 
                 ret, stop = \
-                    execute_if_needed(pipeline_id, _pipeline_id,
-                                      pipeline_details,
-                                      dirty, errors,
-                                      pipeline_cwd, use_cache)
+                    execute_if_needed(pipeline_id, spec, use_cache)
                 if ret is not None:
-                    executed.add(_pipeline_id)
+                    executed.add(spec.pipeline_id)
                     modified += 1
                     results.append(ret)
 
@@ -99,3 +94,7 @@ or 'dirty' for running just the dirty ones."""
 def init():
     """Reset the status of all pipelines"""
     status.initialize()
+
+
+if __name__ == "__main__":
+    cli()

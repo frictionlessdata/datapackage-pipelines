@@ -1,7 +1,7 @@
 import re
 
 
-class ResourceMatcher(object): # pylint: disable=too-few-public-methods
+class ResourceMatcher(object):
 
     def __init__(self, resources):
         self.resources = resources

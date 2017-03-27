@@ -1,14 +1,13 @@
+import asyncio
+import logging
 import os
 import sys
-from json.decoder import JSONDecodeError
-import logging
-
-import asyncio
 from concurrent.futures import CancelledError
+from json.decoder import JSONDecodeError
 
+from datapackage_pipelines.specs.specs import resolve_executor
+from datapackage_pipelines.status import status
 from ..utilities.extended_json import json
-from .status import status
-from .specs import resolve_executor
 
 runner = '%-32s' % 'Main'
 logging.basicConfig(level=logging.DEBUG,
@@ -24,7 +23,7 @@ async def enqueue_errors(step, process, queue):
             break
         line = line.decode('utf8').rstrip()
         if len(line) != 0:
-            logging.info("%s: %s", step['name'], line)
+            logging.info("%s: %s", step['run'], line)
             await queue.put(line)
 
 
@@ -89,6 +88,7 @@ def create_process(args, cwd, wfd, rfd):
                                          cwd=cwd)
     return ret
 
+
 async def process_death_waiter(process):
     return_code = await process.wait()
     return process, return_code
@@ -108,7 +108,7 @@ def find_caches(pipeline_steps, pipeline_cwd):
             pipeline_steps = pipeline_steps[i+1:]
             cache_loader = resolve_executor('cache_loader', '.')
             step = {
-                'run': cache_loader,
+                'executor': cache_loader,
                 'parameters': {
                     'load-from': cache_filename
                 }
@@ -135,7 +135,7 @@ async def construct_process_pipeline(pipeline_steps, pipeline_cwd, errors):
         logging.info("- %s", step['run'])
         args = [
             sys.executable,
-            step['run'],
+            step['executor'],
             str(i),
             json.dumps(step.get('parameters', {})),
             str(step.get('validate', False)),
@@ -174,7 +174,6 @@ async def construct_process_pipeline(pipeline_steps, pipeline_cwd, errors):
                         error_aggregator)
 
 
-# pylint: disable=too-many-locals
 async def async_execute_pipeline(pipeline_id,
                                  pipeline_steps,
                                  pipeline_cwd,
@@ -266,7 +265,7 @@ def execute_pipeline(pipeline_id,
         return loop.run_until_complete(pipeline_task)
     except KeyboardInterrupt:
         logging.info("Caught keyboard interrupt. Cancelling tasks...")
-        pipeline_task.cancel() # pylint: disable=no-member
+        pipeline_task.cancel()
         loop.run_forever()
         logging.info("Caught keyboard interrupt. DONE!")
         raise KeyboardInterrupt()

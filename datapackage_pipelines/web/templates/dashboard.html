@@ -111,7 +111,7 @@
                                     <i class="glyphicon glyphicon-info-sign"
                                        data-toggle="tooltip" data-placement="right" data-html="true"
                                        data-container="body"
-                                       data-title="<pre style='font-size:70%'>{{ yamlize(status.stats)}}</pre>"></i>
+                                       data-title="<pre style='font-size:70%'>{{ yamlize(status.get('stats', {}))}}</pre>"></i>
                                     <a href="#anchor-{{status.slug}}">
                                         {{ status.id.split('/')[-1] }}
                                     </a>

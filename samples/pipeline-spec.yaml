@@ -10,6 +10,8 @@ worldbank-co2-emissions-2:
         title: 'CO2 emissions (metric tons per capita)'
         homepage: 'http://worldbank.org/'
 worldbank-co2-emissions:
+  schedule:
+    crontab: '0 * * * *'
   pipeline:
     -
       run: add_metadata

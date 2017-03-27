@@ -1,24 +1,30 @@
 import logging
 
+from datapackage_pipelines.status import status
 from .celery_app import celery_app
-
-from ..manager import pipelines
+from ..specs import pipelines
 from ..manager.tasks import execute_pipeline
-from ..manager.status import status
 
 
-def trigger_dirties(run_all=False):
-    for pipeline_id, pipeline_details, pipeline_cwd, dirty, errors \
-            in pipelines():
-        if dirty and len(errors) == 0 and \
-                (run_all or status.is_waiting(pipeline_id)):
+def trigger_dirties(completed=None):
+    for spec in pipelines():
+        pipeline_id = spec.pipeline_id
+        if (len(spec.errors) == 0 and
+                (completed is None or completed in spec.dependencies) and
+                (spec.dirty or status.is_waiting(pipeline_id))):
+            status.register(spec.pipeline_id,
+                            spec.cache_hash,
+                            spec.pipeline_details,
+                            spec.source_details,
+                            spec.errors)
             logging.info('Executing DIRTY task %s', pipeline_id)
             pipeline_status = status.queued(pipeline_id)
             execute_pipeline_task.delay(pipeline_id,
-                                        pipeline_details['pipeline'],
-                                        pipeline_cwd,
+                                        spec.pipeline_details['pipeline'],
+                                        spec.path,
                                         'dirty-task',
                                         pipeline_status.data['queued'])
+
 
 @celery_app.task
 def execute_pipeline_task(pipeline_id,
@@ -36,5 +42,5 @@ def execute_pipeline_task(pipeline_id,
                              trigger,
                              False)
 
-#        if success:
-#            trigger_dirties()
+        if success:
+            trigger_dirties(pipeline_id)
