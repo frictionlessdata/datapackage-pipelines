@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "required": [
+    "pipeline"
+  ],
+  "properties": {
+    "schedule": {
+      "type": "object",
+      "properties": {
+        "crontab": {
+          "type": "string"
+        }
+      }
+    },
+    "pipeline": {
+      "type": "array",
+      "minLength": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "run"
+        ],
+        "properties": {
+          "run": {
+            "type": "string"
+          },
+          "parameters": {
+            "type": "object"
+          },
+          "cache": {
+            "type": "boolean"
+          },
+          "validate": {
+            "type": "booelan"
+          }
+        }
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "maxProperties": 1,
+        "properties": {
+          "datapackage": {
+            "type": "string",
+            "format": "uri"
+          },
+          "pipeline": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -38,7 +38,7 @@ INSTALL_REQUIRES = [
     'cachetools'
 ]
 LINT_REQUIRES = [
-    'pylint',
+    'pylama',
 ]
 TESTS_REQUIRE = [
     'tox',

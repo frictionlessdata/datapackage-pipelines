@@ -1,8 +1,8 @@
 import sqlite3
-from ...utilities.extended_json import json
+from datapackage_pipelines.utilities.extended_json import json
 
 
-class Sqlite3Dict(object):  # pylint: disable=too-few-public-methods
+class Sqlite3Dict(object):
     def __init__(self, filename):
         self.filename = filename
         conn = sqlite3.connect(self.filename)

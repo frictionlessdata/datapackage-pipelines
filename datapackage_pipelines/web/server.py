@@ -1,13 +1,12 @@
 import datetime
 
+import slugify
+import yaml
 from flask import Flask, render_template, abort, redirect
 from flask_cors import CORS
 from flask_jsonpify import jsonify
 
-import yaml
-import slugify
-
-from ..manager.status import status
+from datapackage_pipelines.status import status
 
 app = Flask(__name__)
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
@@ -36,7 +35,7 @@ def main():
                              'RUNNING': 'warning',
                              'SUCCEEDED': 'success',
                              'FAILED': 'danger'
-                            }[pipeline.get('state', 'INIT')]
+                             }[pipeline.get('state', 'INIT')]
 
         pipeline['slug'] = slugify.slugify(pipeline['id'])
 

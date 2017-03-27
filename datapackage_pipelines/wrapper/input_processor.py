@@ -9,7 +9,6 @@ from jsontableschema.model import SchemaModel
 from ..utilities.extended_json import json
 
 
-# pylint: disable=too-few-public-methods, too-many-arguments
 class ResourceIterator(object):
 
     def __init__(self, infile, spec, orig_spec,
@@ -74,7 +73,7 @@ def process_input(infile, validate=False, debug=False):
     schema = datapackage.schema.Schema(profile)
     schema.validate(dp)
 
-    _ = infile.readline().strip()
+    infile.readline().strip()
 
     def resources_iterator(_resources, _original_resources):
         # we pass a resource instance that may be changed by the processing

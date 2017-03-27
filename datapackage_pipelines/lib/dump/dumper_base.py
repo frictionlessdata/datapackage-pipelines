@@ -30,7 +30,6 @@ class DumperBase(object):
         self.handle_datapackage(self.__datapackage, self.__params, self.stats)
         self.finalize()
 
-    # pylint: disable=no-self-use
     def prepare_datapackage(self, datapackage, _):
         return datapackage
 
@@ -97,7 +96,6 @@ class DumperBase(object):
     def initialize(self, params):
         pass
 
-    # pylint: disable=no-self-use
     def finalize(self):
         pass
 

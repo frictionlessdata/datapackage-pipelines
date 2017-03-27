@@ -17,12 +17,11 @@ class SQLDumper(DumperBase):
             assert engine is not None, \
                 "Couldn't connect to DB - " \
                 "Please set your '%s' environment variable" % env_var
-        self.engine = create_engine(engine)  # pylint: disable=attribute-defined-outside-init
+        self.engine = create_engine(engine)
 
         for k, v in table_to_resource.items():
             v['table-name'] = k
 
-        # pylint: disable=attribute-defined-outside-init
         self.converted_resources = \
             dict((v['resource-name'], v) for v in table_to_resource.values())
         self.mode = parameters.get('mode', 'rewrite')
@@ -47,5 +46,6 @@ class SQLDumper(DumperBase):
             return storage.write('', resource,
                                  keyed=True, as_generator=True,
                                  update_keys=update_keys)
+
 
 SQLDumper()()

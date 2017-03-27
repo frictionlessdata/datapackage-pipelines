@@ -8,7 +8,7 @@ class PathDumper(CSVDumper):
 
     def initialize(self, params):
         super(PathDumper, self).initialize(params)
-        self.out_path = params.get('out-path', '.')   # pylint: disable=attribute-defined-outside-init
+        self.out_path = params.get('out-path', '.')
         PathDumper.__makedirs(self.out_path)
 
     def write_file_to_output(self, filename, path):
@@ -23,5 +23,6 @@ class PathDumper(CSVDumper):
     def __makedirs(path):
         if not os.path.exists(path):
             os.makedirs(path)
+
 
 PathDumper()()

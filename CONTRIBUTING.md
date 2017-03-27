@@ -19,14 +19,14 @@ To lint the project codebase:
 $ make lint
 ```
 
-Under the hood `pylint` configured in `pylintrc` is used. On this stage it's already
+Under the hood `pylama` configured in `pylama.ini` is used. On this stage it's already
 installed into your environment and could be used separately with more fine-grained control
 as described in documentation - https://www.pylint.org/.
 
 For example to check only errors:
 
 ```
-$ pylint -E <path>
+$ pylanma
 ```
 
 ## Testing

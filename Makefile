@@ -14,7 +14,7 @@ list:
 	@grep '^\.PHONY' Makefile | cut -d' ' -f2- | tr ' ' '\n'
 
 lint:
-	pylint $(PACKAGE)
+	pylama $(PACKAGE)
 
 release:
 	bash -c '[[ -z `git status -s` ]]'

@@ -50,7 +50,7 @@ def process_resource(spec, rows):
         flattened_row = [row.get(name) for name in field_names]
         try:
             flattened_row = jts.cast_row(flattened_row)
-        except:
+        except Exception:
             logging.error('Failed to cast row %r', flattened_row)
             raise
         row = dict(zip(field_names, flattened_row))
@@ -64,6 +64,7 @@ def process_resources(resource_iterator_):
             yield resource
         else:
             yield process_resource(spec, resource)
+
 
 process_datapackage(datapackage)
 
