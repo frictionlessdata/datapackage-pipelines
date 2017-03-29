@@ -103,7 +103,7 @@ class DumperBase(object):
 PYTHON_DIALECT = {
     'number': {
         'decimalChar': '.',
-        'groupChar': None
+        'groupChar': ''
     },
     'date': {
         'format': 'fmt:%Y-%m-%d'
