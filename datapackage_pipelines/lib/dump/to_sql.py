@@ -1,4 +1,5 @@
 import os
+import logging
 from jsontableschema_sql import Storage
 from sqlalchemy import create_engine
 
@@ -37,12 +38,15 @@ class SQLDumper(DumperBase):
             if self.mode == 'rewrite' and '' in storage.buckets:
                 storage.delete('')
             if '' not in storage.buckets:
+                logging.info('Creating DB table %s', table_name)
                 storage.create('', spec['schema'])
             update_keys = None
             if self.mode == 'update':
                 update_keys = parameters.get('update_keys')
                 if update_keys is None:
                     update_keys = spec['schema'].get('primaryKey', [])
+            logging.info('Writing to DB %s -> %s (mode=%s, keys=%s)',
+                         resource_name, table_name, self.mode, update_keys)
             return storage.write('', resource,
                                  keyed=True, as_generator=True,
                                  update_keys=update_keys)
