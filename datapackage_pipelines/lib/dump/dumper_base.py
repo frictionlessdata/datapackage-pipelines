@@ -100,6 +100,28 @@ class DumperBase(object):
         pass
 
 
+PYTHON_DIALECT = {
+    'number': {
+        'decimalChar': '.',
+        'groupChar': None
+    },
+    'date': {
+        'format': 'fmt:%Y-%m-%d'
+    },
+    'time': {
+        'format': 'fmt:%H:%M:%S.%f'
+    },
+    'datetime': {
+        'format': '%Y-%m-%d %H:%M:%S.%f'
+    },
+}
+
+SERIALIZERS = {
+    'array': json.dumps,
+    'object': json.dumps,
+}
+
+
 class CSVDumper(DumperBase):
 
     def prepare_datapackage(self, datapackage, params):
@@ -111,6 +133,7 @@ class CSVDumper(DumperBase):
             resource['encoding'] = 'utf-8'
             basename, _ = os.path.splitext(resource['path'])
             resource['path'] = basename + '.csv'
+            resource['format'] = 'csv'
             resource['dialect'] = dict(
                 lineTerminator='\r\n',
                 delimiter=',',
@@ -118,6 +141,9 @@ class CSVDumper(DumperBase):
                 quoteChar='"',
                 skipInitialSpace=False
             )
+            for field in resource.get('schema', {}).get('fields', []):
+                field.update(PYTHON_DIALECT.get(field['type'], {}))
+
         return datapackage
 
     def handle_datapackage(self, datapackage, parameters, stats):
@@ -158,10 +184,11 @@ class CSVDumper(DumperBase):
                                    fields)
 
     @staticmethod
-    def __transform_value(value, _):
+    def __transform_value(value, field_type):
         if value is None:
             return ''
-        return str(value)
+        serializer = SERIALIZERS.get(field_type, str)
+        return serializer(value)
 
     @staticmethod
     def __transform_row(row, fields):
