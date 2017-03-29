@@ -25,7 +25,6 @@ class SQLDumper(DumperBase):
 
         self.converted_resources = \
             dict((v['resource-name'], v) for v in table_to_resource.values())
-        self.mode = parameters.get('mode', 'rewrite')
 
     def handle_resource(self, resource, spec, parameters, datapackage):
         resource_name = spec['name']
@@ -33,20 +32,21 @@ class SQLDumper(DumperBase):
             return resource
         else:
             converted_resource = self.converted_resources[resource_name]
+            mode = converted_resource.get('mode', 'rewrite')
             table_name = converted_resource['table-name']
             storage = Storage(self.engine, prefix=table_name)
-            if self.mode == 'rewrite' and '' in storage.buckets:
+            if mode == 'rewrite' and '' in storage.buckets:
                 storage.delete('')
             if '' not in storage.buckets:
                 logging.info('Creating DB table %s', table_name)
                 storage.create('', spec['schema'])
             update_keys = None
-            if self.mode == 'update':
-                update_keys = parameters.get('update_keys')
+            if mode == 'update':
+                update_keys = converted_resource.get('update_keys')
                 if update_keys is None:
                     update_keys = spec['schema'].get('primaryKey', [])
             logging.info('Writing to DB %s -> %s (mode=%s, keys=%s)',
-                         resource_name, table_name, self.mode, update_keys)
+                         resource_name, table_name, mode, update_keys)
             return storage.write('', resource,
                                  keyed=True, as_generator=True,
                                  update_keys=update_keys)
