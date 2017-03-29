@@ -36,9 +36,7 @@ def execute_if_needed(argument, spec, use_cache):
             (argument == 'all') or
             (argument == 'dirty' and spec.dirty)):
         success, stats = \
-            execute_pipeline(spec.pipeline_id,
-                             spec.pipeline_details.get('pipeline', []),
-                             spec.path,
+            execute_pipeline(spec,
                              use_cache=use_cache)
         stop = False
         if spec.pipeline_id == argument:

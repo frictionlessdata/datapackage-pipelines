@@ -247,18 +247,16 @@ async def async_execute_pipeline(pipeline_id,
     return success, stats
 
 
-def execute_pipeline(pipeline_id,
-                     pipeline_steps,
-                     pipeline_cwd,
+def execute_pipeline(spec,
                      trigger='manual',
                      use_cache=True):
 
     loop = asyncio.get_event_loop()
 
     pipeline_task = \
-        asyncio.ensure_future(async_execute_pipeline(pipeline_id,
-                                                     pipeline_steps,
-                                                     pipeline_cwd,
+        asyncio.ensure_future(async_execute_pipeline(spec.pipeline_id,
+                                                     spec.pipeline_details.get('pipeline', []),
+                                                     spec.path,
                                                      trigger,
                                                      use_cache))
     try:

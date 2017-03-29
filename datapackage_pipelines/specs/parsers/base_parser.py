@@ -25,6 +25,9 @@ class PipelineSpec(object):
             .format(self.pipeline_id, self.dirty, self.errors,
                     self.dependencies, self.cache_hash)
 
+    def __repr__(self):
+        return str(self)
+
 
 class BaseParser(object):
 

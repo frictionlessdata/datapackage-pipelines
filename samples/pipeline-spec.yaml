@@ -1,14 +1,3 @@
-worldbank-co2-emissions-2:
-  dependencies:
-    - pipeline: ./worldbank-co2-emissions
-    - datapackage: co2-emisonss-wb/datapackage.json
-  pipeline: 
-   -
-      run: add_metadata
-      parameters:
-        name: 'co2-emissions'
-        title: 'CO2 emissions (metric tons per capita)'
-        homepage: 'http://worldbank.org/'
 worldbank-co2-emissions:
   schedule:
     crontab: '0 * * * *'
@@ -55,3 +44,14 @@ worldbank-co2-emissions:
             co2_emisonss_wb:
               resource-name: global-data
 
+worldbank-co2-emissions-2:
+  dependencies:
+    - pipeline: ./worldbank-co2-emissions
+    - datapackage: co2-emisonss-wb/datapackage.json
+  pipeline: 
+   -
+      run: add_metadata
+      parameters:
+        name: 'co2-emissions'
+        title: 'CO2 emissions (metric tons per capita)'
+        homepage: 'http://worldbank.org/'

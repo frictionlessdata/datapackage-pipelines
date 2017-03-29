@@ -31,6 +31,7 @@ dump.to_zip
             "name": "my-spiffy-resource",
             "path": "data/my-data.csv",
             "encoding": "utf-8",
+            "format": "csv",
             "dialect": {
                 "delimiter": ",",
                 "doubleQuote": true,
@@ -42,8 +43,8 @@ dump.to_zip
                 "fields": [
                     {"name": "mystring", "type": "string"},
                     {"name": "myinteger", "type": "integer"},
-                    {"name": "mynumber", "type": "number"},
-                    {"name": "mydate", "type": "date"}
+                    {"name": "mynumber", "type": "number", "groupChar": null, "decimalChar": "."},
+                    {"format": "fmt:%Y-%m-%d", "name": "mydate", "type": "date"}
                 ]
             }
         }

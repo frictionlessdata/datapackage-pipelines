@@ -18,7 +18,7 @@ for spec in pipelines():
             'task': TASK_NAME,
             'schedule': crontab(*spec.schedule),
             'args': (spec.pipeline_id,
-                     spec.pipeline_details['pipeline'],
+                     spec.pipeline_details,
                      spec.path,
                      'schedule',
                      0)
