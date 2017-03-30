@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import os
-import sys
 from concurrent.futures import CancelledError
 from json.decoder import JSONDecodeError
 
@@ -9,9 +8,11 @@ from datapackage_pipelines.specs.specs import resolve_executor
 from datapackage_pipelines.status import status
 from ..utilities.extended_json import json
 
-runner = '%-32s' % 'Main'
+from .runners import runner_config
+
+own_name = '%-32s' % 'Main'
 logging.basicConfig(level=logging.DEBUG,
-                    format="%(levelname)-8s:"+runner+":%(message)s")
+                    format="%(levelname)-8s:"+own_name+":%(message)s")
 logging.root.setLevel(logging.DEBUG)
 
 
@@ -133,14 +134,8 @@ async def construct_process_pipeline(pipeline_steps, pipeline_cwd, errors):
         new_rfd, wfd = os.pipe()
 
         logging.info("- %s", step['run'])
-        args = [
-            sys.executable,
-            step['executor'],
-            str(i),
-            json.dumps(step.get('parameters', {})),
-            str(step.get('validate', False)),
-            step.get('_cache_hash') if step.get('cache') else ''
-        ]
+        runner = runner_config.get_runner(step.get('runner'))
+        args = runner.get_execution_args(step, pipeline_cwd, i)
         process = await create_process(args, pipeline_cwd, wfd, rfd)
         process.args = args[1]
         if wfd is not None:
