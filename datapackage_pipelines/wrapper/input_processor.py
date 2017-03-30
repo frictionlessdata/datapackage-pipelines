@@ -79,6 +79,7 @@ def process_input(infile, validate=False, debug=False):
         # we pass a resource instance that may be changed by the processing
         # code, so we must keep a copy of the original resource (used to
         # validate incoming data)
+        ret = []
         for resource, orig_resource in zip(_resources, _original_resources):
             if 'path' not in resource:
                 continue
@@ -86,6 +87,7 @@ def process_input(infile, validate=False, debug=False):
             res_iter = ResourceIterator(infile,
                                         resource, orig_resource,
                                         validate, debug)
-            yield res_iter
+            ret.append(res_iter)
+        return iter(ret)
 
     return dp, resources_iterator(resources, original_resources)

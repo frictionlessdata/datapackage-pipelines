@@ -28,4 +28,3 @@ class RunnerConfiguration(object):
         kind = runner_config.get('kind')
         parameters = runner_config.get('parameters')
         return self.get_runner_class(kind)(name, parameters)
-

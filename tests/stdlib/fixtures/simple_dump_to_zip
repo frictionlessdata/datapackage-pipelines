@@ -43,7 +43,7 @@ dump.to_zip
                 "fields": [
                     {"name": "mystring", "type": "string"},
                     {"name": "myinteger", "type": "integer"},
-                    {"name": "mynumber", "type": "number", "groupChar": null, "decimalChar": "."},
+                    {"name": "mynumber", "type": "number", "groupChar": "", "decimalChar": "."},
                     {"format": "fmt:%Y-%m-%d", "name": "mydate", "type": "date"}
                 ]
             }
