@@ -24,6 +24,11 @@ class CommonJSONDecoder(_json.JSONDecoder):
                     .date()
             except ValueError:
                 pass
+        if 'type{set}' in obj:
+            try:
+                return set(obj['type{set}'])
+            except ValueError:
+                pass
 
         return obj
 
@@ -44,6 +49,8 @@ class CommonJSONEncoder(_json.JSONEncoder):
             return {'type{decimal}': str(obj)}
         elif isinstance(obj, datetime.date):
             return {'type{date}': str(obj)}
+        elif isinstance(obj, set):
+            return {'type{set}': list(obj)}
 
 
 def _dumps(*args, **kwargs):
