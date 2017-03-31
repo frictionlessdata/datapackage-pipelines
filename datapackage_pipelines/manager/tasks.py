@@ -107,13 +107,13 @@ def find_caches(pipeline_steps, pipeline_cwd):
         if os.path.exists(cache_filename):
             logging.info('Found cache for step %d: %s', i, step['run'])
             pipeline_steps = pipeline_steps[i+1:]
-            cache_loader = resolve_executor('cache_loader', '.')
             step = {
-                'executor': cache_loader,
+                'run': 'cache_loader',
                 'parameters': {
-                    'load-from': cache_filename
+                    'load-from': os.path.join('.cache', step['_cache_hash'])
                 }
             }
+            step['executor'] = resolve_executor(step, '.', [])
             pipeline_steps.insert(0, step)
             break
 
