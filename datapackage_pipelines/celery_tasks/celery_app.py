@@ -5,25 +5,26 @@ from celery.schedules import crontab
 
 from datapackage_pipelines.specs import pipelines, register_all_pipelines
 
-TASK_NAME = 'datapackage_pipelines.celery_tasks.celery_tasks' + \
-                '.execute_pipeline_task'
+import logging
+
+REGULAR_TASK_NAME = 'datapackage_pipelines.celery_tasks.celery_tasks' + \
+                        '.execute_pipeline_task'
+SCHEDULED_TASK_NAME = 'datapackage_pipelines.celery_tasks.celery_tasks' + \
+                        '.execute_scheduled_pipeline'
 
 CELERY_SCHEDULE = {}
 
 register_all_pipelines()
 
 for spec in pipelines():
-    if len(spec.errors) == 0 and spec.schedule is not None:
+    if spec.schedule is not None:
         entry = {
-            'task': TASK_NAME,
+            'task': SCHEDULED_TASK_NAME,
             'schedule': crontab(*spec.schedule),
-            'args': (spec.pipeline_id,
-                     spec.pipeline_details,
-                     spec.path,
-                     'schedule',
-                     0)
+            'args': (spec.pipeline_id,)
         }
         CELERY_SCHEDULE[spec.pipeline_id] = entry
+        logging.info('SCHEDULING task %r: %r', spec.pipeline_id, spec.schedule)
 
 celery_app = Celery('dpp')
 celery_app.conf.update(CELERYBEAT_SCHEDULE=CELERY_SCHEDULE,
@@ -37,5 +38,6 @@ celery_app.conf.update(CELERYBEAT_SCHEDULE=CELERY_SCHEDULE,
                        CELERY_RESULT_SERIALIZER='json',
                        CELERY_ACCEPT_CONTENT=['json'],
                        CELERY_ROUTES={
-                           TASK_NAME: {'queue': 'datapackage-pipelines'},
+                           REGULAR_TASK_NAME: {'queue': 'datapackage-pipelines'},
+                           SCHEDULED_TASK_NAME: {'queue': 'datapackage-pipelines'},
                        })

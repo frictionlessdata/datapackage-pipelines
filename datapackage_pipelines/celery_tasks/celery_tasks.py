@@ -27,6 +27,27 @@ def trigger_dirties(completed=None):
 
 
 @celery_app.task
+def execute_scheduled_pipeline(pipeline_id):
+    for spec in pipelines():
+        if spec.pipeline_id == pipeline_id:
+            if len(spec.errors) == 0:
+                status.register(spec.pipeline_id,
+                                spec.cache_hash,
+                                spec.pipeline_details,
+                                spec.source_details,
+                                spec.errors)
+                logging.info('Executing SCHEDULED task %s', pipeline_id)
+                execute_pipeline_task.delay(pipeline_id,
+                                            spec.pipeline_details,
+                                            spec.path,
+                                            'scheduled',
+                                            0)
+            else:
+                logging.warning('Skipping SCHEDULED task %s, as it has errors %r', pipeline_id, spec.errors)
+            break
+
+
+@celery_app.task
 def execute_pipeline_task(pipeline_id,
                           pipeline_details,
                           pipeline_cwd,
