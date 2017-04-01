@@ -6,12 +6,14 @@ from ..specs import pipelines, PipelineSpec
 from ..manager.tasks import execute_pipeline
 
 
-def trigger_dirties(completed=None):
+def trigger_dirties(completed=None, trigger=None):
     for spec in pipelines():
         pipeline_id = spec.pipeline_id
         if (len(spec.errors) == 0 and
                 (completed is None or completed in spec.dependencies) and
-                (spec.dirty or status.is_waiting(pipeline_id))):
+                (spec.dirty or
+                 status.is_waiting(pipeline_id) or
+                 trigger == 'schedule')):
             status.register(spec.pipeline_id,
                             spec.cache_hash,
                             spec.pipeline_details,
@@ -22,7 +24,7 @@ def trigger_dirties(completed=None):
             execute_pipeline_task.delay(pipeline_id,
                                         spec.pipeline_details,
                                         spec.path,
-                                        'dirty-task',
+                                        'dirty-task' if trigger is None else trigger,
                                         pipeline_status.data['queued'])
 
 
@@ -65,4 +67,4 @@ def execute_pipeline_task(pipeline_id,
                              False)
 
         if success:
-            trigger_dirties(pipeline_id)
+            trigger_dirties(pipeline_id, trigger)
