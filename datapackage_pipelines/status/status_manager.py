@@ -160,8 +160,16 @@ class PipelineStatus(object):
 class StatusManager(object):
 
     def __init__(self, host=None, port=6379):
-        redis = RedisBackend(host, port)
-        self.backend = redis if redis.is_init() else SqliteBackend()
+        self._host = host
+        self._port = port
+        self._backend = None
+
+    @property
+    def backend(self):
+        if self._backend is None:
+            redis = RedisBackend(self._host, self._port)
+            self._backend = redis if redis.is_init() else SqliteBackend()
+        return self._backend
 
     def is_running(self, _id):
         return PipelineStatus(self.backend, _id).check_running()

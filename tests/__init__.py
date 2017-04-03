@@ -1,0 +1,1 @@
+from datapackage_pipelines.manager.logging_config import logging

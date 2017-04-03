@@ -1,6 +1,6 @@
-import logging
-
 import click
+
+from .manager.logging_config import logging
 
 from .specs import pipelines, register_all_pipelines
 from .status import status

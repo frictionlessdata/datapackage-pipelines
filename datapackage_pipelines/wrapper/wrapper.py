@@ -7,12 +7,8 @@ from ..utilities.extended_json import json
 from .input_processor import process_input
 
 
-def processor():
-    return "%-32s" % os.path.basename(sys.argv[0]).split('.')[0].title()
-
-
 logging.basicConfig(level=logging.DEBUG,
-                    format="%(levelname)-8s:"+processor()+":%(message)s")
+                    format="%(levelname)-8s:%(message)s")
 
 
 cache = ''

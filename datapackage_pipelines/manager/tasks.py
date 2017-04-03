@@ -10,11 +10,6 @@ from ..utilities.extended_json import json
 
 from .runners import runner_config
 
-own_name = '%-32s' % 'Main'
-logging.basicConfig(level=logging.DEBUG,
-                    format="%(levelname)-8s:"+own_name+":%(message)s")
-logging.root.setLevel(logging.DEBUG)
-
 
 async def enqueue_errors(step, process, queue):
     out = process.stderr
