@@ -19,7 +19,8 @@ async def enqueue_errors(step, process, queue):
             break
         line = line.decode('utf8').rstrip()
         if len(line) != 0:
-            logging.info("%s: %s", step['run'], line)
+            line = "{}: {}".format(step['run'], line)
+            logging.info(line)
             await queue.put(line)
 
 
