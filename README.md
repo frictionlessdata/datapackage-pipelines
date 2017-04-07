@@ -105,7 +105,7 @@ INFO :Main:SUCCESS: ./worldbank-co2-emissions
 					{'dataset-name': 'co2-emissions', 'total_row_count': 264}
 ```
 
-(Requirements: _Python 3.5_ or higher)
+(Requirements: _Python 3.6_ or higher)
 
 Alternatively, you could use our docker image:
 
