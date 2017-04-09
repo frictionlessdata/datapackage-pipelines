@@ -2,11 +2,14 @@ import tabulator.parsers.csv
 import tabulator.config
 
 
-# a tabulator parser which allows to parse non-tabular textual data - by splitting it into rows with a single data column
+#
 class TabulatorTxtParser(tabulator.parsers.csv.CSVParser):
+    """
+    A custom Tabulator parser which allows to parse non-tabular textual data (e.g. Html).
+    It splits the content into rows by new-lines, each row has a single "data" column containing the row's content
+    """
 
     def __iter_extended_rows(self):
-        # yield (0, None, ["data"])
         for number, line in enumerate(self.__chars, start=1):
             yield (number, None, [{"data": line}])
 

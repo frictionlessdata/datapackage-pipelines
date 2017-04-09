@@ -12,8 +12,6 @@ from datapackage_pipelines.utilities.resource_matcher import ResourceMatcher
 from datapackage_pipelines.utilities.tabulator_txt_parser import register_tabulator_txt_parser
 
 
-
-
 def _reader(opener, _url):
     yield None
     filename = os.path.basename(_url)

@@ -17,5 +17,5 @@ This is the order of parameters:
 
 ## setting up the test environment and running a specific test
 
-* `pip install pytest`
+* `pip install -e .[develop]`
 * `py.test -svk name-of-the-fixture`
