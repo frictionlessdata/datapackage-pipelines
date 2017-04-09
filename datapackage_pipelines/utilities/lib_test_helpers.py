@@ -18,9 +18,11 @@ class ProcessorFixtureTestsBase(object):
         for dirpath, _, filenames in os.walk(self._fixtures_path):
             for filename in filenames:
                 data_in, data_out, dp_out, params, processor = self._load_fixture(dirpath, filename)
+
                 def inner(processor_, params_, data_in_, dp_out_, data_out_):
                     def inner2():
-                        return test_single_fixture(processor_, params_, data_in_, dp_out_, data_out_, self._get_procesor_env())
+                        return test_single_fixture(processor_, params_, data_in_, dp_out_, data_out_,
+                                                   self._get_procesor_env())
                     return inner2
                 yield filename, inner(processor, params, data_in, dp_out, data_out)
 
