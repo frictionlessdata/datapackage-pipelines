@@ -1,0 +1,35 @@
+stream_remote_resources
+--
+{}
+--
+{
+    "name": "test-stream-remote-resources-http",
+    "resources": [
+        {
+            "name": "my-remote-http-resource",
+            "url": "file://tests/data/sample.txt",
+            "format": "txt"
+        }
+    ]
+}
+--
+--
+{
+    "name": "test-stream-remote-resources-http",
+    "resources": [
+        {
+            "name": "my-remote-http-resource",
+            "path": "data/my-remote-http-resource.csv",
+            "format": "txt",
+            "schema": {
+                "fields": [
+                    {"name": "data", "type": "string"}
+                ]
+            }
+        }
+    ]
+}
+--
+{"data": "This is a plain text file - not a CSV file!"}
+{"data": "testing"}
+{"data": "one two three"}
