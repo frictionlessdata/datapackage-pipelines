@@ -4,6 +4,7 @@ import logging
 import itertools
 
 import tabulator
+from tabulator.exceptions import FormatError
 
 from jsontableschema import Schema
 
@@ -20,7 +21,6 @@ def _reader(opener, _url):
     num_headers = len(_headers)
     i = 0
     for i, row in enumerate(_reader):
-
         row = [str(x).strip() for x in row]
         values = set(row)
         if len(values) == 1 and '' in values:
@@ -75,16 +75,23 @@ def stream_reader(_resource, _url, _ignore_missing):
                                      'mediatype', 'skip_rows'}))
             skip_rows = __resource.get('skip_rows', 0)
             if _params.get("format") == "txt":
-                _params["headers"] = 0
+                _params["headers"] = ["data"]
                 register_tabulator_txt_parser()
             _stream = tabulator.Stream(__url, **_params,
                                        post_parse=[row_skipper(skip_rows)])
             try:
-                _stream.open()
-                _headers = dedupe(_stream.headers) if _params.get("format") != "txt" else ["data"]
-                _schema = __resource.get('schema')
+                try:
+                    _stream.open()
+                except FormatError as e:
+                    # Tabulator has some validation which is irrelevant for txt format
+                    if _params.get("format") != "txt":
+                        raise
+                _headers = dedupe(_stream.headers)
+                _schema = _resource.get("schema")
                 if _schema is not None:
                     _schema = Schema(_schema)
+                if _params.get("format") == "txt":
+                    _stream = (r for r in _stream if r != [])
                 return _schema, _headers, _stream, _stream.close
             except tabulator.exceptions.TabulatorException as e:
                 logging.warning("Error while opening resource from url %s: %r",

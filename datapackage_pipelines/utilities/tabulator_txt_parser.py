@@ -11,7 +11,7 @@ class TabulatorTxtParser(tabulator.parsers.csv.CSVParser):
 
     def __iter_extended_rows(self):
         for number, line in enumerate(self.__chars, start=1):
-            yield (number, None, [{"data": line}])
+            yield number, None, [line]
 
 
 def register_tabulator_txt_parser():
