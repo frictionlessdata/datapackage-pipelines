@@ -33,3 +33,5 @@ stream_remote_resources
 {"data": "This is a plain text file - not a CSV file!"}
 {"data": "testing"}
 {"data": "one two three"}
+
+{}
