@@ -42,7 +42,8 @@ class ProcessorFixtureTestsBase(object):
         raise NotImplementedError()
 
     def _load_fixture(self, dirpath, filename):
-        parts = open(os.path.join(dirpath, filename), encoding='utf8').read().split('--\n')
+        with open(os.path.join(dirpath, filename), encoding='utf8') as f:
+            parts = f.read().split('--\n')
         processor, params, dp_in, data_in, dp_out, data_out = parts
         processor_file = self._get_processor_file(processor)
         params = rejsonize(params)
@@ -58,14 +59,22 @@ def test_single_fixture(processor, parameters, data_in, dp_out, data_out, env):
                              input=data_in, stdout=subprocess.PIPE, env=env)
     output = process.stdout.decode('utf8')
     (actual_dp, *actual_data) = output.split('\n\n', 1)
-    assert actual_dp == dp_out
+    assert actual_dp == dp_out, "unexpected value for output datapackage: {}".format(actual_dp)
     if len(actual_data) > 0:
         actual_data = actual_data[0]
-        for actual, expected in zip(actual_data.split('\n'), data_out.split('\n')):
+        actual_data = actual_data.split('\n')
+        expected_data = data_out.split('\n')
+        assert len(actual_data) == len(expected_data), \
+            "unexpected number of output lines: {}, actual_data = {}".format(len(actual_data), actual_data)
+        for line_num, (actual, expected) in enumerate(zip(actual_data, expected_data)):
+            line_msg = "output line {}".format(line_num)
             if len(actual) == 0:
-                assert len(expected) == 0
+                assert len(expected) == 0, \
+                    "{}: did not get any data (but expected some)".format(line_msg)
             else:
-                assert rejsonize(actual) == rejsonize(expected)
+                rj_actual = rejsonize(actual)
+                assert rj_actual == rejsonize(expected), \
+                    "{}: unexpected data: {}".format(line_msg, rj_actual)
 
 
 def rejsonize(s):
