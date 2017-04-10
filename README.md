@@ -858,7 +858,7 @@ Plugins are Python modules named `datapackage-pipelines-<plugin-name>`. Plugins 
 
 A source descriptor is a yaml file containing information which is used to create a full pipeline.
 
-`dpp` will look for files named `<plugin-name>.source-description.yaml` , and will treat them as input for the pipeline generating code - which should be implemented in a class called `Generator` in the `datapackage-pipelines-<plugin-name>` module in `generator.py`.
+`dpp` will look for files named `<plugin-name>.source-spec.yaml` , and will treat them as input for the pipeline generating code - which should be implemented in a class called `Generator` in the `datapackage-pipelines-<plugin-name>` module in `generator.py`.
 
 This class should inherit from `GeneratorBase` and should implement two methods:
 
@@ -911,7 +911,7 @@ class Generator(GeneratorBase):
           )
 ```
 
-In this case, if we store a `ckan.source-description.yaml` file looking like this:
+In this case, if we store a `ckan.source-spec.yaml` file looking like this:
 
 ```yaml
 ckan-instance: example.com
