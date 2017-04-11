@@ -4,7 +4,6 @@ import logging
 import itertools
 
 import tabulator
-from tabulator.exceptions import FormatError
 
 from jsontableschema import Schema
 
