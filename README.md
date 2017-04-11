@@ -65,7 +65,7 @@ In this example we see one pipeline called `worldbank-co2-emissions`. Its pipeli
   This resource has a `name` and a `url`, pointing to the remote location of the data.
 - `stream_remote_resources`: This processor will convert remote resources (like the one we defined in the 1st step) to local resources, streaming the data to processors further down the pipeline (see more about streaming below).
 - `set_types`: This processor assigns data types to fields in the data. In this example, field headers looking like years will be assigned the `number` type.
-- `dump.to_zip`: Create a zipped and validated data-pacakage with the provided file name.
+- `dump.to_zip`: Create a zipped and validated datapackage with the provided file name.
 
 ### Mechanics 
 
@@ -125,7 +125,7 @@ Running a pipeline from the command line is done using the `dpp` tool.
 
 Running `dpp` without any argument, will show the list of available pipelines. This is done by scanning the current directory and its subdirectories, searching for `pipeline-spec.yaml` files and extracting the list of pipeline specificiations described within.
 
-Each pipeline has an identifier, composed of the path to the `pipeline-spec.yaml` file and the name of the pipeline, as defined withing that description file.
+Each pipeline has an identifier, composed of the path to the `pipeline-spec.yaml` file and the name of the pipeline, as defined within that description file.
 
 In order to run a pipeline, you use `dpp run <pipeline-id>`. 
 
@@ -200,7 +200,7 @@ Each processor's input is automatically validated for correctness:
 - Data is not validated against its respective JSON Table Schema, unless explicitly requested by setting the `validate` flag to True in the step's info.
   This is done for two main reasons:
 
-  - Performace wise, validating the data in every step is very CPU instensive
+  - Performance wise, validating the data in every step is very CPU intensive
   - In some cases you modify the schema in one step and the data in another, so you would only like to validate the data once all the changes were made
 
   In any case, when using the `set_types` standard processor, it will validate and transform the input data with the new types..
@@ -717,7 +717,7 @@ spew(datapackage, new_resource_iterator(resource_iterator), stats)
 
 The above code snippet shows the structure of most low-level processors.
 
-We always start with callng `ingest()` - this method gives us the execution parameters, the data-package descriptor (as outputed from the previous step) and an iterator on all streamed resources' rows.
+We always start with calling `ingest()` - this method gives us the execution parameters, the data-package descriptor (as outputed from the previous step) and an iterator on all streamed resources' rows.
 
 We finish the processing by calling `spew()`, which sends the processed data to the next processor in the pipeline. `spew` receives a modified data-package descriptor, a (possibly new) iterator on the resources and a stats object which will be added to stats from previous steps and returned to the user upon completion of the pipeline.
 
@@ -735,7 +735,7 @@ We finish the processing by calling `spew()`, which sends the processed data to 
 
 #### A few examples
 
-We'll start with the same processors from above, now implented with the low level API.
+We'll start with the same processors from above, now implemented with the low level API.
 
 ```python
 # Add license information
@@ -849,25 +849,25 @@ When writing pipelines in a specific problem domain, one might discover that the
 
 In order to ease maintenance and avoid boilerplate, a _`datapackage-pipelines` **plugin**_. 
 
-Plugins are Python modules named `datapackage-pipelines-<plugin-name>`. Plugins can provide two facilities:
+Plugins are Python modules named `datapackage_pipelines_<plugin-name>`. Plugins can provide two facilities:
 
-- Processor packs - you can pack processors revolving a certain theme or for a specific purpose in a plugin. Any processor `foo` residing under the `datapackage-pipelines-<plugin-name>.processors` module can be used from within a pipeline as `<plugin-name>.foo`.
-- Pipeline templates - if the class `Generator` exists in the `datapackage-pipelines-<plugin-name>.generator` module, it will be used to generate pipeline based on templates - which we call "source descriptors".
+- Processor packs - you can pack processors revolving a certain theme or for a specific purpose in a plugin. Any processor `foo` residing under the `datapackage_pipelines_<plugin-name>.processors` module can be used from within a pipeline as `<plugin-name>.foo`.
+- Pipeline templates - if the class `Generator` exists in the `datapackage_pipelines_<plugin-name>.generator` module, it will be used to generate pipeline based on templates - which we call "source descriptors".
 
 ### Source Descriptors
 
 A source descriptor is a yaml file containing information which is used to create a full pipeline.
 
-`dpp` will look for files named `<plugin-name>.source-description.yaml` , and will treat them as input for the pipeline generating code - which should be implemented in a class called `Generator` in the `datapackage-pipelines-<plugin-name>` module in `generator.py`.
+`dpp` will look for files named `<plugin-name>.source-spec.yaml` , and will treat them as input for the pipeline generating code - which should be implemented in a class called `Generator` in the `datapackage_pipelines_<plugin-name>` module in `generator.py`.
 
 This class should inherit from `GeneratorBase` and should implement two methods:
 
 - `generate_pipeline` - which receives the source description and returns a list of pipeline steps
-- `get_schema` - which should return a JSON Schema for validating the source description's structrure
+- `get_schema` - which should return a JSON Schema for validating the source description's structure
 
 #### Example
 
-Let's assume we write a `datapackage-pipelines-ckan` plugin, used to pull data out of [CKAN](https://ckan.org) instances.
+Let's assume we write a `datapackage_pipelines_ckan` plugin, used to pull data out of [CKAN](https://ckan.org) instances.
 
 Here's how such a hypothetical generator would look like:
 
@@ -911,7 +911,7 @@ class Generator(GeneratorBase):
           )
 ```
 
-In this case, if we store a `ckan.source-description.yaml` file looking like this:
+In this case, if we store a `ckan.source-spec.yaml` file looking like this:
 
 ```yaml
 ckan-instance: example.com
@@ -959,7 +959,7 @@ co2-information-cdiac:
 
 In this example, this pipeline is set to run every hour, on the hour.
 
-To run the celery deamon, use `celery`'s command line interface to run `datapackage_pipelines.app`. Here's one way to do it:
+To run the celery daemon, use `celery`'s command line interface to run `datapackage_pipelines.app`. Here's one way to do it:
 
 ```shell
 $ python -m celery worker -B -A datapackage_pipelines.app
