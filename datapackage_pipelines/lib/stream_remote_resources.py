@@ -10,7 +10,6 @@ from jsontableschema import Schema
 
 from datapackage_pipelines.wrapper import ingest, spew
 from datapackage_pipelines.utilities.resource_matcher import ResourceMatcher
-from datapackage_pipelines.utilities.tabulator_txt_parser import register_tabulator_txt_parser
 
 
 def _reader(opener, _url):
@@ -75,23 +74,27 @@ def stream_reader(_resource, _url, _ignore_missing):
                                      'mediatype', 'skip_rows'}))
             skip_rows = __resource.get('skip_rows', 0)
             if _params.get("format") == "txt":
+                # datapackage-pipelines processing requires having a header row
+                # for txt format we add a single "data" column
                 _params["headers"] = ["data"]
-                register_tabulator_txt_parser()
             _stream = tabulator.Stream(__url, **_params,
                                        post_parse=[row_skipper(skip_rows)])
             try:
                 try:
                     _stream.open()
                 except FormatError as e:
-                    # Tabulator has some validation which is irrelevant for txt format
-                    if _params.get("format") != "txt":
+                    if _params.get("format") == "txt" and str(e) == "Format has been detected as HTML (not supported)":
+                        # tabulator tries to detect html content and raise exception on it
+                        # this is irrelevant for txt format - where html content might be encountered and is valid
+                        # unfortunately there is no good way to detect this exception
+                        # see https://github.com/frictionlessdata/tabulator-py/pull/155 for more details
+                        pass
+                    else:
                         raise
                 _headers = dedupe(_stream.headers)
-                _schema = _resource.get("schema")
+                _schema = __resource.get('schema')
                 if _schema is not None:
                     _schema = Schema(_schema)
-                if _params.get("format") == "txt":
-                    _stream = (r for r in _stream if r != [])
                 return _schema, _headers, _stream, _stream.close
             except tabulator.exceptions.TabulatorException as e:
                 logging.warning("Error while opening resource from url %s: %r",
