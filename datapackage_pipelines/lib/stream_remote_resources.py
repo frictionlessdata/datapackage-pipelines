@@ -80,17 +80,7 @@ def stream_reader(_resource, _url, _ignore_missing):
             _stream = tabulator.Stream(__url, **_params,
                                        post_parse=[row_skipper(skip_rows)])
             try:
-                try:
-                    _stream.open()
-                except FormatError as e:
-                    if _params.get("format") == "txt" and str(e) == "Format has been detected as HTML (not supported)":
-                        # tabulator tries to detect html content and raise exception on it
-                        # this is irrelevant for txt format - where html content might be encountered and is valid
-                        # unfortunately there is no good way to detect this exception
-                        # see https://github.com/frictionlessdata/tabulator-py/pull/155 for more details
-                        pass
-                    else:
-                        raise
+                _stream.open()
                 _headers = dedupe(_stream.headers)
                 _schema = __resource.get('schema')
                 if _schema is not None:
