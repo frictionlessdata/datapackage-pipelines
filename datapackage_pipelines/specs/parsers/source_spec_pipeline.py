@@ -35,14 +35,7 @@ class SourceSpecPipelineParser(BaseParser):
                 source_spec = yaml.load(spec_file.read())
                 if generator.internal_validate(source_spec):
                     spec = generator.internal_generate(source_spec)
-                    for pipeline_id, schedule, steps in spec:
-                        pipeline_details = {
-                            'pipeline': steps
-                        }
-                        if schedule is not None:
-                            pipeline_details['schedule'] = {
-                                'crontab': schedule
-                            }
+                    for pipeline_id, pipeline_details in spec:
                         pipeline_id = os.path.join(dirpath, pipeline_id)
                         yield PipelineSpec(path=dirpath,
                                            pipeline_id=pipeline_id,
