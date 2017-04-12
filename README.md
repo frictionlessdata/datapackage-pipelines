@@ -905,11 +905,11 @@ class Generator(GeneratorBase):
                 ('dump.to_zip', {
                    'out-file': 'ckan-datapackage.zip'
                 })])
-        pipeline_details = {
-            'pipeline': pipeline_steps,
-            'schedule': {'crontab': schedule}
-        }
-        yield pipeline_id, pipeline_details
+            pipeline_details = {
+                'pipeline': pipeline_steps,
+                'schedule': {'crontab': schedule}
+            }
+            yield pipeline_id, pipeline_details
 ```
 
 In this case, if we store a `ckan.source-spec.yaml` file looking like this:
