@@ -82,4 +82,4 @@ target/
 datapackage-pipelines.iml
 celerybeat-schedule
 
-.dppdb
+.dpp.db
