@@ -892,23 +892,24 @@ class Generator(GeneratorBase):
         pipeline_id = dataset_name = slugify(source['name'])
         host = source['ckan-instance']
         action = source['data-kind']
-        
-        if action == 'package-list':            
-          schedule = SCHEDULE_MONTHLY
-          yield pipeline_id, schedule, steps(*[
-                  ('ckan.scraper',
-                   {
-                       'ckan-instance': host
-                   }),
-                  ('metadata', {
-                      'name': dataset_name  
-                  }),
-                  ('dump_to_zip',
-                   {
-                       'out-file': 'ckan-datapackage.zip'
-                   })
-                  ]
-          )
+
+        if action == 'package-list':
+            schedule = SCHEDULE_MONTHLY
+            pipeline_steps = steps(*[
+                ('ckan.scraper', {
+                   'ckan-instance': host
+                }),
+                ('metadata', {
+                  'name': dataset_name
+                }),
+                ('dump.to_zip', {
+                   'out-file': 'ckan-datapackage.zip'
+                })])
+            pipeline_details = {
+                'pipeline': pipeline_steps,
+                'schedule': {'crontab': schedule}
+            }
+            yield pipeline_id, pipeline_details
 ```
 
 In this case, if we store a `ckan.source-spec.yaml` file looking like this:

@@ -1,3 +1,4 @@
+SCHEDULE_NONE = None
 SCHEDULE_HOURLY = '0 * * * *'
 SCHEDULE_DAILY = '0 0 * * *'
 SCHEDULE_WEEKLY = '0 0 * * 0'
