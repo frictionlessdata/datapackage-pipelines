@@ -7,6 +7,9 @@ from flask_cors import CORS
 from flask_jsonpify import jsonify
 
 from datapackage_pipelines.status import status
+from datapackage_pipelines.specs import register_all_pipelines
+
+register_all_pipelines()
 
 app = Flask(__name__)
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True

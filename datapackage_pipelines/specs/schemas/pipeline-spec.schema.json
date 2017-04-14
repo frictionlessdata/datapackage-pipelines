@@ -5,6 +5,12 @@
     "pipeline"
   ],
   "properties": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
     "schedule": {
       "type": "object",
       "properties": {

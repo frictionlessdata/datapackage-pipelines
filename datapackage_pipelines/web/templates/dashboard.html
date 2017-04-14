@@ -38,52 +38,11 @@
     <div class="container-fluid">
         <!-- Brand and toggle get grouped for better mobile display -->
         <div class="navbar-header">
-            <!--button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button-->
             <a class="navbar-brand" href="#">Pipeline Status Dashboard</a>
         </div>
 
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-            <!--ul class="nav navbar-nav">
-                <li class="active"><a href="#">Link <span class="sr-only">(current)</span></a></li>
-                <li><a href="#">Link</a></li>
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
-                    <ul class="dropdown-menu">
-                        <li><a href="#">Action</a></li>
-                        <li><a href="#">Another action</a></li>
-                        <li><a href="#">Something else here</a></li>
-                        <li role="separator" class="divider"></li>
-                        <li><a href="#">Separated link</a></li>
-                        <li role="separator" class="divider"></li>
-                        <li><a href="#">One more separated link</a></li>
-                    </ul>
-                </li>
-            </ul>
-            <form class="navbar-form navbar-left">
-                <div class="form-group">
-                    <input type="text" class="form-control" placeholder="Search">
-                </div>
-                <button type="submit" class="btn btn-default">Submit</button>
-            </form>
-            <ul class="nav navbar-nav navbar-right">
-                <li><a href="#">Link</a></li>
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
-                    <ul class="dropdown-menu">
-                        <li><a href="#">Action</a></li>
-                        <li><a href="#">Another action</a></li>
-                        <li><a href="#">Something else here</a></li>
-                        <li role="separator" class="divider"></li>
-                        <li><a href="#">Separated link</a></li>
-                    </ul>
-                </li>
-            </ul-->
         </div><!-- /.navbar-collapse -->
     </div><!-- /.container-fluid -->
 </nav>
@@ -113,7 +72,7 @@
                                        data-container="body"
                                        data-title="<pre style='font-size:70%'>{{ yamlize(status.get('stats', {}))}}</pre>"></i>
                                     <a href="#anchor-{{status.slug}}">
-                                        {{ status.id.split('/')[-1] }}
+                                        {{ status.pipeline.title or status.id.split('/')[-1] }}
                                     </a>
                                 </div>
                             </div>
@@ -128,8 +87,13 @@
                         <div class="col-md-12">
                             <div class="panel panel-{{ status.class }}">
                                 <div class="panel-heading">
-                                    <h1 class="panel-title">{{ status.id }}
-                                        <small>{{ status.message }}</small>
+                                    <h1 class="panel-title">
+                                        {% if status.pipeline.title %}
+                                        {{ status.pipeline.title }} <small>({{ status.id.split('/')[-1] }})</small>
+                                        {% else %}
+                                        {{ status.id }}
+                                        {% endif %}
+                                        <br/><small><strong><span class="glyphicon glyphicon-arrow-right"></span> {{ status.message }}</strong></small>
                                     </h1>
                                 </div>
                                 <div class="panel-body">
@@ -146,33 +110,49 @@
                                             <!-- Tab panes -->
                                             <div class="tab-content">
                                                 <div role="tabpanel" class="tab-pane active" id="status-{{status.slug}}">
+                                                    {% if status.pipeline.description %}
+                                                    <di>{{ status.pipeline.description }}</di>
+                                                    <hr/>
+                                                    {% endif %}
                                                     <dl class="dl-horizontal">
                                                         <dt>Last Run triggered by:</dt><dd>{{ status.trigger }}</dd>
                                                         <dt>Last Run started at:</dt><dd>{{ status.started }}</dd>
                                                         <dt>Last Completion:</dt><dd>{{ status.ended }}</dd>
                                                         <dt>Last Success:</dt><dd>{{ status.last_success }}</dd>
                                                     </dl>
+                                                    <hr/>
+                                                    <p><small>Pipeline ID: <strong>{{ status.id }}</strong></small></p>
                                                 </div>
                                                 <div role="tabpanel"
                                                      class="tab-pane"
-                                                     id="pipeline-{{status.slug}}"
-                                                     data-field="pipeline"
-                                                     data-pipeline="{{status.id}}"
-                                                >
+                                                     id="pipeline-{{status.slug}}">
+                                                    <div class="tab-content"
+                                                         data-field="pipeline"
+                                                         data-pipeline="{{status.id}}"
+                                                    >
+                                                    </div>
                                                 </div>
                                                 <div role="tabpanel"
                                                      class="tab-pane"
-                                                     id="source-{{status.slug}}"
-                                                     data-field="source"
-                                                     data-pipeline="{{status.id}}"
-                                                >
+                                                     id="source-{{status.slug}}">
+                                                    <div class="tab-content"
+                                                             data-field="source"
+                                                             data-pipeline="{{status.id}}"
+                                                    >
+                                                    </div>
                                                 </div>
                                                 <div role="tabpanel"
-                                                     class="tab-pane"
                                                      id="log-{{status.slug}}"
-                                                     data-field="log"
-                                                     data-pipeline="{{status.id}}"
-                                                >
+                                                     class="tab-pane">
+                                                    <div class="tab-content"
+                                                         data-field="log"
+                                                         data-pipeline="{{status.id}}"
+                                                    >
+                                                    </div>
+                                                    <button role="refresher" data-tab="#log-{{status.slug}}"
+                                                            type="button" class="btn btn-primary btn-xs">
+                                                        <span class="glyphicon glyphicon-refresh"></span>
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
@@ -207,23 +187,35 @@
         })
     });
 
-    $('[role=tabpanel]').on('shown.bs.tab', function(e) {
-      var control = $(e.target);
-      var tabContents = $(control.attr('href'));
-      var gotData = tabContents.attr('data-full');
-      if (gotData) return;
-      var field = tabContents.attr('data-field');
+    function refill(target, force) {
+      if (!force) {
+        var gotData = target.attr('data-full');
+        if (gotData) return;
+      }
+      var field = target.attr('data-field');
       if (!field) return;
-      var pipeline_id = tabContents.attr('data-pipeline');
+      var pipeline_id = target.attr('data-pipeline');
       $.get('api/'+field+'/'+pipeline_id, function(data) {
         text = data.text;
         contents = '<pre>';
         for (i = 0 ; i < text.length ; i++) contents += text[i] + '\n';
         contents = contents + '</pre>';
-        tabContents.html(contents);
-        tabContents.attr('data-full', true);
+        target.html(contents);
+        target.attr('data-full', true);
       }, 'json');
-      console.log(field, pipeline_id);
+    }
+
+    $('[role=tabpanel]').on('shown.bs.tab', function(e) {
+      var control = $(e.target);
+      var tabContents = $(control.attr('href')).find('.tab-content');
+      refill(tabContents, false);
+    });
+
+    $('[role=refresher]').on('click', function(e) {
+      var control = $(e.currentTarget);
+      var tab = $(control.attr('data-tab'));
+      var tabContents = tab.find('.tab-content');
+      refill(tabContents, true);
     });
 
 </script>
