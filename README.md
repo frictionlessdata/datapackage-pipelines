@@ -28,6 +28,8 @@ Here's an example of a `pipeline-spec.yaml` file:
 
 ```yaml
 worldbank-co2-emissions:
+  title: CO2 emission data from the World Bank
+  description: Data per year, provided in metric tons per capita.
   pipeline:
     -
       run: add_metadata
