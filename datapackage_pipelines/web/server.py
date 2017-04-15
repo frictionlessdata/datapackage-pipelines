@@ -2,6 +2,8 @@ import datetime
 
 import slugify
 import yaml
+import mistune
+
 from flask import Flask, render_template, abort, redirect
 from flask_cors import CORS
 from flask_jsonpify import jsonify
@@ -23,6 +25,9 @@ def datestr(x):
 def yamlize(x):
     ret = yaml.dump(x, default_flow_style=False)
     return ret
+
+
+markdown = mistune.Markdown(hard_wrap=True)
 
 
 @app.route("/")
@@ -61,7 +66,8 @@ def main():
         item.append(len(item[-1]))
     return render_template('dashboard.html',
                            categories=categories,
-                           yamlize=yamlize)
+                           yamlize=yamlize,
+                           markdown=markdown)
 
 
 @app.route("/api/<field>/<path:pipeline_id>")

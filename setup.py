@@ -28,6 +28,7 @@ INSTALL_REQUIRES = [
     'jsontableschema',
     'jsontableschema-sql>=0.6,<1.0',
     'pyyaml',
+    'mistune',
     'redis',
     'sqlalchemy',
     'flask',
