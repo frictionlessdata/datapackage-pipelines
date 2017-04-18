@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
     <!-- Optional theme -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/flatly/bootstrap.min.css" rel="stylesheet" integrity="sha384-+ENW/yibaokMnme+vBLnHMphUYxHs34h9lpdbSLuAwGkOKFRl4C34WkjazBtb7eT" crossorigin="anonymous">
 
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
@@ -33,6 +33,9 @@
             width: 25%;
             padding-right: 30px;
         }
+        .panel {
+            box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.3);
+        }
         .inner-tabs {
             min-width: 100px;
         }
@@ -42,6 +45,9 @@
             border-right: none;
         }
         .affix-top > .row > .col-xs-12 > .nesting {
+            border-right: 1px solid #ccc;
+        }
+        .affix > .row > .col-xs-12 > .nesting {
             border-right: 1px solid #ccc;
         }
         .nesting > .nesting-contents {
@@ -80,6 +86,11 @@
             font-family: monospace;
             font-size: 0.8em;
             padding-left: 30px;
+        }
+        .button[role="refresher"] {
+            float: right;
+            position: relative;
+            top: -36px;
         }
 
     </style>
@@ -219,7 +230,7 @@
                                                          data-pipeline="{{status.id}}"
                                                     >
                                                     </div>
-                                                    <button role="refresher" data-tab="#log-{{status.slug}}"
+                                                    <button role="refresher" data-tab="#log-{{category[0]}}-{{status.slug}}"
                                                             type="button" class="btn btn-primary btn-xs">
                                                         <span class="glyphicon glyphicon-refresh"></span>
                                                     </button>
