@@ -170,16 +170,16 @@
                                     <div class="row">
                                         <div class="col-sm-1 inner-tabs">
                                             <ul class="nav nav-pills nav-stacked" role="tablist">
-                                                <li role="presentation" class="active"><a href="#status-{{status.slug}}" aria-controls="status" role="tab" data-toggle="tab">Status</a></li>
-                                                <li role="presentation"><a href="#pipeline-{{status.slug}}" aria-controls="pipeline-{{status.id}}" role="tab" data-toggle="tab">Pipeline</a></li>
-                                                <li role="presentation"><a href="#source-{{status.slug}}" aria-controls="source" role="tab" data-toggle="tab">Source</a></li>
-                                                <li role="presentation"><a href="#log-{{status.slug}}" aria-controls="log" role="tab" data-toggle="tab">Log</a></li>
+                                                <li role="presentation" class="active"><a href="#status-{{category[0]}}-{{status.slug}}" aria-controls="status" role="tab" data-toggle="tab">Status</a></li>
+                                                <li role="presentation"><a href="#pipeline-{{category[0]}}-{{status.slug}}" aria-controls="pipeline-{{status.id}}" role="tab" data-toggle="tab">Pipeline</a></li>
+                                                <li role="presentation"><a href="#source-{{category[0]}}-{{status.slug}}" aria-controls="source" role="tab" data-toggle="tab">Source</a></li>
+                                                <li role="presentation"><a href="#log-{{category[0]}}-{{status.slug}}" aria-controls="log" role="tab" data-toggle="tab">Log</a></li>
                                             </ul>
                                         </div>
                                         <div class="col-sm-9">
                                             <!-- Tab panes -->
                                             <div class="tab-content">
-                                                <div role="tabpanel" class="tab-pane active" id="status-{{status.slug}}">
+                                                <div role="tabpanel" class="tab-pane active" id="status-{{category[0]}}-{{status.slug}}">
                                                     {% if status.pipeline.description %}
                                                     <di>{{ markdown(status.pipeline.description) | safe }}</di>
                                                     <hr/>
@@ -195,7 +195,7 @@
                                                 </div>
                                                 <div role="tabpanel"
                                                      class="tab-pane"
-                                                     id="pipeline-{{status.slug}}">
+                                                     id="pipeline-{{category[0]}}-{{status.slug}}">
                                                     <div class="tab-content"
                                                          data-field="pipeline"
                                                          data-pipeline="{{status.id}}"
@@ -204,7 +204,7 @@
                                                 </div>
                                                 <div role="tabpanel"
                                                      class="tab-pane"
-                                                     id="source-{{status.slug}}">
+                                                     id="source-{{category[0]}}-{{status.slug}}">
                                                     <div class="tab-content"
                                                              data-field="source"
                                                              data-pipeline="{{status.id}}"
@@ -212,7 +212,7 @@
                                                     </div>
                                                 </div>
                                                 <div role="tabpanel"
-                                                     id="log-{{status.slug}}"
+                                                     id="log-{{category[0]}}-{{status.slug}}"
                                                      class="tab-pane">
                                                     <div class="tab-content"
                                                          data-field="log"
