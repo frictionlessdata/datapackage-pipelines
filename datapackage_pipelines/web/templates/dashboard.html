@@ -30,10 +30,58 @@
             top: 0px;
             overflow-y: scroll;
             max-height: 100%;
+            width: 25%;
+            padding-right: 30px;
         }
         .inner-tabs {
             min-width: 100px;
         }
+        .nesting {
+            border: 1px solid #ccc;;
+            border-top: none;
+            border-right: none;
+        }
+        .affix-top > .row > .col-xs-12 > .nesting {
+            border-right: 1px solid #ccc;
+        }
+        .nesting > .nesting-contents {
+            border: none;
+            border-top: 1px dashed #ccc;
+            padding-left: 10px;
+            padding-bottom: 5px;
+            display: none;
+        }
+        .nesting.open > .nesting-contents {
+            display: inherit;
+        }
+        .pipline-title {
+            padding-left: 5px;
+            cursor: pointer;
+        }
+        .pipline-title .glyphicon {
+            font-size: 0.85em;
+        }
+
+        .nesting-title {
+            font-size: 0.85em;
+            padding-left: 5px;
+            padding-top: 3px;
+            padding-bottom: 3px;
+            cursor: pointer;
+        }
+        .nesting > .nesting-title .glyphicon {
+            transition: 0.25s ease-in-out;
+            transform: rotate(0deg);
+        }
+        .nesting.open > .nesting-title .glyphicon {
+            transform: rotate(90deg);
+        }
+        .pipline-title .stats {
+            font-family: monospace;
+            font-size: 0.8em;
+            padding-left: 30px;
+        }
+
     </style>
 </head>
 <body>
@@ -53,34 +101,53 @@
 <div class="container-fluid">
     <ul class="nav nav-tabs" role="tablist">
         {% for category in categories %}
-        <li role="presentation" class="{%if category[0]=='REGISTERED'%}active{%endif%}"><a href="#state-{{category[0]}}" aria-controls="{{category[0]}}" role="tab" data-toggle="tab">{{category[1]}} ({{category[4]}})</a></li>
+        <li role="presentation" class="{%if category[0]=='ALL'%}active{%endif%}"><a href="#state-{{category[0]}}" aria-controls="{{category[0]}}" role="tab" data-toggle="tab">{{category[1]}} ({{category[4]}})</a></li>
         {% endfor %}
     </ul>
     <div class="tab-content">
         {% for category in categories %}
-        <div role="tabpanel" class="tab-pane {%if category[0]=='REGISTERED'%}active{%endif%}" id="state-{{category[0]}}">
+        <div role="tabpanel" class="tab-pane {%if category[0]=='ALL'%}active{%endif%}" id="state-{{category[0]}}">
             <div class="row">
                 <div class="col-md-3 hidden-xs hidden-sm">
                     <div data-spy="affix" >
-                        {% for status in category[3] %}
+                        {% macro nested_pipelines(statuses) %}
+                        {% for k, children in statuses.children.items() %}
                         <div class="row">
                             <div class="col-xs-12">
-                                <div>
-                                    <br/>
-                                    <small>{{ '/'.join(status.id.split('/')[1:-1]) }}</small>
-                                </div>
-                                <div>
-                                    <i class="glyphicon glyphicon-info-sign"
-                                       data-toggle="tooltip" data-placement="right" data-html="true"
-                                       data-container="body"
-                                       data-title="<pre style='font-size:70%'>{{ yamlize(status.get('stats', {}))}}</pre>"></i>
-                                    <a href="#anchor-{{status.slug}}">
-                                        {{ status.pipeline.title or status.id.split('/')[-1] }}
-                                    </a>
+                                <div class="nesting open">
+                                    <div class="nesting-title">
+                                        <span class="glyphicon glyphicon-menu-right"></span>
+                                        <span>{{ k }}</span>
+                                    </div>
+                                    <div class="nesting-contents">
+                                        {{ nested_pipelines(children) }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         {% endfor %}
+                        {% for status in statuses.pipelines %}
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div class="pipline-title">
+                                    <div>
+                                        <span class="glyphicon glyphicon-expand"></span>
+                                        <a href="#anchor-{{status.slug}}">
+                                            {{ status.title or status.id }}
+                                        </a>
+                                    </div>
+                                    {% if status.get('stats') %}
+                                    <div class='stats'>
+                                        {{ yamlize(status.get('stats', {})).replace('\n', '<br/>') | safe }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% endmacro %}
+
+                        {{ nested_pipelines(category[5]) }}
                         <br/>
                     </div>
                 </div>
@@ -187,6 +254,9 @@
         var top = $('[data-spy="affix"]:first').offset().top;
         $('[data-spy="affix"]').each(function() {
             $(this).attr('data-offset-top', top);
+        })
+        $('.nesting-title').on('click', function(e) {
+          $(e.currentTarget).parent().toggleClass('open');
         })
     });
 

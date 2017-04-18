@@ -30,6 +30,53 @@ def yamlize(x):
 markdown = mistune.Markdown(hard_wrap=True)
 
 
+def make_hierarchies(statuses):
+
+    def group(l):
+        pipelines = list(filter(lambda x: len(x['id']) == 1, l))
+        children_ = filter(lambda x: len(x['id']) > 1, l)
+        groups_ = {}
+        for child in children_:
+            child_key = child['id'].pop(0)
+            groups_.setdefault(child_key, []).append(child)
+        children_ = dict(
+            (k, group(v))
+            for k, v in groups_.items()
+        )
+        for p in pipelines:
+            p['id'] = p['id'][0]
+        return {
+            'pipelines': pipelines,
+            'children': children_
+        }
+
+    def flatten(children_):
+        for k, v in children_.items():
+            v['children'] = flatten(v['children'])
+            child_keys = list(v['children'].keys())
+            if len(child_keys) == 1:
+                child_key = child_keys[0]
+                children_['/'.join([k, child_key])] = v['children'][child_key]
+                del children_[k]
+        return children_
+
+    statuses = sorted(statuses, key=lambda x: x['id'])
+    statuses = [
+        {
+            'id': st['id'].split('/'),
+            'title': st.get('pipeline', {}).get('title'),
+            'stats': st.get('stats'),
+            'slug': st.get('slug')
+        }
+        for st in statuses
+    ]
+    groups = group(statuses)
+    children = groups.get('children', {})
+    groups['children'] = flatten(children)
+
+    return groups
+
+
 @app.route("/")
 def main():
     statuses = sorted(status.all_statuses(), key=lambda x: x.get('id'))
@@ -46,6 +93,7 @@ def main():
                              }[pipeline.get('state', 'INIT')]
 
         pipeline['slug'] = slugify.slugify(pipeline['id'])
+        pipeline['id'] = pipeline['id'].lstrip('./')
 
     def state_and_not_dirty(state, p):
         return p.get('state') == state and not p.get('dirty')
@@ -54,8 +102,9 @@ def main():
         return p.get('state') == state or p.get('dirty')
 
     categories = [
+        ['ALL', 'All Pipelines', lambda _, __: True],
         ['REGISTERED', 'Waiting to run', state_or_dirty],
-        ['INVALID', 'Failed validation', state_and_not_dirty],
+        ['INVALID', "Can't start", state_and_not_dirty],
         ['RUNNING', 'Running', state_and_not_dirty],
         ['SUCCEEDED', 'Successful Execution', state_and_not_dirty],
         ['FAILED', 'Failed Execution', state_and_not_dirty]
@@ -64,6 +113,7 @@ def main():
         item.append([p for p in statuses
                      if item[2](item[0], p)])
         item.append(len(item[-1]))
+        item.append(make_hierarchies(item[-2]))
     return render_template('dashboard.html',
                            categories=categories,
                            yamlize=yamlize,
