@@ -24,7 +24,7 @@ class ProcessorFixtureTestsBase(object):
 
                 def inner(processor_, params_, data_in_, dp_out_, data_out_):
                     def inner2():
-                        return self.test_single_fixture(
+                        return self._test_single_fixture(
                             processor_, params_,
                             data_in_, dp_out_,
                             data_out_,
@@ -63,17 +63,26 @@ class ProcessorFixtureTestsBase(object):
         data_in = (dp_in + '\n\n' + data_in).encode('utf8')
         return data_in, data_out, dp_out, params, processor_file
 
-    @staticmethod
-    def test_single_fixture(processor, parameters, data_in,
-                            dp_out, data_out, env):
-        """Test a single processor with the given fixture parameters"""
+    def _run_processor(self, processor, parameters, data_in, env):
+        '''Run the passed `processor` and return the output'''
         process = subprocess.run([sys.executable, processor, '1',
                                   parameters, 'False', ''],
                                  input=data_in,
                                  stdout=subprocess.PIPE,
                                  env=env)
-        output = process.stdout.decode('utf8')
-        (actual_dp, *actual_data) = output.split('\n\n', 1)
+        return process.stdout.decode('utf8')
+
+    def _test_single_fixture(self, processor, parameters, data_in,
+                             dp_out, data_out, env):
+        """Test a single processor with the given fixture parameters"""
+        output = self._run_processor(processor, parameters, data_in, env)
+        self.test_fixture(output, dp_out, data_out)
+
+    @staticmethod
+    def test_fixture(processor_output, dp_out, data_out):
+        '''Receives processor output and performs standard tests. Can be
+        overridden in subclasses.'''
+        (actual_dp, *actual_data) = processor_output.split('\n\n', 1)
         assert actual_dp == dp_out, \
             "unexpected value for output datapackage: {}".format(actual_dp)
         if len(actual_data) > 0:
