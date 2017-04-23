@@ -1,5 +1,6 @@
 import logging
 import os
+import hashlib
 
 from .errors import SpecError
 
@@ -43,6 +44,16 @@ def load_module(module):
 
 
 def resolve_executor(step, path, errors):
+
+    if 'code' in step:
+        filename = hashlib.md5(step['code'].encode('utf8')).hexdigest()
+        code_path = os.path.join(path, '.code')
+        if not os.path.exists(code_path):
+            os.mkdir(code_path)
+        code_path = os.path.join(code_path, filename)
+        with open(code_path, 'w') as code_file:
+            code_file.write(step['code'])
+        return code_path
 
     executor = step['run']
     back_up, parts = convert_dot_notation(executor)

@@ -945,6 +945,11 @@ Source descriptors can have any structure that best matches the parameter domain
 
 `dpp` will ensure that source descriptor files conform to that schema before attempting to convert them into pipelines using the `Generator` class.
 
+#### Providing Processor Code
+
+In some cases, a generator would prefer to provide the processor code as well (alongside the pipeline definition).
+In order to to that, the generator can add a `code` attribute to any step containing the processor's code. When executed, this step won't try to resolve the processor as usual but will the provided code instead.
+
 ## Running on a schedule
 
 `datapackage-pipelines` comes with a celery integration, allowing for pipelines to be run at specific times via a `crontab` like syntax.
