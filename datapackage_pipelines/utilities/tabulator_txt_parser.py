@@ -1,6 +1,7 @@
 from tabulator.parsers.api import Parser
 from tabulator.helpers import reset_stream
 
+
 class TXTParser(Parser):
     """Parser to parse TXT data format.
     """
