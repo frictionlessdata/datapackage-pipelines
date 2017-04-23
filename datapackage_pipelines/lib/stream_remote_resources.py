@@ -9,6 +9,7 @@ from jsontableschema import Schema
 
 from datapackage_pipelines.wrapper import ingest, spew
 from datapackage_pipelines.utilities.resource_matcher import ResourceMatcher
+from datapackage_pipelines.utilities.tabulator_txt_parser import TXTParser
 
 
 def _reader(opener, _url):
@@ -76,6 +77,8 @@ def stream_reader(_resource, _url, _ignore_missing):
                 # datapackage-pipelines processing requires having a header row
                 # for txt format we add a single "data" column
                 _params["headers"] = ["data"]
+                _params["custom_parsers"] = {"txt": TXTParser}
+                _params["allow_html"] = True
             _stream = tabulator.Stream(__url, **_params,
                                        post_parse=[row_skipper(skip_rows)])
             try:
