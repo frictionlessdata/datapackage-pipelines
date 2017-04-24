@@ -9,7 +9,6 @@ all: list
 
 install:
 	pip install --upgrade -e .[develop]
-	pip install --upgrade https://github.com/frictionlessdata/tabulator-py/archive/custom-loaders-parsers.zip
 
 list:
 	@grep '^\.PHONY' Makefile | cut -d' ' -f2- | tr ' ' '\n'
