@@ -1,0 +1,4 @@
+<html><<< tabulator has html decection, keeping that causes the failure which we want to test
+This is a plain text file - not a CSV file!
+testing
+one two three

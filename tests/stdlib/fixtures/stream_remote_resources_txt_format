@@ -1,0 +1,38 @@
+stream_remote_resources
+--
+{}
+--
+{
+    "name": "test-stream-remote-resources-txt-format",
+    "resources": [
+        {
+            "name": "my-remote-txt-format-resource",
+            "url": "file://tests/data/sample.txt",
+            "format": "txt"
+        }
+    ]
+}
+--
+--
+{
+    "name": "test-stream-remote-resources-txt-format",
+    "resources": [
+        {
+            "name": "my-remote-txt-format-resource",
+            "path": "data/my-remote-txt-format-resource.csv",
+            "format": "txt",
+            "schema": {
+                "fields": [
+                    {"name": "data", "type": "string"}
+                ]
+            }
+        }
+    ]
+}
+--
+{"data": "<html><<< tabulator has html decection, keeping that causes the failure which we want to test"}
+{"data": "This is a plain text file - not a CSV file!"}
+{"data": "testing"}
+{"data": "one two three"}
+
+{}
