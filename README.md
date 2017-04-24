@@ -290,6 +290,9 @@ _Parameters_:
     resources: '201[67]-data'
 ```
 
+This processor also supports loading plain-text resources (e.g. html pages) and handling them as tabular data - split into rows with a single "data" column.
+To enable this behavior, add the following attribute to the resource: `"format": "txt"`.
+
 ### ***`set_types`***
 
 Sets data types and type options to fields in streamed resources, and make sure that the data still validates with the new types. 
