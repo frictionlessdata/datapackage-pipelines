@@ -1,5 +1,5 @@
 #!/bin/sh
-if [ "$1" = "server" ]; then 
+if [ "$1" = "server" ]; then
     export DPP_REDIS_HOST=127.0.0.1
     echo "Starting Server"
     redis-server /etc/redis.conf --appendonly yes --daemonize yes --dir /var/redis
@@ -15,5 +15,3 @@ if [ "$1" = "server" ]; then
 else
     /usr/local/bin/dpp "$@"
 fi;
-
-
