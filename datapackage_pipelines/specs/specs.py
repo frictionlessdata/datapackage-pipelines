@@ -42,6 +42,8 @@ def calculate_dirty(spec):
 
 def find_specs(root_dir='.'):
     for dirpath, _, filenames in os.walk(root_dir):
+        if dirpath.startswith('./.'):
+            continue
         for filename in filenames:
             for parser in SPEC_PARSERS:
                 if parser.check_filename(filename):

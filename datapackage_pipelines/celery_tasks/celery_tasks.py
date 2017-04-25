@@ -5,27 +5,70 @@ from .celery_app import celery_app
 from ..specs import pipelines, PipelineSpec
 from ..manager.tasks import execute_pipeline
 
+executed_hashes = {}
 
-def trigger_dirties(completed=None, trigger=None):
+
+@celery_app.task
+def update_pipelines(action, completed_pipeline_id, completed_trigger):
+    # action=init: register all pipelines, trigger anything that's dirty
+    # action=update: iterate over all pipelines, register new ones, trigger dirty ones
+    # action=complete: iterate over all pipelines, trigger dependencies
+    # completed_pipeline_id: pipeline id that had just completed (when applicable)
+    # completed_trigger: the trigger for the pipeline that had just completed (when applicable)
+    logging.info("Update Pipelines (%s)", action)
+    status_all_pipeline_ids = set(sts['id'] for sts in status.all_statuses())
+
+    all_pipeline_ids = set()
     for spec in pipelines():
         pipeline_id = spec.pipeline_id
-        if (len(spec.errors) == 0 and
-                (completed is None or completed in spec.dependencies) and
-                (spec.dirty or
-                 status.is_waiting(pipeline_id) or
-                 trigger == 'schedule')):
+        all_pipeline_ids.add(pipeline_id)
+
+        run = False
+        if action == 'init':
             status.register(spec.pipeline_id,
                             spec.cache_hash,
                             spec.pipeline_details,
                             spec.source_details,
                             spec.errors)
-            logging.info('Executing DIRTY task %s', pipeline_id)
+            if spec.dirty:
+                run = True
+        elif action == 'update':
+            registered = True
+            if spec.pipeline_id not in status_all_pipeline_ids:
+                registered = status.register(spec.pipeline_id,
+                                             spec.cache_hash,
+                                             spec.pipeline_details,
+                                             spec.source_details,
+                                             spec.errors)
+                logging.info("NEW Pipeline: %s (registered? %s)", spec, registered)
+            logging.info('Pipeline: %s (dirty: %s, %s != %s?)',
+                         spec.pipeline_id, spec.dirty, executed_hashes.get(spec.pipeline_id), spec.cache_hash)
+            if registered and spec.dirty and executed_hashes.get(spec.pipeline_id) != spec.cache_hash:
+                executed_hashes[spec.pipeline_id] = spec.cache_hash
+                run = True
+        elif action == 'complete':
+            if completed_pipeline_id in spec.dependencies:
+                if spec.dirty or completed_trigger == 'schedule':
+                    status.register(spec.pipeline_id,
+                                    spec.cache_hash,
+                                    spec.pipeline_details,
+                                    spec.source_details,
+                                    spec.errors)
+                    run = True
+
+        if len(spec.errors) == 0 and run:
+            logging.info('Executing task %s (from action "%s")', pipeline_id, action)
             pipeline_status = status.queued(pipeline_id)
             execute_pipeline_task.delay(pipeline_id,
                                         spec.pipeline_details,
                                         spec.path,
-                                        'dirty-task' if trigger is None else trigger,
+                                        'dirty-task' if completed_trigger is None else completed_trigger,
                                         pipeline_status.data['queued'])
+
+    extra_pipelines = status_all_pipeline_ids.difference(all_pipeline_ids)
+    for pipeline_id in extra_pipelines:
+        logging.info("Removing Pipeline: %s", pipeline_id)
+        status.deregister(pipeline_id)
 
 
 @celery_app.task
@@ -67,4 +110,4 @@ def execute_pipeline_task(pipeline_id,
                              False)
 
         if success:
-            trigger_dirties(pipeline_id, trigger)
+            update_pipelines.delay('complete', pipeline_id, trigger)

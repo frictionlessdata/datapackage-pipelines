@@ -149,6 +149,9 @@ class PipelineStatus(object):
         self.save()
         return dirty
 
+    def deregister(self):
+        self.backend.deregister_pipeline_id(self.pipeline_id)
+
     def save(self):
         cur_time = time.time()
         self.data.update({
@@ -190,6 +193,10 @@ class StatusManager(object):
     def register(self, _id, cache_hash, pipeline=(), source=None, errors=()):
         return PipelineStatus(self.backend, _id) \
             .register(cache_hash, pipeline, source, errors)
+
+    def deregister(self, _id):
+        return PipelineStatus(self.backend, _id) \
+            .deregister()
 
     def queued(self, _id):
         ps = PipelineStatus(self.backend, _id)

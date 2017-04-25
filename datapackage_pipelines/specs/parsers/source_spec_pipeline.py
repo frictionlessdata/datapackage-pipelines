@@ -27,7 +27,7 @@ class SourceSpecPipelineParser(BaseParser):
             message = 'Unknown source description kind "{}" in {}' \
                 .format(module_name, fullpath)
             error = SpecError('Unknown source kind', message)
-            yield PipelineSpec(path=dirpath, errors=[error])
+            yield PipelineSpec(pipeline_id=module_name, path=dirpath, errors=[error])
             return
 
         try:
@@ -37,7 +37,7 @@ class SourceSpecPipelineParser(BaseParser):
                     spec = generator.internal_generate(source_spec)
                     for pipeline_id, pipeline_details in spec:
                         pipeline_id = os.path.join(dirpath, pipeline_id)
-                        yield PipelineSpec(path=dirpath,
+                        yield PipelineSpec(path=pipeline_details.get('__path', dirpath),
                                            pipeline_id=pipeline_id,
                                            pipeline_details=pipeline_details,
                                            source_details=source_spec)

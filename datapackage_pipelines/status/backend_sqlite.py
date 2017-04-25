@@ -56,6 +56,14 @@ class SqliteBackend(object):
             all_pipelines.append(pipeline_id)
         self.db[self.ALL_PIPELINES_KEY] = all_pipelines
 
+    def deregister_pipeline_id(self, pipeline_id):
+        all_pipelines = self.db[self.ALL_PIPELINES_KEY]
+        if all_pipelines is None:
+            all_pipelines = []
+        if pipeline_id in all_pipelines:
+            all_pipelines = filter(lambda x: x != pipeline_id, all_pipelines)
+        self.db[self.ALL_PIPELINES_KEY] = all_pipelines
+
     def reset(self):
         self.db[self.ALL_PIPELINES_KEY] = []
 

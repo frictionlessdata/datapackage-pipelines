@@ -5,7 +5,7 @@ ADD . /dpp/
 RUN apk --update --no-cache --virtual=build-dependencies add build-base python3-dev libxml2-dev libxslt-dev postgresql-dev && \
     apk --update --no-cache add libstdc++ redis libpq && \
     pip install psycopg2 datapackage-pipelines-github && \
-    pip install /dpp/ && \
+    pip install -U /dpp/ && \
     apk del build-dependencies && \
     rm -rf /var/cache/apk/*  && \
     mkdir -p /var/redis && chmod 775 /var/redis && chown redis.redis /var/redis

@@ -39,6 +39,10 @@ class RedisBackend(object):
         if self.is_init():
             self.redis.sadd('all-pipelines', pipeline_id.strip())
 
+    def deregister_pipeline_id(self, pipeline_id):
+        if self.is_init():
+            self.redis.srem('all-pipelines', pipeline_id.strip())
+
     def reset(self):
         if self.is_init():
             self.redis.delete('all-pipelines')

@@ -103,11 +103,11 @@ def main():
 
     categories = [
         ['ALL', 'All Pipelines', lambda _, __: True],
-        ['REGISTERED', 'Waiting to run', state_or_dirty],
         ['INVALID', "Can't start", state_and_not_dirty],
+        ['REGISTERED', 'Waiting to run', state_or_dirty],
         ['RUNNING', 'Running', state_and_not_dirty],
+        ['FAILED', 'Failed Execution', state_and_not_dirty],
         ['SUCCEEDED', 'Successful Execution', state_and_not_dirty],
-        ['FAILED', 'Failed Execution', state_and_not_dirty]
     ]
     for item in categories:
         item.append([p for p in statuses
