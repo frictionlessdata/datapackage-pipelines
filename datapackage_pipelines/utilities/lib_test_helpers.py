@@ -9,6 +9,8 @@ import os
 import subprocess
 import sys
 import json
+import mock
+import importlib
 
 
 class ProcessorFixtureTestsBase(object):
@@ -107,3 +109,23 @@ class ProcessorFixtureTestsBase(object):
 
 def rejsonize(s):
     return json.dumps(json.loads(s), sort_keys=True, ensure_ascii=True)
+
+
+@mock.patch('datapackage_pipelines.wrapper.ingest')
+@mock.patch('datapackage_pipelines.wrapper.spew')
+def mock_processor_test(processor, ingest_tuple, mock_spew, mock_ingest):
+    '''Helper function returns the `spew` for a given processor with a given
+    `ingest` tuple.'''
+
+    # Mock all calls to `ingest` to return `ingest_tuple`
+    mock_ingest.return_value = ingest_tuple
+
+    # Call processor
+    file_path = processor
+    module_name, _ = os.path.splitext(os.path.basename(file_path))
+    spec = importlib.util.spec_from_file_location(module_name, file_path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    # Our processor called `spew`. Return the args it was called with.
+    return mock_spew.call_args
