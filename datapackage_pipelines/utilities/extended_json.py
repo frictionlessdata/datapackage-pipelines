@@ -27,7 +27,7 @@ class CommonJSONDecoder(_json.JSONDecoder):
         if 'type{datetime}' in obj:
             try:
                 return datetime.datetime \
-                    .strptime(obj["type{datetime}"], '%Y-%m-%d %H:%M:%S.%f')
+                    .strptime(obj["type{datetime}"], '%Y-%m-%d %H:%M:%S')
             except ValueError:
                 pass
         if 'type{set}' in obj:
