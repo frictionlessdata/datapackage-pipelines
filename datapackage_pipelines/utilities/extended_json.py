@@ -24,6 +24,12 @@ class CommonJSONDecoder(_json.JSONDecoder):
                     .date()
             except ValueError:
                 pass
+        if 'type{datetime}' in obj:
+            try:
+                return datetime.datetime \
+                    .strptime(obj["type{datetime}"], '%Y-%m-%d %H:%M:%S.%f')
+            except ValueError:
+                pass
         if 'type{set}' in obj:
             try:
                 return set(obj['type{set}'])
@@ -47,6 +53,8 @@ class CommonJSONEncoder(_json.JSONEncoder):
 
         if isinstance(obj, decimal.Decimal):
             return {'type{decimal}': str(obj)}
+        elif isinstance(obj, datetime.datetime):
+            return {'type{datetime}': str(obj)}
         elif isinstance(obj, datetime.date):
             return {'type{date}': str(obj)}
         elif isinstance(obj, set):
