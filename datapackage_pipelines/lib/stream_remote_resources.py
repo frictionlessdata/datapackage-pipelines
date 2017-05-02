@@ -72,6 +72,30 @@ def add_constants(extra_headers, extra_values):
     return _func
 
 
+def suffix_remover():
+    def empty_row(row):
+        return all(v is None or (isinstance(v, str) and v == '')
+                   for v in row)
+
+    def _func(extended_rows):
+        stage = 'prefix'
+        for number, headers, row in extended_rows:
+            if stage == 'suffix':
+                if not empty_row(row):
+                    raise ValueError('Expected an empty row, but got %r instead' % row)
+            elif stage == 'body':
+                if empty_row(row):
+                    stage = 'suffix'
+                else:
+                    yield number, headers, row
+            elif stage == 'prefix':
+                if not empty_row(row):
+                    stage = 'body'
+                yield number, headers, row
+
+    return _func
+
+
 def stream_reader(_resource, _url, _ignore_missing):
     def get_opener(__url, __resource):
         def opener():
@@ -93,6 +117,7 @@ def stream_reader(_resource, _url, _ignore_missing):
             constant_values = [constants.get(k) for k in constant_headers]
             _stream = tabulator.Stream(__url, **_params,
                                        post_parse=[row_skipper(skip_rows),
+                                                   suffix_remover(),
                                                    add_constants(constant_headers, constant_values)])
             try:
                 _stream.open()
