@@ -16,7 +16,7 @@ class HashCalculator(object):
         cache_hash = None
         if spec.pipeline_id in self.all_pipeline_ids:
             message = 'Duplicate key {0} in {1}' \
-                .format(spec.pipeline_id, spec.abspath)
+                .format(spec.pipeline_id, spec.path)
             spec.errors.append(SpecError('Duplicate Pipeline Id', message))
 
         else:
