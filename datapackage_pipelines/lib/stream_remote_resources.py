@@ -64,6 +64,14 @@ def row_skipper(rows_to_skip):
     return _func
 
 
+def add_constants(extra_headers, extra_values):
+    def _func(extended_rows):
+        for number, headers, row in extended_rows:
+            row.extend(extra_values)
+            yield number, headers + extra_headers, row
+    return _func
+
+
 def stream_reader(_resource, _url, _ignore_missing):
     def get_opener(__url, __resource):
         def opener():
@@ -71,7 +79,8 @@ def stream_reader(_resource, _url, _ignore_missing):
             _params.update(
                 dict(x for x in __resource.items()
                      if x[0] not in {'path', 'name', 'schema',
-                                     'mediatype', 'skip_rows'}))
+                                     'mediatype', 'skip_rows',
+                                     'constants'}))
             skip_rows = __resource.get('skip_rows', 0)
             if _params.get("format") == "txt":
                 # datapackage-pipelines processing requires having a header row
@@ -79,11 +88,15 @@ def stream_reader(_resource, _url, _ignore_missing):
                 _params["headers"] = ["data"]
                 _params["custom_parsers"] = {"txt": TXTParser}
                 _params["allow_html"] = True
+            constants = _resource.get('constants', {})
+            constant_headers = list(constants.keys())
+            constant_values = [constants.get(k) for k in constant_headers]
             _stream = tabulator.Stream(__url, **_params,
-                                       post_parse=[row_skipper(skip_rows)])
+                                       post_parse=[row_skipper(skip_rows),
+                                                   add_constants(constant_headers, constant_values)])
             try:
                 _stream.open()
-                _headers = dedupe(_stream.headers)
+                _headers = dedupe(_stream.headers + constant_headers)
                 _schema = __resource.get('schema')
                 if _schema is not None:
                     _schema = Schema(_schema)
@@ -91,6 +104,7 @@ def stream_reader(_resource, _url, _ignore_missing):
             except tabulator.exceptions.TabulatorException as e:
                 logging.warning("Error while opening resource from url %s: %r",
                                 _url, e)
+                _stream.close()
                 if not _ignore_missing:
                     raise
                 return {}, [], [], lambda: None
