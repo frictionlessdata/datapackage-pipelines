@@ -57,7 +57,7 @@ worldbank-co2-emissions:
     -
       run: dump.to_zip
       parameters:
-          out-file: co2-emisonss-wb.zip     
+          out-file: co2-emissions-wb.zip     
 ```
 
 In this example we see one pipeline called `worldbank-co2-emissions`. Its pipeline consists of 4 steps:
