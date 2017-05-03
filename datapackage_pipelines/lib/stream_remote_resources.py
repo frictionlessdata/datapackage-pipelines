@@ -78,24 +78,22 @@ def suffix_remover(format):
                    for v in row)
 
     def _func(extended_rows):
-        stage = 'prefix'
+        suffix = False
         for number, headers, row in extended_rows:
             if format == 'txt':
                 yield number, headers, row
                 continue
 
-            if stage == 'suffix':
-                if not empty_row(row):
+            if suffix:
+                if len(row) >= len(headers):
                     logging.warning('Expected an empty row, but got %r instead' % row)
-            elif stage == 'body':
+            else:
                 if empty_row(row):
-                    stage = 'suffix'
+                    continue
+                elif len(row) < len(headers):
+                    suffix = True
                 else:
                     yield number, headers, row
-            elif stage == 'prefix':
-                if not empty_row(row):
-                    stage = 'body'
-                yield number, headers, row
 
     return _func
 
