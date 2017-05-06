@@ -113,7 +113,8 @@ def generic_process_resource(rows,
         row = process_row(row, row_index,
                           spec, resource_index,
                           parameters, stats)
-        yield row
+        if row is not None:
+            yield row
 
 
 def generic_process_resources(resource_iterator,
