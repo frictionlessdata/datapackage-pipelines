@@ -34,8 +34,8 @@ async def dequeue_errors(queue, out):
             out.pop(0)
 
 
-async def collect_stats(infile):
-    reader = asyncio.StreamReader()
+async def collect_stats(infile, limit=None):
+    reader = asyncio.StreamReader(**{"limit": limit} if limit else {})
     reader_protocol = asyncio.StreamReaderProtocol(reader)
     transport, _ = await asyncio.get_event_loop() \
         .connect_read_pipe(lambda: reader_protocol, infile)
@@ -116,7 +116,7 @@ def find_caches(pipeline_steps, pipeline_cwd):
     return pipeline_steps
 
 
-async def construct_process_pipeline(pipeline_steps, pipeline_cwd, errors):
+async def construct_process_pipeline(pipeline_steps, pipeline_cwd, errors, limit=None):
     error_collectors = []
     processes = []
     error_queue = asyncio.Queue()
@@ -146,7 +146,7 @@ async def construct_process_pipeline(pipeline_steps, pipeline_cwd, errors):
         )
 
     error_collectors.append(
-        asyncio.ensure_future(collect_stats(os.fdopen(rfd)))
+        asyncio.ensure_future(collect_stats(os.fdopen(rfd), limit))
     )
 
     def wait_for_finish(_error_collectors,
@@ -169,7 +169,8 @@ async def async_execute_pipeline(pipeline_id,
                                  pipeline_steps,
                                  pipeline_cwd,
                                  trigger,
-                                 use_cache):
+                                 use_cache,
+                                 limit=None):
 
     if status.is_running(pipeline_id):
         logging.info("ALREADY RUNNING %s, BAILING OUT", pipeline_id)
@@ -184,7 +185,7 @@ async def async_execute_pipeline(pipeline_id,
     errors = []
 
     processes, stop_error_collecting = \
-        await construct_process_pipeline(pipeline_steps, pipeline_cwd, errors)
+        await construct_process_pipeline(pipeline_steps, pipeline_cwd, errors, limit)
 
     def kill_all_processes():
         for to_kill in processes:
@@ -249,7 +250,8 @@ def execute_pipeline(spec,
                                                      spec.pipeline_details.get('pipeline', []),
                                                      spec.path,
                                                      trigger,
-                                                     use_cache))
+                                                     use_cache,
+                                                     spec.pipeline_details.get("stream_reader_limit", None)))
     try:
         return loop.run_until_complete(pipeline_task)
     except KeyboardInterrupt:

@@ -998,3 +998,9 @@ To make things easier, you can spin up the web dashboard which provides an overv
 
 To start the web server run `dpp serve` from the command line and browse to http://localhost:5000
 
+## Limitations and known issues
+
+* There is a limit on the data each processor can yield, the default limit is 65536 (might be system dependant).
+  * For most normal use-cases it should be more then enough and most likely if you reach this limit it means you did
+    something wrong in your implementation or in the way you use the pipelines.
+  * However, if you find you need to raise this limit, you can add `stream_reader_limit` attribute to your pipeline
