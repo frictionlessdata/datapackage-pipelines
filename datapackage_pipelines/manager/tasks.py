@@ -46,7 +46,7 @@ async def collect_stats(infile):
         try:
             line = await reader.readline()
         except ValueError:
-            logging.error('Too large stats object!')
+            logging.exception('Too large stats object!')
             break
         if line == b'':
             break
