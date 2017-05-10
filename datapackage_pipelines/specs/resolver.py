@@ -1,6 +1,8 @@
 import logging
 import os
 import hashlib
+from importlib.util import find_spec
+from importlib import import_module
 
 from .errors import SpecError
 
@@ -36,12 +38,8 @@ def convert_dot_notation(executor):
 
 def load_module(module):
     module_name = 'datapackage_pipelines_'+module
-    try:
-        module = __import__(module_name)
-        return module
-    except ImportError:
-        pass
-
+    if find_spec(module_name):
+        return import_module(module_name)
 
 def resolve_executor(step, path, errors):
 
