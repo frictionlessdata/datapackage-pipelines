@@ -40,7 +40,7 @@ def load_module(module):
         module = __import__(module_name)
         return module
     except ImportError:
-        pass
+        logging.exception("failed to import datapackage pipelines module {}".format(module_name))
 
 
 def resolve_executor(step, path, errors):
