@@ -860,13 +860,13 @@ In order to ease maintenance and avoid boilerplate, a _`datapackage-pipelines` *
 Plugins are Python modules named `datapackage_pipelines_<plugin-name>`. Plugins can provide two facilities:
 
 - Processor packs - you can pack processors revolving a certain theme or for a specific purpose in a plugin. Any processor `foo` residing under the `datapackage_pipelines_<plugin-name>.processors` module can be used from within a pipeline as `<plugin-name>.foo`.
-- Pipeline templates - if the class `Generator` exists in the `datapackage_pipelines_<plugin-name>.generator` module, it will be used to generate pipeline based on templates - which we call "source descriptors".
+- Pipeline templates - if the class `Generator` exists in the `datapackage_pipelines_<plugin-name>` module, it will be used to generate pipeline based on templates - which we call "source descriptors".
 
 ### Source Descriptors
 
 A source descriptor is a yaml file containing information which is used to create a full pipeline.
 
-`dpp` will look for files named `<plugin-name>.source-spec.yaml` , and will treat them as input for the pipeline generating code - which should be implemented in a class called `Generator` in the `datapackage_pipelines_<plugin-name>` module in `generator.py`.
+`dpp` will look for files named `<plugin-name>.source-spec.yaml` , and will treat them as input for the pipeline generating code - which should be implemented in a class called `Generator` in the `datapackage_pipelines_<plugin-name>` module.
 
 This class should inherit from `GeneratorBase` and should implement two methods:
 
