@@ -64,14 +64,10 @@ def process_input(infile, validate=False, debug=False):
     resources = dp.get('resources', [])
     original_resources = copy.deepcopy(resources)
 
-    profiles = list(dp.get('profiles', {}).keys())
-    profile = 'tabular'
-    if 'tabular' in profiles:
-        profiles.remove('tabular')
-    if len(profiles) > 0:
-        profile = profiles.pop(0)
-    schema = datapackage.schema.Schema(profile)
-    schema.validate(dp)
+    if len(resources) > 0:
+        profile = dp.get('profile', 'data-package')
+        profile = datapackage.Profile(profile)
+        profile.validate(dp)
 
     infile.readline().strip()
 

@@ -5,6 +5,8 @@ parameters, datapackage, res_iter = ingest()
 
 if datapackage is None:
     datapackage = {}
+if 'profile' not in datapackage:
+    datapackage['profile'] = 'tabular-data-package'
 
 datapackage.setdefault('resources', [])
 
