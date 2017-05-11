@@ -24,7 +24,7 @@ INSTALL_REQUIRES = [
     'six>=1.9',
     'celery',
     'requests',
-    'datapackage',
+    'datapackage<1.0',
     'jsontableschema',
     'jsontableschema-sql>=0.6,<1.0',
     'pyyaml',
