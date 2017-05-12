@@ -143,7 +143,7 @@
                                 <div class="pipline-title">
                                     <div>
                                         <span class="glyphicon glyphicon-expand"></span>
-                                        <a href="#anchor-{{status.slug}}">
+                                        <a href="#anchor-{{category[0]}}-{{status.slug}}">
                                             {{ status.title or status.id }}
                                         </a>
                                     </div>
@@ -164,7 +164,7 @@
                 </div>
                 <div class="col-md-9">
                     {% for status in category[3] %}
-                    <div class="row" id="anchor-{{status.slug}}">
+                    <div class="row" id="anchor-{{category[0]}}-{{status.slug}}">
                         <div class="col-md-12">
                             <div class="panel panel-{{ status.class }}">
                                 <div class="panel-heading">
