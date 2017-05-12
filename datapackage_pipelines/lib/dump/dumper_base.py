@@ -43,6 +43,10 @@ class DumperBase(object):
                 except InvalidCastError:
                     logging.error('Bad value %r for field %s', v, k)
                     raise
+                except TypeError:
+                    logging.error('Failed to cast value %r for field %s, possibly missing from schema', v, k)
+                    raise
+
             yield row
 
     @staticmethod
