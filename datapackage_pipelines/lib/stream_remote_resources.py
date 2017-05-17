@@ -67,7 +67,7 @@ def row_skipper(rows_to_skip):
 def add_constants(extra_headers, extra_values):
     def _func(extended_rows):
         for number, headers, row in extended_rows:
-            row.extend(extra_values)
+            row = row[:len(headers)] + extra_values
             yield number, headers + extra_headers, row
     return _func
 
