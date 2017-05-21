@@ -3,6 +3,30 @@ import json as _json
 
 import decimal
 
+from .lazy_dict import LazyDict
+
+
+class LazyJsonLine(LazyDict):
+
+    def __init__(self, args, kwargs):
+        super().__init__()
+        self.line = args[0]
+        self.args = args
+        self.kwargs = kwargs
+
+    def _evaluate(self):
+        return json.loads(*self.args, **self.kwargs)
+
+    def __str__(self):
+        if self.inner is not None:
+            return str(self.inner)
+        return self.line
+
+    def __repr__(self):
+        if self.inner is not None:
+            return repr(self.inner)
+        return self.line
+
 
 class CommonJSONDecoder(_json.JSONDecoder):
     """
@@ -61,6 +85,26 @@ class CommonJSONEncoder(_json.JSONEncoder):
             return {'type{set}': list(obj)}
 
 
+def _dumpl(*args, **kwargs):
+    obj = args[0]
+    if isinstance(obj, LazyJsonLine):
+        if not obj.dirty:
+            return obj.line
+        else:
+            kwargs['cls'] = CommonJSONEncoder
+            return _json.dumps(obj.inner, **kwargs)
+    kwargs['cls'] = CommonJSONEncoder
+    return _json.dumps(*args, **kwargs)
+
+
+def _loadl(*args, **kwargs):
+    if args[0][0] == '{':
+        kwargs['cls'] = CommonJSONDecoder
+        return LazyJsonLine(args, kwargs)
+    else:
+        return _loads(*args, **kwargs)
+
+
 def _dumps(*args, **kwargs):
     kwargs['cls'] = CommonJSONEncoder
     return _json.dumps(*args, **kwargs)
@@ -84,6 +128,8 @@ def _load(*args, **kwargs):
 class json(object):
     dumps = _dumps
     loads = _loads
+    dumpl = _dumpl
+    loadl = _loadl
     dump = _dump
     load = _load
     JSONDecodeError = _json.JSONDecodeError

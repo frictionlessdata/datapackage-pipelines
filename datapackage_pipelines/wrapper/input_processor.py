@@ -34,7 +34,7 @@ class ResourceIterator(object):
         if line == '':
             self.stopped = True
             raise StopIteration()
-        line = json.loads(line)
+        line = json.loadl(line)
         if self.validate:
             for k, v in line.items():
                 try:
