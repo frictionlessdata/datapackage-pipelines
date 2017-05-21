@@ -25,7 +25,7 @@ class TXTParser(Parser):
 
     def open(self, source, encoding=None, force_parse=False):
         self.close()
-        self.__chars = self.__loader.load(source, encoding, mode='t')
+        self.__chars = self.__loader.load(source, encoding)
         self.reset()
 
     def close(self):
