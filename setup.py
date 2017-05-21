@@ -36,7 +36,8 @@ INSTALL_REQUIRES = [
     'awesome-slugify',
     'flask-cors',
     'flask-jsonpify',
-    'cachetools'
+    'cachetools',
+    'tabulator>=1.0.0a'
 ]
 LINT_REQUIRES = [
     'pylama',
