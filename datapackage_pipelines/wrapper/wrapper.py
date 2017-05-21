@@ -57,7 +57,7 @@ def spew(dp, resources_iterator, stats=None):
             for f in files:
                 f.write('\n')
             for rec in res:
-                line = json.dumps(rec,
+                line = json.dumpl(rec,
                                   sort_keys=True,
                                   ensure_ascii=True)
                 # logging.error('SPEWING: {}'.format(line))
