@@ -1,4 +1,4 @@
-from tabulator.parsers.api import Parser
+from tabulator.parser import Parser
 from tabulator.helpers import reset_stream
 
 
@@ -10,22 +10,22 @@ class TXTParser(Parser):
 
     options = []
 
-    def __init__(self, **options):
+    def __init__(self, loader, **options):
+        super(TXTParser, self).__init__(loader, **options)
 
         # Set attributes
         self.__options = options
         self.__extended_rows = None
-        self.__loader = None
+        self.__loader = loader
         self.__chars = None
 
     @property
     def closed(self):
         return self.__chars is None or self.__chars.closed
 
-    def open(self, source, encoding, loader):
+    def open(self, source, encoding=None, force_parse=False):
         self.close()
-        self.__loader = loader
-        self.__chars = loader.load(source, encoding, mode='t')
+        self.__chars = self.__loader.load(source, encoding, mode='t')
         self.reset()
 
     def close(self):
