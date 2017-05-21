@@ -1,15 +1,32 @@
 import os
 import logging
-
+from datetime import date
 import itertools
+from decimal import Decimal
 
 import tabulator
 
 from jsontableschema import Schema
 
 from datapackage_pipelines.wrapper import ingest, spew
+from datapackage_pipelines.utilities.extended_json import json
 from datapackage_pipelines.utilities.resource_matcher import ResourceMatcher
 from datapackage_pipelines.utilities.tabulator_txt_parser import TXTParser
+
+
+def _tostr(value):
+    if isinstance(value, str):
+        return value
+    elif value is None:
+        return ''
+    elif isinstance(value, (int, float, bool, Decimal)):
+        return str(value)
+    elif isinstance(value, date):
+        return value.isoformat()
+    elif isinstance(value, (list, dict)):
+        return json.dumps(value)
+
+    assert False, "Internal error - don't know how to handle %r of type %r" % (value, type(value))
 
 
 def _reader(opener, _url):
@@ -20,7 +37,7 @@ def _reader(opener, _url):
     num_headers = len(_headers)
     i = 0
     for i, row in enumerate(_reader):
-        row = [str(x).strip() for x in row]
+        row = [_tostr(x).strip() for x in row]
         values = set(row)
         if len(values) == 1 and '' in values:
             # In case of empty rows, just skip them
