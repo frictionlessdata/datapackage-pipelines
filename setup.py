@@ -26,7 +26,7 @@ INSTALL_REQUIRES = [
     'requests',
     'datapackage<1.0',
     'jsontableschema',
-    'jsontableschema-sql>=0.6,<1.0',
+    'jsontableschema-sql>=0.6',
     'pyyaml',
     'mistune',
     'redis',
@@ -37,6 +37,7 @@ INSTALL_REQUIRES = [
     'flask-cors',
     'flask-jsonpify',
     'cachetools',
+    'tabulator>=1.0.0a',
 ]
 SPEEDUP_REQUIRES = [
     'plyvel',
