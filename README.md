@@ -339,6 +339,33 @@ _Parameters_:
       "social security number": null
 ```
 
+### ***`load_resource`***
+
+Loads a tabular resource from an existing data-package. 
+
+_Parameters_:
+
+Loads the resource specified in the `resource` parameter from the data package located at `url`.
+
+`resource` can be 
+- a string, indicating the `name` of the required resource 
+- or an integer, indicating the index of the resource in the data package (0-based) 
+
+All properties of the loaded resource will be copied - `path` and `schema` included.
+
+*Example*:
+
+```yaml
+- run: load_resource
+  parameters: 
+    url: http://example.com/my-datapackage/datapackage.json
+    resource: my-resource
+- run: load_resource
+  parameters:
+    url: http://example.com/my-other-datapackage/datapackage.json
+    resource: 1
+```
+
 
 ### ***`concatenate`***
 
