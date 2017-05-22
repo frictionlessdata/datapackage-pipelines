@@ -15,7 +15,7 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
     # action=complete: iterate over all pipelines, trigger dependencies
     # completed_pipeline_id: pipeline id that had just completed (when applicable)
     # completed_trigger: the trigger for the pipeline that had just completed (when applicable)
-    logging.info("Update Pipelines (%s)", action)
+    logging.debug("Update Pipelines (%s)", action)
     status_all_pipeline_ids = set(sts['id'] for sts in status.all_statuses())
 
     all_pipeline_ids = set()
@@ -41,8 +41,8 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
                                              spec.source_details,
                                              spec.errors)
                 logging.info("NEW Pipeline: %s (registered? %s)", spec, registered)
-            logging.info('Pipeline: %s (dirty: %s, %s != %s?)',
-                         spec.pipeline_id, spec.dirty, executed_hashes.get(spec.pipeline_id), spec.cache_hash)
+            logging.debug('Pipeline: %s (dirty: %s, %s != %s?)',
+                          spec.pipeline_id, spec.dirty, executed_hashes.get(spec.pipeline_id), spec.cache_hash)
             if registered and spec.dirty and executed_hashes.get(spec.pipeline_id) != spec.cache_hash:
                 executed_hashes[spec.pipeline_id] = spec.cache_hash
                 run = True
