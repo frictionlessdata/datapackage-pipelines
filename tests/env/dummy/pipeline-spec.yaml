@@ -1,0 +1,68 @@
+pipeline-test-basic:
+  pipeline:
+    -
+      run: add_metadata
+      parameters:
+        name: 'al-treasury-spending'
+        title: 'Albania Treasury Service'
+        granularity: transactional
+        countryCode: AL
+        homepage: 'http://spending.data.al/en/treasuryservice/list/year/2014/inst_code/1005001'
+    -
+      run: add_resource
+      parameters:
+        name: "treasury"
+        url: "https://raw.githubusercontent.com/openspending/fiscal-data-package-demos/master/al-treasury-spending/data/treasury.csv"
+        schema:
+          fields:
+            -
+              name: "Budget Institution"
+              type: string
+            -
+              name: "Supplier"
+              type: string
+            -
+              name: "Treasury Branch"
+              type: string
+            -
+              name: "Value"
+              type: number
+            -
+              name: "Date registered"
+              type: date
+            -
+              name: "Date executed"
+              type: date
+            -
+              name: "Receipt No"
+              type: string
+            -
+              name: "Kategori Shpenzimi"
+              type: string
+            -
+              name: "Receipt Description"
+              type: string
+    -
+      run: stream_remote_resources
+    -
+      run: pipeline-test-supplier-titleize
+      parameters:
+        key: Supplier
+    -
+      run: ..extract-year
+      parameters:
+         from-key: "Date executed"
+         to-key: "Year"
+    -
+      run: ..common.pipeline-common
+    -
+      run: dump.to_zip
+      parameters:
+          out-file: dump.zip
+
+
+pipeline-test-big-outputs:
+  pipeline:
+    - run: big-outputs
+    - run: big-outputs
+
