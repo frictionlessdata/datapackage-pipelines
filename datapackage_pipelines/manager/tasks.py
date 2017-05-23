@@ -10,11 +10,18 @@ from ..utilities.extended_json import json
 
 from .runners import runner_config
 
+SINK = os.path.join(os.path.dirname(__file__),
+                    '..', 'lib', 'internal', 'sink.py')
+
 
 async def enqueue_errors(step, process, queue):
     out = process.stderr
     while True:
-        line = await out.readline()
+        try:
+            line = await out.readline()
+        except ValueError:
+            logging.error('Received a too long log line (>64KB), truncated')
+            continue
         if line == b'':
             break
         line = line.decode('utf8').rstrip()
@@ -124,6 +131,12 @@ async def construct_process_pipeline(pipeline_steps, pipeline_cwd, errors):
 
     error_aggregator = \
         asyncio.ensure_future(dequeue_errors(error_queue, errors))
+
+    pipeline_steps.append({
+        'run': '(sink)',
+        'executor': SINK,
+        '_cache_hash': pipeline_steps[-1]['_cache_hash']
+    })
 
     for i, step in enumerate(pipeline_steps):
 
