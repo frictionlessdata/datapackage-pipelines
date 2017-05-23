@@ -36,7 +36,10 @@ INSTALL_REQUIRES = [
     'awesome-slugify',
     'flask-cors',
     'flask-jsonpify',
-    'cachetools'
+    'cachetools',
+]
+SPEEDUP_REQUIRES = [
+    'plyvel',
 ]
 LINT_REQUIRES = [
     'pylama',
@@ -56,7 +59,10 @@ setup(
     include_package_data=True,
     install_requires=INSTALL_REQUIRES,
     tests_require=TESTS_REQUIRE,
-    extras_require={'develop': LINT_REQUIRES + TESTS_REQUIRE},
+    extras_require={
+        'develop': LINT_REQUIRES + TESTS_REQUIRE,
+        'speedup': SPEEDUP_REQUIRES,
+    },
     zip_safe=False,
     long_description=README,
     description='{{ DESCRIPTION }}',
@@ -69,7 +75,6 @@ setup(
     ],
     classifiers=[
         'Development Status :: 4 - Beta',
-        'Environment :: Web Environment',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',

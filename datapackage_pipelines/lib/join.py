@@ -1,12 +1,20 @@
 import os
-import sqlite3
 import tempfile
 import collections
-
 import cachetools
+import logging
 
 from datapackage_pipelines.wrapper import ingest, spew
 from datapackage_pipelines.utilities.extended_json import json
+
+try:
+    import plyvell as DB_ENGINE
+    logging.info('Using leveldb for joining')
+    db_kind = 'LevelDB'
+except ImportError:
+    import sqlite3 as DB_ENGINE
+    logging.info('Using sqlite for joining')
+    db_kind = 'sqlite'
 
 
 class KeyCalc(object):
@@ -20,11 +28,11 @@ class KeyCalc(object):
         return self.key_spec.format(**row)
 
 
-class DB(object):
+class SqliteDB(object):
 
     def __init__(self):
         self.tmpfile = tempfile.NamedTemporaryFile()
-        self.db = sqlite3.connect(self.tmpfile.name)
+        self.db = DB_ENGINE.connect(self.tmpfile.name)
         self.cursor = self.db.cursor()
         self.cursor.execute('''CREATE TABLE d (key text, value text)''')
         self.cursor.execute('''CREATE UNIQUE INDEX i ON d (key)''')
@@ -53,6 +61,32 @@ class DB(object):
         keys = cursor.execute('''SELECT key FROM d ORDER BY key ASC''')
         for key, in keys:
             yield key
+
+
+class LevelDB(object):
+
+    def __init__(self):
+        self.tmpdir = tempfile.TemporaryDirectory()
+        self.db = DB_ENGINE.DB(self.tmpdir.name, create_if_missing=True)
+
+    def get(self, key):
+        ret = self.db.get(key.encode('utf8'))
+        if ret is None:
+            raise KeyError()
+        else:
+            return json.loads(ret.decode('utf8'))
+
+    def set(self, key, value):
+        value = json.dumps(value).encode('utf8')
+        key = key.encode('utf8')
+        self.db.put(key, value)
+
+    def keys(self):
+        for key, value in self.db:
+            yield key.decode('utf8')
+
+
+DB = LevelDB if db_kind == 'LevelDB' else SqliteDB
 
 
 class CachedDB(cachetools.LRUCache):
