@@ -8,7 +8,7 @@ from datapackage_pipelines.wrapper import ingest, spew
 from datapackage_pipelines.utilities.extended_json import json
 
 try:
-    import plyvell as DB_ENGINE
+    import plyvel as DB_ENGINE
     logging.info('Using leveldb for joining')
     db_kind = 'LevelDB'
 except ImportError:
