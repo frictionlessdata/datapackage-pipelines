@@ -1,5 +1,5 @@
-#FROM python:3.6-alpine
-FROM rcarmo/alpine-python:3.6.1
+FROM python:3.6-alpine
+#FROM rcarmo/alpine-python:3.6.1
 
 ADD . /dpp/
 
