@@ -10,6 +10,9 @@ all: list
 install:
 	pip install --upgrade -e .[develop]
 
+install-speedup:
+	pip install --upgrade -e .[develop,speedup]
+
 list:
 	@grep '^\.PHONY' Makefile | cut -d' ' -f2- | tr ' ' '\n'
 
