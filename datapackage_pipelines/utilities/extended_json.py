@@ -83,6 +83,9 @@ class CommonJSONEncoder(_json.JSONEncoder):
             return {'type{date}': str(obj)}
         elif isinstance(obj, set):
             return {'type{set}': list(obj)}
+        elif isinstance(obj, LazyDict):
+            return obj.inner
+        return super().default(obj)
 
 
 def _dumpl(*args, **kwargs):
