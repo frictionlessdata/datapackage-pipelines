@@ -47,9 +47,10 @@ class SQLDumper(DumperBase):
                     update_keys = spec['schema'].get('primaryKey', [])
             logging.info('Writing to DB %s -> %s (mode=%s, keys=%s)',
                          resource_name, table_name, mode, update_keys)
-            return storage.write('', resource,
-                                 keyed=True, as_generator=True,
-                                 update_keys=update_keys)
+            return map(lambda written: written.row,
+                       storage.write('', resource,
+                                     keyed=True, as_generator=True,
+                                     update_keys=update_keys))
 
 
 SQLDumper()()
