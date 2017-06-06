@@ -116,7 +116,7 @@ PYTHON_DIALECT = {
         'format': 'fmt:%H:%M:%S.%f'
     },
     'datetime': {
-        'format': '%Y-%m-%d %H:%M:%S.%f'
+        'format': 'fmt:%Y-%m-%d %H:%M:%S.%f'
     },
 }
 
