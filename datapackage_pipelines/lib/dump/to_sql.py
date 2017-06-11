@@ -1,6 +1,5 @@
 import os
 import logging
-import json
 from jsontableschema_sql import Storage
 from sqlalchemy import create_engine
 
