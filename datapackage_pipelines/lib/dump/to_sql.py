@@ -1,5 +1,6 @@
 import os
 import logging
+import json
 from functools import partial
 from jsontableschema_sql import Storage
 from sqlalchemy import create_engine
