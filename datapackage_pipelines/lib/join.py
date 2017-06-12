@@ -185,7 +185,20 @@ else:
     target_key = None
 deduplication = target_key is None
 
-fields = parameters['fields']
+
+def fix_fields(fields_):
+    for field in sorted(fields_.keys()):
+        spec = fields_[field]
+        if spec is None:
+            fields_[field] = spec = {}
+        if 'name' not in spec:
+            spec['name'] = field
+        if 'aggregate' not in spec:
+            spec['aggregate'] = 'any'
+    return fields_
+
+
+fields = fix_fields(parameters['fields'])
 full = parameters.get('full', True)
 
 
@@ -211,7 +224,6 @@ def indexer(resource):
 
 
 def process_target(resource):
-    empty_extra = dict((f, None) for f in fields.keys())
     if deduplication:
         # just empty the iterable
         collections.deque(indexer(resource), maxlen=0)
@@ -229,14 +241,17 @@ def process_target(resource):
             key = target_key(row)
             try:
                 extra = db[key]
+                extra = dict(
+                    (k, AGGREGATORS[fields[k]['aggregate']].finaliser(v))
+                    for k, v in extra.items()
+                )
             except KeyError:
                 if not full:
                     continue
-                extra = empty_extra
-            extra = dict(
-                (k, AGGREGATORS[fields[k]['aggregate']].finaliser(v))
-                for k, v in extra.items()
-            )
+                extra = dict(
+                    (k, row.get(k))
+                    for k in fields.keys()
+                )
             row.update(extra)
             yield row
 
@@ -267,12 +282,6 @@ def process_target_resource(source_spec, resource):
     added_fields = sorted(fields.keys())
     for field in added_fields:
         spec = fields[field]
-        if spec is None:
-            fields[field] = spec = {}
-        if 'name' not in spec:
-            spec['name'] = field
-        if 'aggregate' not in spec:
-            spec['aggregate'] = 'any'
         agg = spec['aggregate']
         data_type = AGGREGATORS[agg].dataType
         if data_type is None:
@@ -281,10 +290,17 @@ def process_target_resource(source_spec, resource):
                             f['name'] == spec_['name'],
                             source_spec['schema']['fields']))
             data_type = source_field['type']
-        target_fields.append({
-            'name': field,
-            'type': data_type
-        })
+        try:
+            existing_field = next(iter(filter(
+                lambda f: f['name'] == field,
+                target_fields)))
+            assert existing_field['type'] == data_type, \
+                'Reusing %s but with different data types: %s != %s' % (field, existing_field['type'], data_type)
+        except StopIteration:
+            target_fields.append({
+                'name': field,
+                'type': data_type
+            })
     return resource
 
 
