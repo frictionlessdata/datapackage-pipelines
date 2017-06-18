@@ -1,5 +1,6 @@
 import os
 import logging
+from functools import partial
 from jsontableschema_sql import Storage
 from sqlalchemy import create_engine
 
@@ -47,16 +48,18 @@ class SQLDumper(DumperBase):
                     update_keys = spec['schema'].get('primaryKey', [])
             logging.info('Writing to DB %s -> %s (mode=%s, keys=%s)',
                          resource_name, table_name, mode, update_keys)
-            return map(self.get_output_row,
+            return map(partial(self.get_output_row, parameters),
                        storage.write('', resource,
                                      keyed=True, as_generator=True,
                                      update_keys=update_keys))
 
-    def get_output_row(self, written):
+    def get_output_row(self, parameters, written):
         row, updated, updated_id = written
-        return {"row": row,
-                "updated": updated,
-                "updated_id": updated_id}
+        if "updated_column" in parameters:
+            row[parameters["updated_column"]] = updated
+        if "updated_id_column" in parameters:
+            row[parameters["updated_id_column"]] = updated_id
+        return row
 
 
 SQLDumper()()
