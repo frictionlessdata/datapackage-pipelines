@@ -29,6 +29,7 @@ class WrappedPythonRunner(LocalPythonRunner):
         abspath = os.path.abspath(cwd)
         cmd = self.parameters['wrapper'].format(path=cwd,
                                                 abspath=abspath,
-                                                cmd=cmd)
+                                                cmd=cmd,
+                                                env=os.environ)
         args = shlex.split(cmd)
         return args
