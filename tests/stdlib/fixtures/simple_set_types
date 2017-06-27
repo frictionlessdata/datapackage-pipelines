@@ -1,0 +1,43 @@
+set_types
+--
+{
+    "types": {
+        "t1": {"type": "number", "groupChar": ","},
+        "t2": null
+    }
+}
+--
+{
+    "name": "test",
+    "resources": [
+        {
+            "name": "concat-a",
+            "path": "concat-a.csv",
+            "schema": { "fields": [
+                {"name": "t1", "type": "string"},
+                {"name": "t2", "type": "string"}
+            ]}
+        }
+    ]
+}
+--
+{"t1": "123,456", "t2": "to-remove"}
+{"t1": "456,123", "t2": "to-remove"}
+--
+{
+    "name": "test",
+    "resources": [
+        {
+            "name": "concat-a",
+            "path": "concat-a.csv",
+            "schema": { "fields": [
+                {"name": "t1", "type": "number", "groupChar": ","}
+            ]}
+        }
+    ]
+}
+--
+{"t1": {"type{decimal}": "123456"}}
+{"t1": {"type{decimal}": "456123"}}
+
+{}

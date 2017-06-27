@@ -19,6 +19,11 @@ class SQLDumper(DumperBase):
                 "Couldn't connect to DB - " \
                 "Please set your '%s' environment variable" % env_var
         self.engine = create_engine(engine)
+        try:
+            self.engine.connect()
+        except OperationalError:
+            logging.exception('Failed to connect to database %s', engine)
+            raise
 
         for k, v in table_to_resource.items():
             v['table-name'] = k
