@@ -1,0 +1,19 @@
+load_metadata
+--
+{
+    "url": "tests/data/datapackage.json"
+}
+--
+{
+    "name": "test",
+    "resources": []
+}
+--
+--
+{
+    "name": "my-spiffy-datapackage",
+    "my-prop": "the-props-value",
+    "resources": []
+}
+--
+{}
