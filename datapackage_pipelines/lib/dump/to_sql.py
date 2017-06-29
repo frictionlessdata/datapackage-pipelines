@@ -3,6 +3,7 @@ import logging
 from functools import partial
 from jsontableschema_sql import Storage
 from sqlalchemy import create_engine
+from sqlalchemy.exc import OperationalError
 
 from datapackage_pipelines.lib.dump.dumper_base import DumperBase
 

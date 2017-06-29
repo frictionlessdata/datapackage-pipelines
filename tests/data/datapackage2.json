@@ -1,0 +1,41 @@
+{
+  "name": "my-spiffy-datapackage",
+  "resources": [
+    {
+      "name": "my-spiffy-resource",
+      "path": "sample.csv",
+      "schema": {
+        "fields": [
+          {"name": "first_name", "type": "string"},
+          {"name": "last_name", "type": "string"},
+          {"name": "house", "type": "string"},
+          {"name": "age", "type": "integer"}
+        ]
+      }
+    },
+    {
+      "name": "the-spiffy-resource",
+      "path": "sample.csv",
+      "schema": {
+        "fields": [
+          {"name": "first_name", "type": "string"},
+          {"name": "last_name", "type": "string"},
+          {"name": "house", "type": "string"},
+          {"name": "age", "type": "integer"}
+        ]
+      }
+    },
+    {
+      "name": "the-other-spiffy-resource",
+      "path": "sample2.csv",
+      "schema": {
+        "fields": [
+          {"name": "first_name", "type": "string"},
+          {"name": "last_name", "type": "string"},
+          {"name": "house", "type": "string"},
+          {"name": "age", "type": "integer"}
+        ]
+      }
+    }
+  ]
+}
