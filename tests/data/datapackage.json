@@ -1,5 +1,6 @@
 {
   "name": "my-spiffy-datapackage",
+  "my-prop": "the-props-value",
   "resources": [
     {
       "name": "my-spiffy-resource",
