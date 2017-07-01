@@ -54,7 +54,7 @@ def make_hierarchies(statuses):
         for k, v in children_.items():
             v['children'] = flatten(v['children'])
             child_keys = list(v['children'].keys())
-            if len(child_keys) == 1:
+            if len(child_keys) == 1 and len(v['pipelines']) == 0:
                 child_key = child_keys[0]
                 children_['/'.join([k, child_key])] = v['children'][child_key]
                 del children_[k]
