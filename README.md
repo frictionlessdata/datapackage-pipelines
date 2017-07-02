@@ -622,6 +622,10 @@ _Parameters_:
   - `update_keys` - Only applicable for the `update` mode. A list of field names that should be used to check for row existence.
         If left unspecified, will use the schema's `primaryKey` as default.
   - `indexes` - TBD
+- `updated_column` - Optional name of a column that will be added to the spewed data with boolean value
+  - `true` - row was updated
+  - `false` - row was inserted
+- `updated_id_column` - Optional name of a column that will be added to the spewed data and contain the id of the updated row in DB.
 
 ### ***`dump.to_path`***
 
