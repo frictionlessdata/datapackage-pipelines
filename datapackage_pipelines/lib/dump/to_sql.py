@@ -32,6 +32,9 @@ class SQLDumper(DumperBase):
         self.converted_resources = \
             dict((v['resource-name'], v) for v in table_to_resource.values())
 
+        self.updated_column = parameters.get("updated_column")
+        self.updated_id_column = parameters.get("updated_id_column")
+
     def handle_resource(self, resource, spec, parameters, datapackage):
         resource_name = spec['name']
         if resource_name not in self.converted_resources:
@@ -53,10 +56,18 @@ class SQLDumper(DumperBase):
                     update_keys = spec['schema'].get('primaryKey', [])
             logging.info('Writing to DB %s -> %s (mode=%s, keys=%s)',
                          resource_name, table_name, mode, update_keys)
-            return map(lambda written: written.row,
+            return map(self.get_output_row,
                        storage.write('', resource,
                                      keyed=True, as_generator=True,
                                      update_keys=update_keys))
+
+    def get_output_row(self, written):
+        row, updated, updated_id = written.row, written.updated, written.updated_id
+        if self.updated_column:
+            row[self.updated_column] = updated
+        if self.updated_id_column:
+            row[self.updated_id_column] = updated_id
+        return row
 
 
 SQLDumper()()
