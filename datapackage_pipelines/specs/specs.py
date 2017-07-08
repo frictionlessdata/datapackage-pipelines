@@ -47,7 +47,10 @@ def find_specs(root_dir='.'):
         for filename in filenames:
             for parser in SPEC_PARSERS:
                 if parser.check_filename(filename):
-                    yield from parser.to_pipeline(os.path.join(dirpath, filename))
+                    fullpath = os.path.join(dirpath, filename)
+                    with open(fullpath, encoding='utf8') as spec_file:
+                        contents = spec_file.read()
+                        yield from parser.to_pipeline(contents, fullpath)
 
 
 def pipelines():

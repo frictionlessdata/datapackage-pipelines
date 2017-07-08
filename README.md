@@ -920,7 +920,10 @@ A source descriptor is a yaml file containing information which is used to creat
 
 This class should inherit from `GeneratorBase` and should implement two methods:
 
-- `generate_pipeline` - which receives the source description and returns a list of pipeline steps
+- `generate_pipeline` - 
+   which receives the source description and returns an iterator of tuples of the form `(id, details)`.
+   `id` might be a pipeline id, in which case details would be an object containing the pipeline definition.
+   If `id` is of the form `:module:`, then the details are treated as a source spec from the specified module. This way a generator a generator might generate other source specs. 
 - `get_schema` - which should return a JSON Schema for validating the source description's structure
 
 #### Example

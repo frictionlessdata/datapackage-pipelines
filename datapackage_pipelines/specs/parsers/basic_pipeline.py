@@ -15,16 +15,16 @@ class BasicPipelineParser(BaseParser):
         return filename == cls.SPEC_FILENAME
 
     @classmethod
-    def to_pipeline(cls, fullpath):
+    def to_pipeline(cls, contents, fullpath):
         dirpath = os.path.dirname(fullpath)
-        with open(fullpath, encoding='utf8') as spec_file:
-            try:
-                spec = yaml.load(spec_file.read())
-                for pipeline_id, pipeline_details in spec.items():
-                    pipeline_id = os.path.join(dirpath, pipeline_id)
-                    yield PipelineSpec(path=dirpath,
-                                       pipeline_id=pipeline_id,
-                                       pipeline_details=pipeline_details)
-            except yaml.YAMLError as e:
-                error = SpecError('Invalid Pipeline Spec', str(e))
-                yield PipelineSpec(path=dirpath, errors=[error])
+
+        try:
+            spec = yaml.load(contents)
+            for pipeline_id, pipeline_details in spec.items():
+                pipeline_id = os.path.join(dirpath, pipeline_id)
+                yield PipelineSpec(path=dirpath,
+                                   pipeline_id=pipeline_id,
+                                   pipeline_details=pipeline_details)
+        except yaml.YAMLError as e:
+            error = SpecError('Invalid Pipeline Spec', str(e))
+            yield PipelineSpec(path=dirpath, errors=[error])

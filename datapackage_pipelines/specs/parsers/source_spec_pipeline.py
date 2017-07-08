@@ -16,7 +16,7 @@ class SourceSpecPipelineParser(BaseParser):
         return filename.endswith(cls.SOURCE_FILENAME_SUFFIX)
 
     @classmethod
-    def to_pipeline(cls, fullpath):
+    def to_pipeline(cls, contents, fullpath):
         filename = os.path.basename(fullpath)
         dirpath = os.path.dirname(fullpath)
 
@@ -31,21 +31,26 @@ class SourceSpecPipelineParser(BaseParser):
             return
 
         try:
-            with open(fullpath, encoding='utf8') as spec_file:
-                source_spec = yaml.load(spec_file.read())
-                if generator.internal_validate(source_spec):
-                    spec = generator.internal_generate(source_spec)
-                    for pipeline_id, pipeline_details in spec:
+            source_spec = yaml.load(contents)
+            if generator.internal_validate(source_spec):
+                spec = generator.internal_generate(source_spec)
+                for pipeline_id, pipeline_details in spec:
+                    if pipeline_id[0] == ':' and pipeline_id[-1] == ':':
+                        module = pipeline_id[1:-1]
+                        filename = module + cls.SOURCE_FILENAME_SUFFIX
+                        yield from cls.to_pipeline(pipeline_details,
+                                                   os.path.join(dirpath, filename))
+                    else:
                         pipeline_id = os.path.join(dirpath, pipeline_id)
                         yield PipelineSpec(path=pipeline_details.get('__path', dirpath),
                                            pipeline_id=pipeline_id,
                                            pipeline_details=pipeline_details,
                                            source_details=source_spec)
-                else:
-                    message = 'Invalid source description for "{}" in {}' \
-                        .format(module_name, fullpath)
-                    error = SpecError('Invalid Source', message)
-                    yield PipelineSpec(path=dirpath, errors=[error])
+            else:
+                message = 'Invalid source description for "{}" in {}' \
+                    .format(module_name, fullpath)
+                error = SpecError('Invalid Source', message)
+                yield PipelineSpec(path=dirpath, errors=[error])
 
         except yaml.YAMLError as e:
             error = SpecError('Invalid Source Spec', str(e))
