@@ -121,6 +121,8 @@ class PipelineStatus(object):
 
     def register(self, cache_hash, pipeline, source, errors):
 
+        assert pipeline is not None
+
         if self.check_running():
             return False
 

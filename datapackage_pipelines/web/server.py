@@ -1,8 +1,10 @@
 import datetime
+import os
 
 import slugify
 import yaml
 import mistune
+from flask import Blueprint
 
 from flask import Flask, render_template, abort, redirect
 from flask_cors import CORS
@@ -12,10 +14,6 @@ from datapackage_pipelines.status import status
 from datapackage_pipelines.specs import register_all_pipelines
 
 register_all_pipelines()
-
-app = Flask(__name__)
-app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
-CORS(app)
 
 
 def datestr(x):
@@ -77,7 +75,10 @@ def make_hierarchies(statuses):
     return groups
 
 
-@app.route("/")
+blueprint = Blueprint('dpp', 'dpp')
+
+
+@blueprint.route("/")
 def main():
     statuses = sorted(status.all_statuses(), key=lambda x: x.get('id'))
     for pipeline in statuses:
@@ -120,7 +121,7 @@ def main():
                            markdown=markdown)
 
 
-@app.route("/api/<field>/<path:pipeline_id>")
+@blueprint.route("/api/<field>/<path:pipeline_id>")
 def pipeline_api(field, pipeline_id):
     fields = {
         'log': 'reason',
@@ -141,7 +142,7 @@ def pipeline_api(field, pipeline_id):
     return jsonify(ret)
 
 
-@app.route("/badge/<path:pipeline_id>")
+@blueprint.route("/badge/<path:pipeline_id>")
 def badge(pipeline_id):
     if not pipeline_id.startswith('./'):
         pipeline_id = './' + pipeline_id
@@ -162,3 +163,11 @@ def badge(pipeline_id):
     return redirect('https://img.shields.io/badge/{}-{}-{}.svg'.format(
         'pipeline', status_text, status_color
     ))
+
+
+app = Flask(__name__)
+app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
+CORS(app)
+
+url_prefix = os.environ.get('DPP_BASE_PATH', '/')
+app.register_blueprint(blueprint, url_prefix=url_prefix)
