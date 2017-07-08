@@ -7,7 +7,7 @@ RUN apk --update --no-cache --virtual=build-dependencies add \
         build-base python3-dev \libxml2-dev libxslt-dev postgresql-dev  && \
     apk --update --no-cache add libstdc++ redis libpq && \
     apk --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --update add leveldb leveldb-dev && \
-    pip install psycopg2 datapackage-pipelines-github && \
+    pip install psycopg2 datapackage-pipelines-github datapackage-pipelines-sourcespec-registry && \
     pip install -U /dpp/[speedup] && \
     apk del build-dependencies && \
     rm -rf /var/cache/apk/*  && \
