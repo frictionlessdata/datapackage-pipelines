@@ -1,11 +1,13 @@
 import os
 
+import yaml
 from datapackage_pipelines.status import status
 
 from .resolver import resolve_executor
 from .errors import SpecError
 from .schemas.validator import validate_pipeline
 from .parsers import BasicPipelineParser, SourceSpecPipelineParser
+from .parsers.base_parser import PipelineSpec
 from .hashers import HashCalculator, DependencyMissingException
 
 SPEC_PARSERS = [
@@ -50,7 +52,12 @@ def find_specs(root_dir='.'):
                     fullpath = os.path.join(dirpath, filename)
                     with open(fullpath, encoding='utf8') as spec_file:
                         contents = spec_file.read()
-                        yield from parser.to_pipeline(contents, fullpath)
+                        try:
+                            spec = yaml.load(contents)
+                            yield from parser.to_pipeline(spec, fullpath)
+                        except yaml.YAMLError as e:
+                            error = SpecError('Invalid Spec File %s' % fullpath, str(e))
+                            yield PipelineSpec(path=dirpath, errors=[error])
 
 
 def pipelines():

@@ -41,5 +41,5 @@ class BaseParser(object):
         raise NotImplementedError()
 
     @classmethod
-    def to_pipeline(cls, contents, fullpath):
+    def to_pipeline(cls, spec, fullpath):
         raise NotImplementedError()
