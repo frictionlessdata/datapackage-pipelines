@@ -1,6 +1,7 @@
 import datetime
 import os
 
+import logging
 import slugify
 import yaml
 import mistune
@@ -78,7 +79,7 @@ def make_hierarchies(statuses):
 blueprint = Blueprint('dpp', 'dpp')
 
 
-@blueprint.route("/")
+@blueprint.route("")
 def main():
     statuses = sorted(status.all_statuses(), key=lambda x: x.get('id'))
     for pipeline in statuses:
@@ -121,7 +122,7 @@ def main():
                            markdown=markdown)
 
 
-@blueprint.route("/api/<field>/<path:pipeline_id>")
+@blueprint.route("api/<field>/<path:pipeline_id>")
 def pipeline_api(field, pipeline_id):
     fields = {
         'log': 'reason',
@@ -142,7 +143,7 @@ def pipeline_api(field, pipeline_id):
     return jsonify(ret)
 
 
-@blueprint.route("/badge/<path:pipeline_id>")
+@blueprint.route("badge/<path:pipeline_id>")
 def badge(pipeline_id):
     if not pipeline_id.startswith('./'):
         pipeline_id = './' + pipeline_id
@@ -170,4 +171,8 @@ app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 CORS(app)
 
 url_prefix = os.environ.get('DPP_BASE_PATH', '/')
+if not url_prefix.endswith('/'):
+    url_prefix += '/'
+logging.info('Serving on path %s', url_prefix)
+
 app.register_blueprint(blueprint, url_prefix=url_prefix)
