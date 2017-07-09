@@ -1,7 +1,5 @@
 import os
 
-import yaml
-
 from ..resolver import resolve_generator
 from ..errors import SpecError
 from .base_parser import BaseParser, PipelineSpec

@@ -1,8 +1,5 @@
 import os
 
-import yaml
-
-from ..errors import SpecError
 from .base_parser import BaseParser, PipelineSpec
 
 
