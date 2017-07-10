@@ -1,7 +1,7 @@
 add_resource
 --
 {
-    "name": "my-empty-env-resource",
+    "name": "my-env-resource",
     "url": "env://EXISTENT_ENV"
 }
 --
