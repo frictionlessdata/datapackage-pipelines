@@ -1,0 +1,24 @@
+add_resource
+--
+{
+    "name": "my-empty-env-resource",
+    "url": "env://EXISTENT_ENV"
+}
+--
+{
+    "name": "test",
+    "resources": []
+}
+--
+--
+{
+    "name": "test",
+    "resources": [
+        {
+            "name": "my-empty-env-resource",
+            "url": "file://tests/data/sample.csv"
+        }
+    ]
+}
+--
+{}
