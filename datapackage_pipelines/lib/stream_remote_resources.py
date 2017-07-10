@@ -189,14 +189,6 @@ for resource in datapackage['resources']:
         new_resource_iterator.append(next(resource_iterator))
     elif 'url' in resource:
         url = resource['url']
-        if url.startswith('env://'):
-            env_var = url[6:]
-            engine = os.environ.get(env_var)
-            assert engine is not None, \
-                "Couldn't connect to DB - " \
-                "Please set your '%s' environment variable" % env_var
-
-            url = engine
 
         name = resource['name']
         if not resources.match(name):
