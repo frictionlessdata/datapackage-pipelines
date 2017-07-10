@@ -43,7 +43,7 @@ as described in documentation - https://www.pylint.org/.
 For example to check only errors:
 
 ```
-$ pylanma
+$ pylama
 ```
 
 ## Testing
