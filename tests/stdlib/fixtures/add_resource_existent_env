@@ -15,7 +15,7 @@ add_resource
     "name": "test",
     "resources": [
         {
-            "name": "my-empty-env-resource",
+            "name": "my-env-resource",
             "url": "file://tests/data/sample.csv"
         }
     ]
