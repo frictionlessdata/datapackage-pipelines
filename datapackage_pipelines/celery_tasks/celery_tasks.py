@@ -48,7 +48,7 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
                 run = True
         elif action == 'complete':
             if completed_pipeline_id in spec.dependencies:
-                if spec.dirty or completed_trigger == 'schedule':
+                if spec.dirty or completed_trigger == 'scheduled':
                     status.register(spec.pipeline_id,
                                     spec.cache_hash,
                                     spec.pipeline_details,
