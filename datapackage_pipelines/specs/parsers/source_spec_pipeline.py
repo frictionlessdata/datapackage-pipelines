@@ -19,6 +19,7 @@ class SourceSpecPipelineParser(BaseParser):
         dirpath = os.path.dirname(fullpath)
 
         module_name = filename[:-len(cls.SOURCE_FILENAME_SUFFIX)]
+        pipeline_id = os.path.join(dirpath, module_name)
         generator = resolve_generator(module_name)
 
         if generator is None:
@@ -29,21 +30,27 @@ class SourceSpecPipelineParser(BaseParser):
             return
 
         if generator.internal_validate(source_spec):
-            spec = generator.internal_generate(source_spec)
-            for pipeline_id, pipeline_details in spec:
-                if pipeline_id[0] == ':' and pipeline_id[-1] == ':':
-                    module = pipeline_id[1:-1]
-                    filename = module + cls.SOURCE_FILENAME_SUFFIX
-                    yield from cls.to_pipeline(pipeline_details,
-                                               os.path.join(dirpath, filename))
-                else:
-                    pipeline_id = os.path.join(dirpath, pipeline_id)
-                    yield PipelineSpec(path=pipeline_details.get('__path', dirpath),
-                                       pipeline_id=pipeline_id,
-                                       pipeline_details=pipeline_details,
-                                       source_details=source_spec)
+            try:
+                spec = generator.internal_generate(source_spec)
+                for pipeline_id, pipeline_details in spec:
+                    if pipeline_id[0] == ':' and pipeline_id[-1] == ':':
+                        module = pipeline_id[1:-1]
+                        filename = module + cls.SOURCE_FILENAME_SUFFIX
+                        yield from cls.to_pipeline(pipeline_details,
+                                                   os.path.join(dirpath, filename))
+                    else:
+                        pipeline_id = os.path.join(dirpath, pipeline_id)
+                        yield PipelineSpec(path=pipeline_details.get('__path', dirpath),
+                                           pipeline_id=pipeline_id,
+                                           pipeline_details=pipeline_details,
+                                           source_details=source_spec)
+            except Exception as e:
+                message = '"{}" in {}' \
+                    .format(e, fullpath)
+                error = SpecError('Error converting source', message)
+                yield PipelineSpec(pipeline_id=pipeline_id, path=dirpath, errors=[error])
         else:
             message = 'Invalid source description for "{}" in {}' \
                 .format(module_name, fullpath)
             error = SpecError('Invalid Source', message)
-            yield PipelineSpec(path=dirpath, errors=[error])
+            yield PipelineSpec(pipeline_id=pipeline_id, path=dirpath, errors=[error])
