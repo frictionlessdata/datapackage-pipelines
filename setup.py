@@ -50,7 +50,7 @@ TESTS_REQUIRE = [
 ]
 README = read('README.md')
 VERSION = read(PACKAGE, 'VERSION')
-PACKAGES = find_packages(exclude=['examples', 'tests'])
+PACKAGES = find_packages(exclude=['examples', 'tests', '.tox'])
 
 # Run
 setup(
