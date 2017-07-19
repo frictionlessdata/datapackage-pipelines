@@ -81,7 +81,7 @@ def process_input(infile, validate=False, debug=False):
         # validate incoming data)
         ret = []
         for resource, orig_resource in zip(_resources, _original_resources):
-            if 'path' not in resource:
+            if 'path' not in resource or 'schema' not in resource:
                 continue
 
             res_iter = ResourceIterator(infile,

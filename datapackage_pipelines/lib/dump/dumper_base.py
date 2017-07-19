@@ -1,12 +1,15 @@
 import os
 import csv
+import shutil
 import tempfile
 import logging
 import hashlib
 
+import requests
 from jsontableschema.exceptions import InvalidCastError
 from jsontableschema.model import SchemaModel
 
+from ...utilities.resources import internal_tabular
 from ...utilities.extended_json import json
 from ...wrapper import ingest, spew
 
@@ -134,6 +137,8 @@ class CSVDumper(DumperBase):
 
         # Make sure all resources are proper CSVs
         for resource in datapackage['resources']:
+            if not internal_tabular(resource):
+                continue
             resource['encoding'] = 'utf-8'
             basename, _ = os.path.splitext(resource['path'])
             resource['path'] = basename + '.csv'
@@ -156,6 +161,23 @@ class CSVDumper(DumperBase):
         temp_file_name = temp_file.name
         temp_file.close()
         self.write_file_to_output(temp_file_name, 'datapackage.json')
+        self.copy_non_tabular_resources(datapackage)
+
+    def copy_non_tabular_resources(self, datapackage):
+        for resource in datapackage['resources']:
+            if 'url' in resource and 'path' in resource and 'schema' not in resource:
+                url = resource['url']
+                delete = False
+                if url.startswith('http://') or url.startswith('https://'):
+                    tmp = tempfile.NamedTemporaryFile(delete=False)
+                    stream = requests.get(url, stream=True)
+                    shutil.copyfileobj(stream, tmp)
+                    tmp.close()
+                    url = tmp.name
+                    delete = True
+                self.write_file_to_output(url, resource['path'])
+                if delete:
+                    os.unlink(url)
 
     def write_file_to_output(self, filename, path):
         raise NotImplementedError()

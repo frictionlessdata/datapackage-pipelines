@@ -638,6 +638,12 @@ _Parameters_:
   This path will be created if it doesn't exist, as well as internal data-package paths.
 
   If omitted, then `.` (the current directory) will be assumed.
+  
+#### *Note*
+
+All the `dump.to_*` processors will handle non-tabular resources as well.
+These resources must have both a `url` and `path` properties, and _must not_ contain a `schema` property.
+In such cases, the file will be downloaded from the `url` and placed in the provided `path`.
 
 ## Custom Processors
 

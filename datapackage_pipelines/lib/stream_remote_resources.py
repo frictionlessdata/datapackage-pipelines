@@ -9,6 +9,7 @@ import tabulator
 from jsontableschema import Schema
 
 from datapackage_pipelines.wrapper import ingest, spew
+from datapackage_pipelines.utilities.resources import external_tabular, internal_tabular
 from datapackage_pipelines.utilities.extended_json import json
 from datapackage_pipelines.utilities.resource_matcher import ResourceMatcher
 from datapackage_pipelines.utilities.tabulator_txt_parser import TXTParser
@@ -185,9 +186,7 @@ new_resource_iterator = []
 for resource in datapackage['resources']:
 
     path = resource.get('path')
-    if path is not None and '://' not in path:
-        new_resource_iterator.append(next(resource_iterator))
-    elif 'url' in resource:
+    if external_tabular(resource):
         url = resource['url']
         if url.startswith('env://'):
             env_var = url[6:]
@@ -202,11 +201,14 @@ for resource in datapackage['resources']:
         if not resources.match(name):
             continue
 
-        path = os.path.join('data', name + '.csv')
-        resource['path'] = path
+        if 'path' not in resource:
+            path = os.path.join('data', name + '.csv')
+            resource['path'] = path
 
         del resource['url']
         rows = stream_reader(resource, url, ignore_missing or url == "")
         new_resource_iterator.append(rows)
+    elif internal_tabular(resource):
+        new_resource_iterator.append(next(resource_iterator))
 
 spew(datapackage, new_resource_iterator)

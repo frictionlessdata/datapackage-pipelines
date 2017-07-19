@@ -6,6 +6,8 @@ from ..utilities.extended_json import json
 
 from .input_processor import process_input
 
+from ..utilities.resources import internal_tabular
+
 
 logging.basicConfig(level=logging.DEBUG,
                     format="%(levelname)-8s:%(message)s")
@@ -44,8 +46,7 @@ def spew(dp, resources_iterator, stats=None):
         files.append(gzip.open(cache_filename+'.ongoing', 'wt'))
 
     expected_resources = \
-        len(list(filter(lambda x: x.get('path') is not None,
-                        dp.get('resources', []))))
+        len(list(filter(internal_tabular, dp.get('resources', []))))
     row_count = 0
     try:
         for f in files:

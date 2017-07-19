@@ -23,6 +23,9 @@ def process_datapackage(datapackage_):
         if not resources.match(name):
             continue
 
+        if 'schema' not in resource:
+            continue
+
         fields = resource.setdefault('schema', {}).get('fields', [])
         for field_name, field_definition in types.items():
             field_name_re = re.compile(field_name)
