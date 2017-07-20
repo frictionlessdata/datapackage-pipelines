@@ -6,6 +6,11 @@ import decimal
 from .lazy_dict import LazyDict
 
 
+DATE_FORMAT = '%Y-%m-%d'
+DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+TIME_FORMAT = '%H:%M:%S'
+
+
 class LazyJsonLine(LazyDict):
 
     def __init__(self, args, kwargs):
@@ -44,14 +49,14 @@ class CommonJSONDecoder(_json.JSONDecoder):
         if 'type{date}' in obj:
             try:
                 return datetime.datetime \
-                    .strptime(obj["type{date}"], '%Y-%m-%d') \
+                    .strptime(obj["type{date}"], DATE_FORMAT) \
                     .date()
             except ValueError:
                 pass
         if 'type{datetime}' in obj:
             try:
                 return datetime.datetime \
-                    .strptime(obj["type{datetime}"], '%Y-%m-%d %H:%M:%S')
+                    .strptime(obj["type{datetime}"], DATETIME_FORMAT)
             except ValueError:
                 pass
         if 'type{set}' in obj:
@@ -78,9 +83,9 @@ class CommonJSONEncoder(_json.JSONEncoder):
         if isinstance(obj, decimal.Decimal):
             return {'type{decimal}': str(obj)}
         elif isinstance(obj, datetime.datetime):
-            return {'type{datetime}': str(obj)}
+            return {'type{datetime}': obj.strftime(DATETIME_FORMAT)}
         elif isinstance(obj, datetime.date):
-            return {'type{date}': str(obj)}
+            return {'type{date}': obj.strftime(DATE_FORMAT)}
         elif isinstance(obj, set):
             return {'type{set}': list(obj)}
         elif isinstance(obj, LazyDict):

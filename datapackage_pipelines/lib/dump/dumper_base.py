@@ -10,7 +10,7 @@ from jsontableschema.exceptions import InvalidCastError
 from jsontableschema.model import SchemaModel
 
 from ...utilities.resources import internal_tabular
-from ...utilities.extended_json import json
+from ...utilities.extended_json import json, DATETIME_FORMAT, DATE_FORMAT, TIME_FORMAT
 from ...wrapper import ingest, spew
 
 
@@ -113,19 +113,22 @@ PYTHON_DIALECT = {
         'groupChar': ''
     },
     'date': {
-        'format': 'fmt:%Y-%m-%d'
+        'format': 'fmt:' + DATE_FORMAT
     },
     'time': {
-        'format': 'fmt:%H:%M:%S.%f'
+        'format': 'fmt:' + TIME_FORMAT
     },
     'datetime': {
-        'format': 'fmt:%Y-%m-%d %H:%M:%S.%f'
+        'format': 'fmt:' + DATETIME_FORMAT
     },
 }
 
 SERIALIZERS = {
     'array': json.dumps,
     'object': json.dumps,
+    'datetime': lambda d: d.strftime(DATETIME_FORMAT),
+    'date': lambda d: d.strftime(DATE_FORMAT),
+    'time': lambda d: d.strftime(TIME_FORMAT),
 }
 
 
