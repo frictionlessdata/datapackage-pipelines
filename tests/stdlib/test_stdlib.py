@@ -5,6 +5,7 @@ ROOT_PATH = os.path.join(os.path.dirname(__file__), '..', '..')
 ENV = os.environ.copy()
 ENV['PYTHONPATH'] = ROOT_PATH
 
+ENV['EXISTENT_ENV'] = 'file://tests/data/sample.csv'
 
 class StdlibfixtureTests(ProcessorFixtureTestsBase):
 

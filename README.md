@@ -239,6 +239,8 @@ _Parameters_:
 
 You should provide the `name` and `url` attributes, and other optional attributes as defined in the [spec]([http://specs.frictionlessdata.io/data-packages/#resource-information).
 
+Note that `url` also supports `env://<environment-variable>`, which indicates that the resource url should be fetched from the indicated environment variable.  This is useful in case you are supplying a string with sensitive information (such as an SQL connection string for streaming from a database table).
+
 Parameters are basically arguments that are passed to a `tabulator.Stream` instance (see the [API](https://github.com/frictionlessdata/tabulator-py#api-reference)).
 Other than those, you can pass a `constants` parameter which should be a mapping of headers to string values.
 When used in conjunction with `stream_remote_resources`, these constant values will be added to each generated row 
