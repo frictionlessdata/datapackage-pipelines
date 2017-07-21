@@ -32,11 +32,21 @@ worldbank-co2-emissions:
     -
       run: dump.to_zip
       parameters:
-          out-file: co2-emisonss-wb.zip     
+          out-file: co2-emisonss-wb.zip
     -
       run: dump.to_path
       parameters:
           out-path: co2-emisonss-wb
+    -
+      run: dump.to_zip
+      parameters:
+          format: json
+          out-file: co2-emisonss-wb.json.zip     
+    -
+      run: dump.to_path
+      parameters:
+          format: json
+          out-path: co2-emisonss-wb-json
     -
       run: dump.to_sql
       parameters:

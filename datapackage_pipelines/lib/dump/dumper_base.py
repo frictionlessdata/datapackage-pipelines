@@ -1,5 +1,4 @@
 import os
-import csv
 import shutil
 import tempfile
 import logging
@@ -10,8 +9,10 @@ from jsontableschema.exceptions import InvalidCastError
 from jsontableschema.model import SchemaModel
 
 from ...utilities.resources import internal_tabular
-from ...utilities.extended_json import json, DATETIME_FORMAT, DATE_FORMAT, TIME_FORMAT
+from ...utilities.extended_json import json
 from ...wrapper import ingest, spew
+
+from .file_formats import CSVFormat, JSONFormat
 
 
 class DumperBase(object):
@@ -107,54 +108,23 @@ class DumperBase(object):
         pass
 
 
-PYTHON_DIALECT = {
-    'number': {
-        'decimalChar': '.',
-        'groupChar': ''
-    },
-    'date': {
-        'format': 'fmt:' + DATE_FORMAT
-    },
-    'time': {
-        'format': 'fmt:' + TIME_FORMAT
-    },
-    'datetime': {
-        'format': 'fmt:' + DATETIME_FORMAT
-    },
-}
-
-SERIALIZERS = {
-    'array': json.dumps,
-    'object': json.dumps,
-    'datetime': lambda d: d.strftime(DATETIME_FORMAT),
-    'date': lambda d: d.strftime(DATE_FORMAT),
-    'time': lambda d: d.strftime(TIME_FORMAT),
-}
-
-
-class CSVDumper(DumperBase):
+class FileDumper(DumperBase):
 
     def prepare_datapackage(self, datapackage, params):
         datapackage = \
-            super(CSVDumper, self).prepare_datapackage(datapackage, params)
+            super(FileDumper, self).prepare_datapackage(datapackage, params)
+
+        file_format = params.get('format', 'csv')
+        self.file_format = {
+            'csv': CSVFormat,
+            'json': JSONFormat
+        }[file_format]()
 
         # Make sure all resources are proper CSVs
         for resource in datapackage['resources']:
             if not internal_tabular(resource):
                 continue
-            resource['encoding'] = 'utf-8'
-            basename, _ = os.path.splitext(resource['path'])
-            resource['path'] = basename + '.csv'
-            resource['format'] = 'csv'
-            resource['dialect'] = dict(
-                lineTerminator='\r\n',
-                delimiter=',',
-                doubleQuote=True,
-                quoteChar='"',
-                skipInitialSpace=False
-            )
-            for field in resource.get('schema', {}).get('fields', []):
-                field.update(PYTHON_DIALECT.get(field['type'], {}))
+            self.file_format.prepare_resource(resource)
 
         return datapackage
 
@@ -185,13 +155,13 @@ class CSVDumper(DumperBase):
     def write_file_to_output(self, filename, path):
         raise NotImplementedError()
 
-    def rows_processor(self, resource, spec, _csv_file, _writer, _fields):
+    def rows_processor(self, resource, spec, temp_file, writer, fields):
         for row in resource:
-            transformed_row = CSVDumper.__transform_row(row, _fields)
-            _writer.writerow(transformed_row)
+            self.file_format.write_row(writer, row, fields)
             yield row
-        filename = _csv_file.name
-        _csv_file.close()
+        self.file_format.finalize_file(writer)
+        filename = temp_file.name
+        temp_file.close()
         self.write_file_to_output(filename, spec['path'])
 
     def handle_resource(self, resource, spec, _, datapackage):
@@ -201,25 +171,12 @@ class CSVDumper(DumperBase):
         fields = schema['fields']
         headers = list(map(lambda field: field['name'], fields))
 
-        csv_writer = csv.DictWriter(temp_file, headers)
-        csv_writer.writeheader()
+        writer = self.file_format.initialize_file(temp_file, headers)
 
         fields = dict((field['name'], field) for field in fields)
 
         return self.rows_processor(resource,
                                    spec,
                                    temp_file,
-                                   csv_writer,
+                                   writer,
                                    fields)
-
-    @staticmethod
-    def __transform_value(value, field_type):
-        if value is None:
-            return ''
-        serializer = SERIALIZERS.get(field_type, str)
-        return serializer(value)
-
-    @staticmethod
-    def __transform_row(row, fields):
-        return dict((k, CSVDumper.__transform_value(v, fields[k]['type']))
-                    for k, v in row.items())

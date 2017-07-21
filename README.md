@@ -594,14 +594,6 @@ The resulting dataset could look like:
 | Vertigo 2 (2016) | Lindsay Lohan | Lee Ka Shing | 2          | 11000000       | 22000000       |
 | ...              |               |              |            |                |                |
 
-### ***`dump.to_zip`***
-
-Saves the datapackage to a zipped archive.
-
-_Parameters_:
-
-- `out-file` - Name of the output file where the zipped data will be stored
-
 ### ***`dump.to_sql`***
 
 Saves the datapackage to an SQL database.
@@ -629,6 +621,15 @@ _Parameters_:
   - `false` - row was inserted
 - `updated_id_column` - Optional name of a column that will be added to the spewed data and contain the id of the updated row in DB.
 
+### ***`dump.to_zip`***
+
+Saves the datapackage to a zipped archive.
+
+_Parameters_:
+
+- `out-file` - Name of the output file where the zipped data will be stored
+- `format` - Specifies the type of output files generated: `csv` (the default) or `json` 
+
 ### ***`dump.to_path`***
 
 Saves the datapackage to a filesystem path.
@@ -640,10 +641,12 @@ _Parameters_:
   This path will be created if it doesn't exist, as well as internal data-package paths.
 
   If omitted, then `.` (the current directory) will be assumed.
-  
+
+- `format` - Specifies the type of output files generated: `csv` (the default) or `json` 
+
 #### *Note*
 
-All the `dump.to_*` processors will handle non-tabular resources as well.
+`dump.to_path` and `dump.to_zip` processors will handle non-tabular resources as well.
 These resources must have both a `url` and `path` properties, and _must not_ contain a `schema` property.
 In such cases, the file will be downloaded from the `url` and placed in the provided `path`.
 

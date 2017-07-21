@@ -1,10 +1,10 @@
 import zipfile
 import os
 
-from datapackage_pipelines.lib.dump.dumper_base import CSVDumper
+from datapackage_pipelines.lib.dump.dumper_base import FileDumper
 
 
-class ZipDumper(CSVDumper):
+class ZipDumper(FileDumper):
 
     def initialize(self, params):
         super(ZipDumper, self).initialize(params)

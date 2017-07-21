@@ -1,10 +1,10 @@
 import os
 import shutil
 
-from datapackage_pipelines.lib.dump.dumper_base import CSVDumper
+from datapackage_pipelines.lib.dump.dumper_base import FileDumper
 
 
-class PathDumper(CSVDumper):
+class PathDumper(FileDumper):
 
     def initialize(self, params):
         super(PathDumper, self).initialize(params)
