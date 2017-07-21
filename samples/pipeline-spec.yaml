@@ -12,9 +12,18 @@ worldbank-co2-emissions:
       run: add_resource
       parameters:
         name: 'global-data'
+        url: /Users/adam/Downloads/API_EN.ATM.CO2E.KT_DS2_en_csv_v2.csv
+        headers: 5
+        #headers: 4
+        #url: "http://api.worldbank.org/v2/en/indicator/EN.ATM.CO2E.PC?downloadformat=excel"
+        #format: xls
+    -
+      run: add_resource
+      parameters:
+        name: 'global-data-json'
+        headers: 4
         url: "http://api.worldbank.org/v2/en/indicator/EN.ATM.CO2E.PC?downloadformat=excel"
         format: xls
-        headers: 4
     -
       run: stream_remote_resources
     -
@@ -33,20 +42,12 @@ worldbank-co2-emissions:
       run: dump.to_zip
       parameters:
           out-file: co2-emisonss-wb.zip
+          force-format: false
     -
       run: dump.to_path
       parameters:
           out-path: co2-emisonss-wb
-    -
-      run: dump.to_zip
-      parameters:
-          format: json
-          out-file: co2-emisonss-wb.json.zip     
-    -
-      run: dump.to_path
-      parameters:
-          format: json
-          out-path: co2-emisonss-wb-json
+          force-format: false
     -
       run: dump.to_sql
       parameters:

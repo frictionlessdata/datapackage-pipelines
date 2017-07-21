@@ -9,9 +9,6 @@ if datapackage is None:
 
 datapackage.setdefault('resources', [])
 
-assert 'path' not in parameters, \
-    "You can only add remote resources using this processor"
-
 if parameters['url'].startswith('env://'):
     env_var = parameters['url'][6:]
     env_url = os.environ.get(env_var)

@@ -114,17 +114,27 @@ class FileDumper(DumperBase):
         datapackage = \
             super(FileDumper, self).prepare_datapackage(datapackage, params)
 
-        file_format = params.get('format', 'csv')
-        self.file_format = {
-            'csv': CSVFormat,
-            'json': JSONFormat
-        }[file_format]()
+        force_format = params.get('force-format', True)
+        forced_format = params.get('format', 'csv')
+
+        self.file_formatters = {}
 
         # Make sure all resources are proper CSVs
         for resource in datapackage['resources']:
             if not internal_tabular(resource):
                 continue
-            self.file_format.prepare_resource(resource)
+            if force_format:
+                file_format = forced_format
+            else:
+                _, file_format = os.path.splitext(resource['path'])
+                file_format = file_format[1:]
+            file_formatter = {
+                'csv': CSVFormat,
+                'json': JSONFormat
+            }.get(file_format)
+            if file_format is not None:
+                self.file_formatters[resource['name']] = file_formatter()
+                self.file_formatters[resource['name']].prepare_resource(resource)
 
         return datapackage
 
@@ -134,7 +144,8 @@ class FileDumper(DumperBase):
         temp_file_name = temp_file.name
         temp_file.close()
         self.write_file_to_output(temp_file_name, 'datapackage.json')
-        self.copy_non_tabular_resources(datapackage)
+        if parameters.get('handle-non-tabular', False):
+            self.copy_non_tabular_resources(datapackage)
 
     def copy_non_tabular_resources(self, datapackage):
         for resource in datapackage['resources']:
@@ -156,27 +167,31 @@ class FileDumper(DumperBase):
         raise NotImplementedError()
 
     def rows_processor(self, resource, spec, temp_file, writer, fields):
+        file_formatter = self.file_formatters[spec['name']]
         for row in resource:
-            self.file_format.write_row(writer, row, fields)
+            file_formatter.write_row(writer, row, fields)
             yield row
-        self.file_format.finalize_file(writer)
+        file_formatter.finalize_file(writer)
         filename = temp_file.name
         temp_file.close()
         self.write_file_to_output(filename, spec['path'])
 
     def handle_resource(self, resource, spec, _, datapackage):
-        schema = spec['schema']
+        if spec['name'] in self.file_formatters:
+            schema = spec['schema']
 
-        temp_file = tempfile.NamedTemporaryFile(mode="w+", delete=False)
-        fields = schema['fields']
-        headers = list(map(lambda field: field['name'], fields))
+            temp_file = tempfile.NamedTemporaryFile(mode="w+", delete=False)
+            fields = schema['fields']
+            headers = list(map(lambda field: field['name'], fields))
 
-        writer = self.file_format.initialize_file(temp_file, headers)
+            writer = self.file_formatters[spec['name']].initialize_file(temp_file, headers)
 
-        fields = dict((field['name'], field) for field in fields)
+            fields = dict((field['name'], field) for field in fields)
 
-        return self.rows_processor(resource,
-                                   spec,
-                                   temp_file,
-                                   writer,
-                                   fields)
+            return self.rows_processor(resource,
+                                       spec,
+                                       temp_file,
+                                       writer,
+                                       fields)
+        else:
+            return resource
