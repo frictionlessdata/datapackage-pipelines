@@ -1,10 +1,44 @@
+import datetime
+import decimal
 import os
 import logging
+
+import copy
+from datapackage_pipelines.utilities.extended_json import json
 from jsontableschema_sql import Storage
 from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError
 
 from datapackage_pipelines.lib.dump.dumper_base import DumperBase
+
+
+def jsonize(obj):
+    return json.dumps(obj)
+
+
+def strize(obj):
+    if isinstance(obj, dict):
+        return dict(
+            (k, strize(v))
+            for k, v in obj.items()
+        )
+    elif isinstance(obj, (str, int, float, bool)):
+        return obj
+    elif isinstance(obj, datetime.date):
+        return obj.isoformat()
+    elif isinstance(obj, decimal.Decimal):
+        return float(obj)
+    elif isinstance(obj, (list, set)):
+        return [strize(x) for x in obj]
+    elif obj is None:
+        return None
+    assert False, "Don't know how to handle object %r" % obj
+
+
+OBJECT_FIXERS = {
+    'sqlite': [strize, jsonize],
+    'postgresql': [strize]
+}
 
 
 class SQLDumper(DumperBase):
@@ -48,7 +82,9 @@ class SQLDumper(DumperBase):
                 storage.delete('')
             if '' not in storage.buckets:
                 logging.info('Creating DB table %s', table_name)
-                storage.create('', spec['schema'])
+                storage.create('',
+                               self.normalise_schema_for_engine(self.engine.dialect.name,
+                                                                spec['schema']))
             update_keys = None
             if mode == 'update':
                 update_keys = converted_resource.get('update_keys')
@@ -57,9 +93,13 @@ class SQLDumper(DumperBase):
             logging.info('Writing to DB %s -> %s (mode=%s, keys=%s)',
                          resource_name, table_name, mode, update_keys)
             return map(self.get_output_row,
-                       storage.write('', resource,
-                                     keyed=True, as_generator=True,
-                                     update_keys=update_keys))
+                       storage.write(
+                           '',
+                           self.normalise_for_engine(self.engine.dialect.name,
+                                                     resource, spec),
+                           keyed=True, as_generator=True,
+                           update_keys=update_keys
+                       ))
 
     def get_output_row(self, written):
         row, updated, updated_id = written.row, written.updated, written.updated_id
@@ -68,6 +108,29 @@ class SQLDumper(DumperBase):
         if self.updated_id_column:
             row[self.updated_id_column] = updated_id
         return row
+
+    def normalise_schema_for_engine(self, dialect, schema):
+        schema = copy.deepcopy(schema)
+        for field in schema['fields']:
+            if dialect == 'sqlite' and field['type'] in ['object', 'array']:
+                field['type'] = 'string'
+        logging.error('DIALECT: %r, SCHEMA %r', dialect, schema)
+        return schema
+
+    def normalise_for_engine(self, dialect, resource, spec):
+        actions = {}
+        for field in spec['schema']['fields']:
+            if field['type'] in ['array', 'object']:
+                assert dialect in OBJECT_FIXERS, "Don't know how to handle %r connection dialect" % dialect
+                actions.setdefault(field['name'], []).extend(OBJECT_FIXERS[dialect])
+        logging.error('ACTIONS %r', actions)
+
+        for row in resource:
+            for name, action_list in actions.items():
+                for action in action_list:
+                    row[name] = action(row.get(name))
+
+            yield row
 
 
 SQLDumper()()

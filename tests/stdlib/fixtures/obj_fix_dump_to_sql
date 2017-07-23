@@ -1,0 +1,52 @@
+dump.to_sql
+--
+{
+    "engine": "sqlite://",
+    "tables": {
+        "test": {
+            "resource-name": "my-spiffy-resource"
+        }
+    }
+}
+--
+{
+    "name": "test",
+    "resources": [
+        {
+            "name": "my-spiffy-resource",
+            "path": "data/my-data.csv",
+            "schema": {
+                "fields": [
+                    {"name": "myarray", "type": "array"},
+                    {"name": "myobject", "type": "object"},
+                    {"name": "mynumber", "type": "number"},
+                    {"name": "mydate", "type": "date"}
+                ]
+            }
+        }
+    ]
+}
+--
+{"myarray":[{"type{date}": "2016-12-31"}, {"type{datetime}": "2016-11-10 12:34:56"}], "myobject": {"n1": {"n2": {"type{decimal}": "78.99"}}}, "mynumber": 2.0, "mydate": {"type{date}": "2016-12-31"}}
+--
+{
+    "name": "test",
+    "resources": [
+        {
+            "name": "my-spiffy-resource",
+            "path": "data/my-data.csv",
+            "schema": {
+                "fields": [
+                    {"name": "myarray", "type": "array"},
+                    {"name": "myobject", "type": "object"},
+                    {"name": "mynumber", "type": "number"},
+                    {"name": "mydate", "type": "date"}
+                ]
+            }
+        }
+    ]
+}
+--
+{"myarray": "[\"2016-12-31\", \"2016-11-10T12:34:56\"]", "mydate": {"type{date}": "2016-12-31"}, "mynumber": 2.0, "myobject": "{\"n1\": {\"n2\": 78.99}}"}
+
+{"dataset_name": "test", "count_of_rows": 1}

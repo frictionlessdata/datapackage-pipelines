@@ -85,8 +85,8 @@ class ProcessorFixtureTestsBase(object):
         '''Receives processor output and performs standard tests. Can be
         overridden in subclasses.'''
         (actual_dp, *actual_data) = processor_output.split('\n\n', 1)
-        assert actual_dp == dp_out, \
-            "unexpected value for output datapackage: {}".format(actual_dp)
+        assert actual_dp.strip() == dp_out.strip(), \
+            "unexpected value for output datapackage:\n{!r}\n{!r}".format(actual_dp, dp_out)
         if len(actual_data) > 0:
             actual_data = actual_data[0]
             actual_data = actual_data.split('\n')
