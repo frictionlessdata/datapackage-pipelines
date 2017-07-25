@@ -1,5 +1,4 @@
 import jsonschema
-import logging
 
 
 class GeneratorBase(object):

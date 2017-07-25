@@ -136,6 +136,7 @@ def stream_reader(_resource, _url, _ignore_missing):
                 except KeyError:
                     logging.error("Unknown format %r", format)
                     raise
+                _params['format'] = format
                 _params.update(
                     dict(x for x in __resource.items()
                          if x[0] in parser_cls.options))
