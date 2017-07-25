@@ -120,19 +120,26 @@ def stream_reader(_resource, _url, _ignore_missing):
     def get_opener(__url, __resource):
         def opener():
             _params = dict(headers=1)
-            _params.update(
-                dict(x for x in __resource.items()
-                     if x[0] not in {'path', 'name', 'schema',
-                                     'mediatype', 'skip_rows',
-                                     'constants'}))
             skip_rows = __resource.get('skip_rows', 0)
-            format = _params.get("format")
+            format = __resource.get("format")
             if format == "txt":
                 # datapackage-pipelines processing requires having a header row
                 # for txt format we add a single "data" column
                 _params["headers"] = ["data"]
                 _params["custom_parsers"] = {"txt": TXTParser}
                 _params["allow_html"] = True
+            else:
+                if format is None:
+                    _, format = tabulator.helpers.detect_scheme_and_format(__url)
+                try:
+                    parser_cls = tabulator.helpers.import_attribute(tabulator.config.PARSERS[format])
+                except KeyError:
+                    logging.error("Unknown format %r", format)
+                    raise
+                _params.update(
+                    dict(x for x in __resource.items()
+                         if x[0] in parser_cls.options))
+
             constants = _resource.get('constants', {})
             constant_headers = list(constants.keys())
             constant_values = [constants.get(k) for k in constant_headers]

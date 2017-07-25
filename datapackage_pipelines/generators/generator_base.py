@@ -1,4 +1,5 @@
 import jsonschema
+import logging
 
 
 class GeneratorBase(object):
@@ -18,7 +19,7 @@ class GeneratorBase(object):
         schema = self._get_schema()
         try:
             schema.validate(source)
-        except jsonschema.ValidationError:
+        except jsonschema.ValidationError as e:
             return False
         return True
 

@@ -17,6 +17,6 @@ class StdlibfixtureTests(ProcessorFixtureTestsBase):
         return os.path.join(ROOT_PATH, 'datapackage_pipelines', 'lib', processor.strip() + '.py')
 
 
-for filename, testfunc in StdlibfixtureTests(os.path.join(os.path.dirname(__file__), 'fixtures')).get_tests():
-    globals()['test_stdlib_%s' % filename] = testfunc
+for filename, _func in StdlibfixtureTests(os.path.join(os.path.dirname(__file__), 'fixtures')).get_tests():
+    globals()['test_stdlib_%s' % filename] = _func
 

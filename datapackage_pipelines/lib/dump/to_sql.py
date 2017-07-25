@@ -114,7 +114,6 @@ class SQLDumper(DumperBase):
         for field in schema['fields']:
             if dialect == 'sqlite' and field['type'] in ['object', 'array']:
                 field['type'] = 'string'
-        logging.error('DIALECT: %r, SCHEMA %r', dialect, schema)
         return schema
 
     def normalise_for_engine(self, dialect, resource, spec):
@@ -123,7 +122,6 @@ class SQLDumper(DumperBase):
             if field['type'] in ['array', 'object']:
                 assert dialect in OBJECT_FIXERS, "Don't know how to handle %r connection dialect" % dialect
                 actions.setdefault(field['name'], []).extend(OBJECT_FIXERS[dialect])
-        logging.error('ACTIONS %r', actions)
 
         for row in resource:
             for name, action_list in actions.items():
