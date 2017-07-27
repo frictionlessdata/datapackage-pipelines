@@ -139,6 +139,11 @@ def stream_reader(_resource, _url, _ignore_missing):
                 _params.update(
                     dict(x for x in __resource.items()
                          if x[0] in parser_cls.options))
+                _params.update(
+                    dict(x for x in __resource.items()
+                         if x[0] in {'headers', 'scheme', 'encoding', 'sample_size', 'allow_html',
+                                     'force_strings', 'force_parse'}))
+
             _params['format'] = format
 
             constants = _resource.get('constants', {})
