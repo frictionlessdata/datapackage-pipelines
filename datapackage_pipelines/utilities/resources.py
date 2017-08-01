@@ -1,4 +1,4 @@
-def external_tabular(descriptor):
+def streamable(descriptor):
     return 'url' in descriptor
 
 
