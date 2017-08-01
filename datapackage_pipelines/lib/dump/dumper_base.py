@@ -96,7 +96,7 @@ class DumperBase(object):
         for row in resource:
             counter += 1
             if counter % 10000 == 0:
-                logging.info('Dumped %d rows', DumperBase.get_attr(datapackage, self.datapackage_rowcount) + counter)
+                logging.info('Dumped %d rows', DumperBase.get_attr(datapackage, self.datapackage_rowcount, 0) + counter)
             yield row
         DumperBase.inc_attr(datapackage, self.datapackage_rowcount, counter)
         DumperBase.inc_attr(resource_spec, self.resource_rowcount, counter)
@@ -185,7 +185,7 @@ class FileDumper(DumperBase):
                 delete = False
                 if url.startswith('http://') or url.startswith('https://'):
                     tmp = tempfile.NamedTemporaryFile(delete=False)
-                    stream = requests.get(url, stream=True)
+                    stream = requests.get(url, stream=True).raw
                     shutil.copyfileobj(stream, tmp)
                     tmp.close()
                     url = tmp.name
