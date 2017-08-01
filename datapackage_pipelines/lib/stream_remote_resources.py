@@ -9,7 +9,7 @@ import tabulator
 from jsontableschema import Schema
 
 from datapackage_pipelines.wrapper import ingest, spew
-from datapackage_pipelines.utilities.resources import external_tabular, internal_tabular
+from datapackage_pipelines.utilities.resources import streamable, internal_tabular
 from datapackage_pipelines.utilities.extended_json import json
 from datapackage_pipelines.utilities.resource_matcher import ResourceMatcher
 from datapackage_pipelines.utilities.tabulator_txt_parser import TXTParser
@@ -199,7 +199,7 @@ new_resource_iterator = []
 for resource in datapackage['resources']:
 
     path = resource.get('path')
-    if external_tabular(resource):
+    if streamable(resource):
         url = resource['url']
 
         name = resource['name']

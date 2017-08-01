@@ -640,6 +640,15 @@ _Parameters_:
 - `format` - Specifies the type of output files to be generated (if `force-format` is true): `csv` (the default) or `json`
 - `handle-non-tabular` - Specifies whether non tabular resources (i.e. resources without a `schema`) should be dumped as well to the resulting datapackage.
     (See note below for more details)
+- `counters` - Specifies whether to count rows, bytes or md5 hash of the data and where it should be stored. An object with the following properties:
+    - `datapackage-rowcount`: Where should a total row count of the datapackage be stored (default: `count_of_rows`)
+    - `datapackage-bytes`: Where should a total byte count of the datapackage be stored (default: `bytes`)
+    - `datapackage-hash`: Where should an md5 hash of the datapackage be stored (default: `hash`)
+    - `resource-rowcount`: Where should a total row count of each resource be stored (default: `count_of_rows`)
+    - `resource-bytes`: Where should a total byte count of each resource be stored (default: `bytes`)
+    - `resource-hash`: Where should an md5 hash of each resource be stored (default: `hash`)
+    Each of these attributes could be set to null in order to prevent the counting.
+    Each property could be a dot-separated string, for storing the data inside a nested object (e.g. `stats.rowcount`)
 
 ### ***`dump.to_zip`***
 
@@ -650,6 +659,7 @@ _Parameters_:
 - `out-file` - Name of the output file where the zipped data will be stored
 - `force-format` and `format` - Same as in `dump.to_path` 
 - `handle-non-tabular` - Same as in `dump.to_path` 
+- `counters` - Same as in `dump.to_path` 
 
 #### *Note*
 

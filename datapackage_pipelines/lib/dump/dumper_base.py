@@ -20,6 +20,13 @@ class DumperBase(object):
     def __init__(self):
         self.__params, self.__datapackage, self.__res_iter = ingest()
         self.stats = {}
+        counters = self.__params.get('counters', {})
+        self.datapackage_rowcount = counters.get('datapackage-rowcount', 'count_of_rows')
+        self.datapackage_bytes = counters.get('datapackage-bytes', 'bytes')
+        self.datapackage_hash = counters.get('datapackage-hash', 'hash')
+        self.resource_rowcount = counters.get('resource-rowcount', 'count_of_rows')
+        self.resource_bytes = counters.get('resource-bytes', 'bytes')
+        self.resource_hash = counters.get('resource-hash', 'hash')
 
     def __call__(self):
         self.initialize(self.__params)
@@ -38,6 +45,37 @@ class DumperBase(object):
         return datapackage
 
     @staticmethod
+    def get_attr(obj, prop, default=None):
+        if prop is None:
+            return
+        prop = prop.split('.')
+        while len(prop) > 1:
+            obj = obj.get(prop.pop(0), {})
+        prop = prop.pop(0)
+        return obj.get(prop, default)
+
+    @staticmethod
+    def set_attr(obj, prop, value):
+        if prop is None:
+            return
+        prop = prop.split('.')
+        while len(prop) > 1:
+            obj = obj.setdefault(prop.pop(0), {})
+        prop = prop.pop(0)
+        obj[prop] = value
+
+    @staticmethod
+    def inc_attr(obj, prop, value):
+        if prop is None:
+            return
+        prop = prop.split('.')
+        while len(prop) > 1:
+            obj = obj.setdefault(prop.pop(0), {})
+        prop = prop.pop(0)
+        obj.setdefault(prop, 0)
+        obj[prop] += value
+
+    @staticmethod
     def schema_validator(resource):
         schema = SchemaModel(resource.spec['schema'])
         for row in resource:
@@ -53,46 +91,39 @@ class DumperBase(object):
 
             yield row
 
-    @staticmethod
-    def row_counter(datapackage, resource_spec, resource):
-        resource_spec['count_of_rows'] = 0
+    def row_counter(self, datapackage, resource_spec, resource):
+        counter = 0
         for row in resource:
-            datapackage['count_of_rows'] += 1
-            resource_spec['count_of_rows'] += 1
-            if datapackage['count_of_rows'] % 1 == 10000:
+            counter += 1
+            if counter % 10000 == 0:
                 logging.info('Dumped %d rows', datapackage['count_of_rows'])
             yield row
-
-    @staticmethod
-    def hasher(datapackage, resource_spec, resource):
-        resource_spec['hash'] = hashlib.md5()
-        for row in resource:
-            row_dump = json.dumps(row,
-                                  sort_keys=True,
-                                  ensure_ascii=True)\
-                           .encode('utf8')
-            resource_spec['hash'].update(row_dump)
-            datapackage['hash'].update(row_dump)
-            yield row
-        resource_spec['hash'] = resource_spec['hash'].hexdigest()
+        DumperBase.inc_attr(datapackage, self.datapackage_rowcount, counter)
+        DumperBase.inc_attr(resource_spec, self.resource_rowcount, counter)
 
     def handle_resources(self, datapackage,
                          resource_iterator,
                          parameters, stats):
-        datapackage['count_of_rows'] = 0
-        datapackage['hash'] = hashlib.md5()
         for resource in resource_iterator:
             resource_spec = resource.spec
             ret = self.handle_resource(DumperBase.schema_validator(resource),
                                        resource_spec,
                                        parameters,
                                        datapackage)
-            ret = DumperBase.row_counter(datapackage, resource_spec, ret)
-            ret = DumperBase.hasher(datapackage, resource_spec, ret)
+            ret = self.row_counter(datapackage, resource_spec, ret)
             yield ret
 
-        datapackage['hash'] = datapackage['hash'].hexdigest()
-        stats['count_of_rows'] = datapackage['count_of_rows']
+        # Calculate datapackage hash
+        if self.datapackage_hash:
+            datapackage_hash = hashlib.md5(
+                        json.dumps(datapackage,
+                                   sort_keys=True,
+                                   ensure_ascii=True).encode('ascii')
+                    ).hexdigest()
+            DumperBase.set_attr(datapackage, self.datapackage_hash, datapackage_hash)
+
+        stats['count_of_rows'] = DumperBase.get_attr(datapackage, self.datapackage_rowcount)
+        stats['bytes'] = DumperBase.get_attr(datapackage, self.datapackage_bytes)
         stats['dataset_name'] = datapackage['name']
 
     def handle_datapackage(self, datapackage, parameters, stats):
@@ -166,12 +197,29 @@ class FileDumper(DumperBase):
     def write_file_to_output(self, filename, path):
         raise NotImplementedError()
 
-    def rows_processor(self, resource, spec, temp_file, writer, fields):
+    def rows_processor(self, resource, spec, temp_file, writer, fields, datapackage):
         file_formatter = self.file_formatters[spec['name']]
         for row in resource:
             file_formatter.write_row(writer, row, fields)
             yield row
         file_formatter.finalize_file(writer)
+
+        # File size:
+        filesize = temp_file.tell()
+        DumperBase.inc_attr(datapackage, self.datapackage_bytes, filesize)
+        DumperBase.inc_attr(spec, self.resource_bytes, filesize)
+
+        # File Hash:
+        if self.resource_hash:
+            temp_file.seek(0)
+            hasher = hashlib.md5()
+            data = 'x'
+            while len(data) > 0:
+                data = temp_file.read(1024)
+                hasher.update(data.encode('utf8'))
+            DumperBase.set_attr(spec, self.resource_hash, hasher.hexdigest())
+
+        # Finalise
         filename = temp_file.name
         temp_file.close()
         self.write_file_to_output(filename, spec['path'])
@@ -192,6 +240,7 @@ class FileDumper(DumperBase):
                                        spec,
                                        temp_file,
                                        writer,
-                                       fields)
+                                       fields,
+                                       datapackage)
         else:
             return resource
