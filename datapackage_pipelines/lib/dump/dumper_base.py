@@ -96,7 +96,7 @@ class DumperBase(object):
         for row in resource:
             counter += 1
             if counter % 10000 == 0:
-                logging.info('Dumped %d rows', datapackage['count_of_rows'])
+                logging.info('Dumped %d rows', DumperBase.get_attr(datapackage, self.datapackage_rowcount) + counter)
             yield row
         DumperBase.inc_attr(datapackage, self.datapackage_rowcount, counter)
         DumperBase.inc_attr(resource_spec, self.resource_rowcount, counter)
