@@ -77,17 +77,22 @@ class DumperBase(object):
 
     @staticmethod
     def schema_validator(resource):
-        schema = SchemaModel(resource.spec['schema'])
+        schema = resource.spec['schema']
+        field_names = set([f['name'] for f in schema['fields']])
+        schema = SchemaModel(schema)
+        warned_fields = set()
         for row in resource:
             for k, v in row.items():
-                try:
-                    schema.cast(k, v)
-                except InvalidCastError:
-                    logging.error('Bad value %r for field %s', v, k)
-                    raise
-                except TypeError:
-                    logging.error('Failed to cast value %r for field %s, possibly missing from schema', v, k)
-                    raise
+                if k in field_names:
+                    try:
+                        schema.cast(k, v)
+                    except InvalidCastError:
+                        logging.error('Bad value %r for field %s', v, k)
+                        raise
+                else:
+                    if k not in warned_fields:
+                        warned_fields.add(k)
+                        logging.warning('Encountered field %r, not in schema', k)
 
             yield row
 
