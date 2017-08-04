@@ -595,6 +595,38 @@ The resulting dataset could look like:
 | Vertigo 2 (2016) | Lindsay Lohan | Lee Ka Shing | 2          | 11000000       | 22000000       |
 | ...              |               |              |            |                |                |
 
+
+### ***`filter`***
+
+Filter streamed resources. 
+
+`filter` accepts equality and inequality conditions and tests each row in the selected resources. If none of the conditions validate, the row will be discarded. 
+
+_Parameters_:
+
+- `resources` - Which resources to apply the filter on. Same semantics as `resources` in `stream_remote_resources`.
+- `in` - Mapping of keys to values which translate to `row[key] == value` conditions  
+- `out` - Mapping of keys to values which translate to `row[key] != value` conditions
+  
+Both `in` and `out` should be a list of objects.
+
+*Examples*:
+
+Filtering just American and European countries, leaving out countries whose main language is English:
+```yaml
+- run: filter
+  parameters: 
+    resources: world_population
+    in:
+      - continent: america 
+      - continent: europe 
+- run: filter
+  parameters: 
+    resources: world_population
+    out:
+      - language: english 
+```
+
 ### ***`dump.to_sql`***
 
 Saves the datapackage to an SQL database.

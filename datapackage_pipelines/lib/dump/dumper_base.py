@@ -17,8 +17,8 @@ from .file_formats import CSVFormat, JSONFormat
 
 class DumperBase(object):
 
-    def __init__(self):
-        self.__params, self.__datapackage, self.__res_iter = ingest()
+    def __init__(self, debug=False):
+        self.__params, self.__datapackage, self.__res_iter = ingest(debug)
         self.stats = {}
         counters = self.__params.get('counters', {})
         self.datapackage_rowcount = counters.get('datapackage-rowcount', 'count_of_rows')
