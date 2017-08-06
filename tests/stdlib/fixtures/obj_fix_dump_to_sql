@@ -1,6 +1,10 @@
 dump.to_sql
 --
 {
+    "comment": [
+        "this test involves data types which work differently in sqlite and postgresql",
+        "so, forcing sqlite engine here"
+    ],
     "engine": "sqlite://",
     "tables": {
         "test": {

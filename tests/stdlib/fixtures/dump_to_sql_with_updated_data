@@ -1,7 +1,6 @@
 dump.to_sql
 --
 {
-    "engine": "sqlite://",
     "tables": {
         "test": {
             "resource-name": "my-spiffy-resource"

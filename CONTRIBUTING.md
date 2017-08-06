@@ -63,3 +63,13 @@ All positional arguments and options after `--` will be passed to `py.test`:
 ```
 tox -e py35 -- -v tests/<path>
 ```
+
+## Testing with other databases
+
+By default the tests run with sqlite in-memory database which doesn't require any setup.
+However, most projects will want to use a real DB, like PostgreSQL.
+
+To run the tests with a different DB, you need to supply the connection string via environment variable.
+For example, to run with local postgresql databsae:
+
+`OVERRIDE_TEST_DB=postgresql://postgres:123456@localhost:5432/postgres py.test`

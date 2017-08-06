@@ -21,25 +21,21 @@ class ProcessorFixtureTestsBase(object):
     def get_tests(self):
         for dirpath, _, filenames in os.walk(self._fixtures_path):
             for filename in filenames:
-                data_in, data_out, dp_out, params, processor = \
-                    self._load_fixture(dirpath, filename)
+                data_in, data_out, dp_out, params, processor = self._load_fixture(dirpath, filename)
+                yield filename, self._get_test_func(processor, params, data_in, dp_out, data_out, filename)
 
-                def inner(processor_, params_, data_in_, dp_out_, data_out_):
-                    def inner2():
-                        return self._test_single_fixture(
-                            processor_, params_,
-                            data_in_, dp_out_,
-                            data_out_,
-                            self._get_procesor_env())
-                    return inner2
-                yield filename, inner(processor, params,
-                                      data_in, dp_out, data_out)
+    def _get_test_func(self, processor, params, data_in, dp_out, data_out, filename):
+        def inner():
+            return self._test_single_fixture(processor, params, data_in, dp_out, data_out,
+                                             self._get_procesor_env(filename))
+        return inner
 
-    def _get_procesor_env(self):
+    def _get_procesor_env(self, filename):
         """
         Set the environment variables for the sub-process that runs the
         processor extending classes will most likely want to set the PYTHONPATH
         variable to correct value
+        you can use the filename param to setup DB or other dependencies differently for each fixture
         """
         return {}
 
