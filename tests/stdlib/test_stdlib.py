@@ -20,16 +20,17 @@ class StdlibfixtureTests(ProcessorFixtureTestsBase):
             engine = create_engine(ENV['DPP_DB_ENGINE'])
             engine.execute(text("DROP TABLE IF EXISTS test;"))
         if filename == "dump_to_sql_update_mode__update":
+            engine = create_engine(ENV['DPP_DB_ENGINE'])
             engine.execute(text("""
                 CREATE TABLE test (
-                  id integet not null primary key,
+                  id integer not null primary key,
                   mystring text,
                   mynumber double precision,
                   mydate date
                 )
             """))
             engine.execute(text("""
-                INSERT INTO text VALUES (1, "foo", 5.6, null);
+                INSERT INTO test VALUES (1, 'foo', 5.6, null);
             """))
         return ENV
 
