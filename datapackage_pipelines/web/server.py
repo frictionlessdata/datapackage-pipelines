@@ -122,6 +122,16 @@ def main():
                            markdown=markdown)
 
 
+@blueprint.route("api/raw/<path:pipeline_id>")
+def pipeline_raw_api(pipeline_id):
+    if not pipeline_id.startswith('./'):
+        pipeline_id = './' + pipeline_id
+    pipeline_status = status.get_status(pipeline_id)
+    if pipeline_status is None:
+        abort(404)
+    return jsonify(pipeline_status)
+
+
 @blueprint.route("api/<field>/<path:pipeline_id>")
 def pipeline_api(field, pipeline_id):
     fields = {
