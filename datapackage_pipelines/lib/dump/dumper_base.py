@@ -129,6 +129,7 @@ class DumperBase(object):
 
         stats['count_of_rows'] = DumperBase.get_attr(datapackage, self.datapackage_rowcount)
         stats['bytes'] = DumperBase.get_attr(datapackage, self.datapackage_bytes)
+        stats['hash'] = DumperBase.get_attr(datapackage, self.datapackage_hash)
         stats['dataset_name'] = datapackage['name']
 
     def handle_datapackage(self, datapackage, parameters, stats):
