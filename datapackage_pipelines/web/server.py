@@ -146,8 +146,11 @@ def pipeline_api(field, pipeline_id):
     if pipeline_status is None or field is None:
         abort(404)
     ret = pipeline_status[field]
-    if field != 'reason':
-        ret = yamlize(ret)
+    if ret is not None:
+        if field != 'reason':
+            ret = yamlize(ret)
+    else:
+        ret = ''
     ret = ret.split('\n')
     ret = {'text': ret}
     return jsonify(ret)

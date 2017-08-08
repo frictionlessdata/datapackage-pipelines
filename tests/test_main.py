@@ -8,5 +8,5 @@ def test_pipeline():
     '''Tests a few pipelines.'''
     for spec in pipelines():
         if spec.pipeline_id.startswith('./tests/env/dummy/pipeline-test'):
-            success, _ = execute_pipeline(spec, use_cache=False)
+            success, _, _ = execute_pipeline(spec, use_cache=False)
             assert success

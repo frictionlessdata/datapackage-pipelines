@@ -202,6 +202,10 @@
                                                         <dt>Last Success:</dt><dd>{{ status.last_success }}</dd>
                                                     </dl>
                                                     <hr/>
+                                                    {% if status.error_log %}
+                                                    <pre>{{ status.error_log }}</pre>
+                                                    <hr/>
+                                                    {% endif %}
                                                     <p><small>Pipeline ID: <strong>{{ status.id }}</strong></small></p>
                                                 </div>
                                                 <div role="tabpanel"

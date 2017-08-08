@@ -13,7 +13,7 @@ class PipelineStatus(object):
         'REGISTERED': {
             'success': None,
             'message': "Didn't run",
-            'reason': "Didn't run yet"
+            'error_log': "Didn't run yet"
         },
         'INVALID': {
             'success': False,
@@ -78,6 +78,7 @@ class PipelineStatus(object):
             self.data.update({
                 'started': cur_time,
                 'trigger': trigger,
+                'error_log': None,
             })
             self.set_state('RUNNING')
 
@@ -87,7 +88,8 @@ class PipelineStatus(object):
         self.save()
 
     def set_idle(self, success,
-                 log=None, cache_hash=None, stats=None, force=False):
+                 log=None, cache_hash=None, stats=None,
+                 error_log=None, force=False):
         if self.data['state'] not in {'RUNNING'}:
             logging.error('set_idle: bad state %s', self.data['state'])
             return
@@ -100,6 +102,7 @@ class PipelineStatus(object):
             self.data.update({
                 'ended': cur_time,
                 'reason': log,
+                'error_log': error_log
             })
             if success is True:
                 self.data.update({
@@ -139,7 +142,8 @@ class PipelineStatus(object):
         if len(errors) > 0:
             self.data.update({
                 'message': errors[0][0],
-                'reason': '\n'.join('{}: {}'.format(*e) for e in errors),
+                'reason': None,
+                'error_log': '\n'.join('{}: {}'.format(*e) for e in errors),
             })
             self.set_state('INVALID')
         else:
@@ -188,9 +192,9 @@ class StatusManager(object):
     def running(self, _id, trigger=None, log=None):
         PipelineStatus(self.backend, _id).set_running(trigger, log)
 
-    def idle(self, _id, success, reason, cache_hash, stats):
+    def idle(self, _id, success, reason, cache_hash, stats, error_log):
         PipelineStatus(self.backend, _id) \
-            .set_idle(success, reason, cache_hash, stats)
+            .set_idle(success, reason, cache_hash, stats, error_log)
 
     def register(self, _id, cache_hash, pipeline=(), source=None, errors=()):
         return PipelineStatus(self.backend, _id) \

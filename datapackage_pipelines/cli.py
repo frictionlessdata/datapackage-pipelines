@@ -35,13 +35,13 @@ def execute_if_needed(argument, spec, use_cache):
     if ((argument == spec.pipeline_id) or
             (argument == 'all') or
             (argument == 'dirty' and spec.dirty)):
-        success, stats = \
+        success, stats, errors = \
             execute_pipeline(spec,
                              use_cache=use_cache)
         stop = False
         if spec.pipeline_id == argument:
             stop = True
-        return (spec.pipeline_id, success, stats), stop
+        return (spec.pipeline_id, success, stats, errors), stop
     return None, False
 
 
@@ -76,11 +76,15 @@ or 'dirty' for running just the dirty ones."""
                     break
 
         logging.info('RESULTS:')
-        for pipeline_id, success, stats in results:
-            logging.info('%s: %s %s',
+        for pipeline_id, success, stats, errors in results:
+            logging.info('%s: %s %s%s',
                          'SUCCESS' if success else 'FAILURE',
                          pipeline_id,
-                         repr(stats) if stats is not None else '')
+                         repr(stats) if stats is not None else '',
+                         ('\nERROR log from processor %s:\n+--------\n| ' % errors[0] +
+                          '\n| '.join(errors[1:]) +
+                          '\n+--------')
+                         if errors else '')
 
     except KeyboardInterrupt:
         pass

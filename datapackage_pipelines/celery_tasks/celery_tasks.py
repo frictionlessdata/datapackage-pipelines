@@ -104,7 +104,7 @@ def execute_pipeline_task(pipeline_id,
         spec = PipelineSpec(pipeline_id=pipeline_id,
                             pipeline_details=pipeline_details,
                             path=pipeline_cwd)
-        success, _ = \
+        success, _, _ = \
             execute_pipeline(spec,
                              trigger,
                              False)
