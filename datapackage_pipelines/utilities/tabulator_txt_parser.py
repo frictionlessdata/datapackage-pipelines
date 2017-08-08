@@ -18,6 +18,7 @@ class TXTParser(Parser):
         self.__extended_rows = None
         self.__loader = loader
         self.__chars = None
+        self.__encoding = None
 
     @property
     def closed(self):
@@ -26,6 +27,9 @@ class TXTParser(Parser):
     def open(self, source, encoding=None, force_parse=False):
         self.close()
         self.__chars = self.__loader.load(source, encoding)
+        self.__encoding = getattr(self.__chars, 'encoding', encoding)
+        if self.__encoding:
+            self.__encoding.lower()
         self.reset()
 
     def close(self):
@@ -39,6 +43,10 @@ class TXTParser(Parser):
     @property
     def extended_rows(self):
         return self.__extended_rows
+
+    @property
+    def encoding(self):
+        return self.__encoding
 
     # Private
 
