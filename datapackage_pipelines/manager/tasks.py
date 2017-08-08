@@ -27,7 +27,7 @@ async def enqueue_errors(step, process, queue):
             break
         line = line.decode('utf8').rstrip()
         if len(line) != 0:
-            if line.startswith('ERROR'):
+            if line.startswith('ERROR') or line.startswith('Traceback'):
                 errors.append(step['run'])
             if len(errors) > 0:
                 errors.append(line)
