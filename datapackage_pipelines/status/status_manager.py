@@ -13,7 +13,7 @@ class PipelineStatus(object):
         'REGISTERED': {
             'success': None,
             'message': "Didn't run",
-            'error_log': "Didn't run yet"
+            'error_log': ["Didn't run yet"]
         },
         'INVALID': {
             'success': False,
@@ -143,7 +143,7 @@ class PipelineStatus(object):
             self.data.update({
                 'message': errors[0][0],
                 'reason': None,
-                'error_log': '\n'.join('{}: {}'.format(*e) for e in errors),
+                'error_log': ['{}: {}'.format(*e) for e in errors],
             })
             self.set_state('INVALID')
         else:

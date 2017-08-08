@@ -203,7 +203,7 @@
                                                     </dl>
                                                     <hr/>
                                                     {% if status.error_log %}
-                                                    <pre>{{ status.error_log }}</pre>
+                                                    <pre>{{ '\n'.join(status.error_log) }}</pre>
                                                     <hr/>
                                                     {% endif %}
                                                     <p><small>Pipeline ID: <strong>{{ status.id }}</strong></small></p>

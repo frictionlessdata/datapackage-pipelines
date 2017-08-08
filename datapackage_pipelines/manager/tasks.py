@@ -27,8 +27,9 @@ async def enqueue_errors(step, process, queue):
             break
         line = line.decode('utf8').rstrip()
         if len(line) != 0:
-            if line.startswith('ERROR') or line.startswith('Traceback'):
-                errors.append(step['run'])
+            if len(errors) == 0:
+                if line.startswith('ERROR') or line.startswith('Traceback'):
+                    errors.append(step['run'])
             if len(errors) > 0:
                 errors.append(line)
                 if len(errors) > 1000:
@@ -37,6 +38,7 @@ async def enqueue_errors(step, process, queue):
             logging.info(line)
             await queue.put(line)
     return errors
+
 
 async def dequeue_errors(queue, out):
     while True:

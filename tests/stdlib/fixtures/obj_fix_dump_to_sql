@@ -53,4 +53,4 @@ dump.to_sql
 --
 {"myarray": "[\"2016-12-31\", \"2016-11-10T12:34:56\"]", "mydate": {"type{date}": "2016-12-31"}, "mynumber": 2.0, "myobject": "{\"n1\": {\"n2\": 78.99}}"}
 
-{"dataset_name": "test", "count_of_rows": 1, "bytes": null}
+{"dataset_name": "test", "count_of_rows": 1, "bytes": null, "hash": "62ab341c8247d789ff73940ee7157617"}
