@@ -100,7 +100,7 @@ class ProcessorFixtureTestsBase(object):
                 else:
                     rj_actual = rejsonize(actual)
                     assert rj_actual == rejsonize(expected), \
-                        "{}: unexpected data: {}".format(line_msg, rj_actual)
+                        "{}: unexpected data: {} (expected {})".format(line_msg, rj_actual, expected)
 
 
 def rejsonize(s):

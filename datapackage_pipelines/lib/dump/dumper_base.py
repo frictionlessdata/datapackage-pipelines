@@ -38,7 +38,6 @@ class DumperBase(object):
                                    self.__params,
                                    self.stats),
              self.stats)
-        self.handle_datapackage(self.__datapackage, self.__params, self.stats)
         self.finalize()
 
     def prepare_datapackage(self, datapackage, _):
@@ -127,13 +126,13 @@ class DumperBase(object):
                     ).hexdigest()
             DumperBase.set_attr(datapackage, self.datapackage_hash, datapackage_hash)
 
+        self.handle_datapackage(datapackage, parameters, stats)
+
+    def handle_datapackage(self, datapackage, parameters, stats):
         stats['count_of_rows'] = DumperBase.get_attr(datapackage, self.datapackage_rowcount)
         stats['bytes'] = DumperBase.get_attr(datapackage, self.datapackage_bytes)
         stats['hash'] = DumperBase.get_attr(datapackage, self.datapackage_hash)
         stats['dataset_name'] = datapackage['name']
-
-    def handle_datapackage(self, datapackage, parameters, stats):
-        pass
 
     def handle_resource(self, resource, spec, parameters, datapackage):
         raise NotImplementedError()
@@ -176,13 +175,16 @@ class FileDumper(DumperBase):
         return datapackage
 
     def handle_datapackage(self, datapackage, parameters, stats):
+        if parameters.get('handle-non-tabular', False):
+            self.copy_non_tabular_resources(datapackage)
         temp_file = tempfile.NamedTemporaryFile(mode="w+", delete=False)
         json.dump(datapackage, temp_file, sort_keys=True, ensure_ascii=True)
         temp_file_name = temp_file.name
+        filesize = temp_file.tell()
         temp_file.close()
+        DumperBase.inc_attr(datapackage, self.datapackage_bytes, filesize)
         self.write_file_to_output(temp_file_name, 'datapackage.json')
-        if parameters.get('handle-non-tabular', False):
-            self.copy_non_tabular_resources(datapackage)
+        super(FileDumper, self).handle_datapackage(datapackage, parameters, stats)
 
     def copy_non_tabular_resources(self, datapackage):
         for resource in datapackage['resources']:
@@ -193,9 +195,13 @@ class FileDumper(DumperBase):
                     tmp = tempfile.NamedTemporaryFile(delete=False)
                     stream = requests.get(url, stream=True).raw
                     shutil.copyfileobj(stream, tmp)
+                    filesize = tmp.tell()
                     tmp.close()
                     url = tmp.name
                     delete = True
+                else:
+                    filesize = os.stat(url).st_size
+                DumperBase.inc_attr(datapackage, self.datapackage_bytes, filesize)
                 self.write_file_to_output(url, resource['path'])
                 if delete:
                     os.unlink(url)
