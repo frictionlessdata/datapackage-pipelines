@@ -339,7 +339,7 @@ _Parameters_:
         type: number
       "date of birth":
         type: date
-        format: "fmt:dd/mm/YYYY"
+        format: "fmt:%d/%m/%Y"
       "social security number": null
 ```
 
