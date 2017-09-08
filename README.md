@@ -1,6 +1,7 @@
 # Datapackage Pipelines
 
-[![Travis](https://img.shields.io/travis/frictionlessdata/datapackage-pipelines/master.svg)](https://travis-ci.org/frictionlessdata/datapackage-pipelines) [![Coveralls](http://img.shields.io/coveralls/frictionlessdata/datapackage-pipelines.svg?branch=master)](https://coveralls.io/r/frictionlessdata/datapackage-pipelines?branch=master)
+[![Travis](https://img.shields.io/travis/frictionlessdata/datapackage-pipelines/master.svg)](https://travis-ci.org/frictionlessdata/datapackage-pipelines)
+[![Coveralls](http://img.shields.io/coveralls/frictionlessdata/datapackage-pipelines.svg?branch=master)](https://coveralls.io/r/frictionlessdata/datapackage-pipelines?branch=master)
 
 ## The Basics
 
@@ -185,11 +186,11 @@ Example:
 cat-vs-dog-populations:
   dependencies:
     - 
-      pipeline: ./geo/regoin-areal
+      pipeline: ./geo/region-areal
     - 
-      datapackage: http://pets.net/data/dogs-per-regoin/datapackage.json
+      datapackage: http://pets.net/data/dogs-per-region/datapackage.json
     - 
-      datapackage: http://pets.net/data/dogs-per-regoin
+      datapackage: http://pets.net/data/dogs-per-region
   ...
 ```
 
@@ -303,7 +304,7 @@ To enable this behavior, add the following attribute to the resource: `"format":
 
 Sets data types and type options to fields in streamed resources, and make sure that the data still validates with the new types. 
 
-This allows to make modification to the existing table schema, and usually to the default schema from `stream_remote_resources`.
+This allows to make modifications to the existing table schema, and usually to the default schema from `stream_remote_resources`.
 
 _Parameters_:
 
@@ -334,7 +335,7 @@ _Parameters_:
     types:
       age: 
         type: integer
-      "yealry_score_[0-9]{4}": 
+      "yearly_score_[0-9]{4}":
         type: number
       "date of birth":
         type: date
@@ -425,7 +426,7 @@ _Parameters_:
     sources: 'report-year-20[0-9]{2}'
     fields:
       activity: []
-      amount: ['2009_amount', 'Amount', 'AMOUNT [USD]', '$$$']    
+      amount: ['2009_amount', 'Amount', 'AMOUNT [USD]', '$$$']
 ```
 
 In this example we concatenate all resources that look like `report-year-<year>`, and output them to the `multi-year-report` resource.
@@ -485,7 +486,7 @@ _Parameters_:
 
     - `set` - collect all distinct values of the aggregated field, unordered 
     
-    - `array` - collect all values of the aggregated field, in order of appearance   
+    - `array` - collect all values of the aggregated field, in order of appearance
 
     - `any` - pick any value.
 
@@ -605,7 +606,7 @@ Filter streamed resources.
 _Parameters_:
 
 - `resources` - Which resources to apply the filter on. Same semantics as `resources` in `stream_remote_resources`.
-- `in` - Mapping of keys to values which translate to `row[key] == value` conditions  
+- `in` - Mapping of keys to values which translate to `row[key] == value` conditions
 - `out` - Mapping of keys to values which translate to `row[key] != value` conditions
   
 Both `in` and `out` should be a list of objects.
@@ -638,7 +639,7 @@ _Parameters_:
   If not specified, assumes a default of `env://DPP_DB_ENGINE`
 - `tables` - Mapping between resources and DB tables. Keys are table names, values are objects with the following attributes:
   - `resource-name` - name of the resource that should be dumped to the table
-  - `mode` - How data should be written to the DB.   
+  - `mode` - How data should be written to the DB.
     Possible values:
       - `rewrite` (the default) - rewrite the table, all previous data (if any) will be deleted.
       - `append` - write new rows without changing already existing data.
@@ -965,7 +966,7 @@ In this example we can see that the initial datapackage is generated from scratc
 
 When writing pipelines in a specific problem domain, one might discover that the processing pipelines that are developed follow a certain pattern. Scraping, or fetching source data tends to be similar to one another. Processing, data cleaning, validation are often the same.
 
-In order to ease maintenance and avoid boilerplate, a _`datapackage-pipelines` **plugin**_. 
+In order to ease maintenance and avoid boilerplate, a _`datapackage-pipelines` **plugin**_ can be written.
 
 Plugins are Python modules named `datapackage_pipelines_<plugin-name>`. Plugins can provide two facilities:
 
@@ -983,7 +984,7 @@ This class should inherit from `GeneratorBase` and should implement two methods:
 - `generate_pipeline` - 
    which receives the source description and returns an iterator of tuples of the form `(id, details)`.
    `id` might be a pipeline id, in which case details would be an object containing the pipeline definition.
-   If `id` is of the form `:module:`, then the details are treated as a source spec from the specified module. This way a generator a generator might generate other source specs. 
+   If `id` is of the form `:module:`, then the details are treated as a source spec from the specified module. This way a generator might generate other source specs.
 - `get_schema` - which should return a JSON Schema for validating the source description's structure
 
 #### Example
@@ -1081,7 +1082,7 @@ co2-information-cdiac:
     -
         ...
   schedule:
-    crontab: '0 * * * *'          
+    crontab: '0 * * * *'
 ```
 
 In this example, this pipeline is set to run every hour, on the hour.
