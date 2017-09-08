@@ -81,4 +81,9 @@ target/
 datapackage-pipelines.iml
 celerybeat-schedule
 
+# Datapackage Pipeline DB
 .dpp.db
+
+# Resources created by our tests
+my-spiffy-resource.zip
+tests/env/dummy/dump.zip
