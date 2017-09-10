@@ -8,7 +8,8 @@ stream_remote_resources
     "resources": [
         {
             "name": "my-remote-resource",
-            "url": "file://tests/data/sample.csv"
+            "streamedFrom": "file://tests/data/sample.csv",
+            "path": "."
         }
     ]
 }

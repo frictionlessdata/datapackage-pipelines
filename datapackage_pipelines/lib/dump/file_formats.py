@@ -3,6 +3,7 @@ import json
 import os
 
 from datapackage_pipelines.utilities.extended_json import DATETIME_FORMAT, DATE_FORMAT, TIME_FORMAT
+from datapackage_pipelines.utilities.resources import get_path
 
 
 def identity(x):
@@ -61,7 +62,7 @@ class CSVFormat(FileFormat):
 
     def prepare_resource(self, resource):
         resource['encoding'] = 'utf-8'
-        basename, _ = os.path.splitext(resource['path'])
+        basename, _ = os.path.splitext(get_path(resource))
         resource['path'] = basename + '.csv'
         resource['format'] = 'csv'
         resource['dialect'] = dict(
@@ -110,7 +111,7 @@ class JSONFormat(FileFormat):
 
     def prepare_resource(self, resource):
         resource['encoding'] = 'utf-8'
-        basename, _ = os.path.splitext(resource['path'])
+        basename, _ = os.path.splitext(get_path(resource))
         resource['path'] = basename + '.json'
         resource['format'] = 'json'
         super(JSONFormat, self).prepare_resource(resource)

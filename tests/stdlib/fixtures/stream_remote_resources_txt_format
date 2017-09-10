@@ -7,7 +7,8 @@ stream_remote_resources
     "resources": [
         {
             "name": "my-remote-txt-format-resource",
-            "url": "file://tests/data/sample.txt",
+            "streamedFrom": "file://tests/data/sample.txt",
+            "path": ".",
             "format": "txt"
         }
     ]

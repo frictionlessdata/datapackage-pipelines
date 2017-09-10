@@ -16,7 +16,9 @@ load_resource
     "resources": [
         {
             "name": "the-spiffy-resource",
+            "profile": "data-resource",
             "path": "sample.csv",
+            "encoding": "utf-8",
             "schema": {
                 "fields": [
                     {"name": "first_name", "type": "string"},
@@ -28,7 +30,9 @@ load_resource
         },
         {
             "name": "the-other-spiffy-resource",
+            "profile": "data-resource",
             "path": "sample2.csv",
+            "encoding": "utf-8",
             "schema": {
                 "fields": [
                     {"name": "first_name", "type": "string"},

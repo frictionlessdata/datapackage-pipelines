@@ -18,7 +18,7 @@ for i, orig_res in enumerate(datapackage.resources):
     if resource_index == i or \
           (name_matcher is not None and name_matcher.match(orig_res.descriptor.get('name'))):
         dp['resources'].append(orig_res.descriptor)
-        selected_resources.append(orig_res.iter())
+        selected_resources.append(orig_res.iter(keyed=True))
 
 assert len(selected_resources) > 0, "Failed to find resource with index or name matching %r" % resource
 

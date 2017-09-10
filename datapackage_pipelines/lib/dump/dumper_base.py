@@ -5,10 +5,10 @@ import logging
 import hashlib
 
 import requests
-from jsontableschema.exceptions import InvalidCastError
-from jsontableschema.model import SchemaModel
+from tableschema.exceptions import CastError
+from tableschema.schema import Schema
 
-from ...utilities.resources import internal_tabular
+from ...utilities.resources import internal_tabular, non_tabular, get_path, PROP_STREAMED_FROM, is_a_url
 from ...utilities.extended_json import json
 from ...wrapper import ingest, spew
 
@@ -77,21 +77,21 @@ class DumperBase(object):
     @staticmethod
     def schema_validator(resource):
         schema = resource.spec['schema']
-        field_names = set([f['name'] for f in schema['fields']])
-        schema = SchemaModel(schema)
+        field_names = [f['name'] for f in schema['fields']]
+        schema = Schema(schema)
         warned_fields = set()
         for row in resource:
-            for k, v in row.items():
-                if k in field_names:
-                    try:
-                        schema.cast(k, v)
-                    except InvalidCastError:
-                        logging.error('Bad value %r for field %s', v, k)
-                        raise
-                else:
-                    if k not in warned_fields:
-                        warned_fields.add(k)
-                        logging.warning('Encountered field %r, not in schema', k)
+            to_cast = [row.get(f) for f in field_names]
+            try:
+                schema.cast_row(to_cast)
+            except CastError:
+                logging.exception('Failed to cast row %r', row)
+                raise
+
+            for k in set(row.keys()) - set(field_names):
+                if k not in warned_fields:
+                    warned_fields.add(k)
+                    logging.warning('Encountered field %r, not in schema', k)
 
             yield row
 
@@ -162,7 +162,7 @@ class FileDumper(DumperBase):
             if force_format:
                 file_format = forced_format
             else:
-                _, file_format = os.path.splitext(resource['path'])
+                _, file_format = os.path.splitext(get_path(resource))
                 file_format = file_format[1:]
             file_formatter = {
                 'csv': CSVFormat,
@@ -188,10 +188,10 @@ class FileDumper(DumperBase):
 
     def copy_non_tabular_resources(self, datapackage):
         for resource in datapackage['resources']:
-            if 'url' in resource and 'path' in resource and 'schema' not in resource:
-                url = resource['url']
+            if non_tabular(resource):
+                url = resource[PROP_STREAMED_FROM]
                 delete = False
-                if url.startswith('http://') or url.startswith('https://'):
+                if is_a_url(url):
                     tmp = tempfile.NamedTemporaryFile(delete=False)
                     stream = requests.get(url, stream=True).raw
                     shutil.copyfileobj(stream, tmp)
@@ -203,7 +203,7 @@ class FileDumper(DumperBase):
                     filesize = os.stat(url).st_size
                 DumperBase.inc_attr(resource, self.resource_bytes, filesize)
                 DumperBase.inc_attr(datapackage, self.datapackage_bytes, filesize)
-                self.write_file_to_output(url, resource['path'])
+                self.write_file_to_output(url, get_path(resource))
                 if delete:
                     os.unlink(url)
 
@@ -235,7 +235,7 @@ class FileDumper(DumperBase):
         # Finalise
         filename = temp_file.name
         temp_file.close()
-        self.write_file_to_output(filename, spec['path'])
+        self.write_file_to_output(filename, get_path(spec))
 
     def handle_resource(self, resource, spec, _, datapackage):
         if spec['name'] in self.file_formatters:

@@ -21,12 +21,11 @@ def read(*paths):
 PACKAGE = 'datapackage_pipelines'
 NAME = PACKAGE.replace('_', '-')
 INSTALL_REQUIRES = [
-    'six>=1.9',
     'celery',
     'requests',
-    'datapackage<1.0',
-    'jsontableschema',
-    'jsontableschema-sql>=0.6',
+    'datapackage>=1.0',
+    'tableschema>=1.0.0',
+    'tableschema-sql>=0.9',
     'pyyaml',
     'mistune',
     'redis',
@@ -37,7 +36,7 @@ INSTALL_REQUIRES = [
     'flask-cors',
     'flask-jsonpify',
     'cachetools',
-    'tabulator>=1.0.0a',
+    'tabulator>=1.0.0',
 ]
 SPEEDUP_REQUIRES = [
     'plyvel',
