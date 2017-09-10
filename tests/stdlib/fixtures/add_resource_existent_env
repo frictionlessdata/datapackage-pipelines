@@ -16,7 +16,8 @@ add_resource
     "resources": [
         {
             "name": "my-env-resource",
-            "url": "file://tests/data/sample.csv"
+            "streamedFrom": "file://tests/data/sample.csv",
+            "path": "."
         }
     ]
 }

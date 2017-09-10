@@ -13,6 +13,7 @@ load_metadata
 {
     "name": "my-spiffy-datapackage",
     "my-prop": "the-props-value",
+    "profile": "data-package",
     "resources": []
 }
 --

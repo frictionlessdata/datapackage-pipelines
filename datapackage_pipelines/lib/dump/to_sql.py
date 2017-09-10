@@ -5,7 +5,7 @@ import logging
 
 import copy
 from datapackage_pipelines.utilities.extended_json import json
-from jsontableschema_sql import Storage
+from tableschema_sql import Storage
 from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError
 

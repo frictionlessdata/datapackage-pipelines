@@ -3,7 +3,7 @@ import logging
 
 from datapackage_pipelines.wrapper import ingest, spew
 from datapackage_pipelines.utilities.resource_matcher import ResourceMatcher
-import jsontableschema
+import tableschema
 
 parameters, datapackage, resource_iterator = ingest()
 
@@ -47,7 +47,7 @@ def process_datapackage(datapackage_):
 
 def process_resource(spec, rows):
     schema = spec['schema']
-    jts = jsontableschema.Schema(schema)
+    jts = tableschema.Schema(schema)
     field_names = list(map(lambda f: f['name'], schema['fields']))
     for row in rows:
         flattened_row = [row.get(name) for name in field_names]

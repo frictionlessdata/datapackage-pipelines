@@ -6,10 +6,11 @@ from decimal import Decimal
 
 import tabulator
 
-from jsontableschema import Schema
+from tableschema import Schema
 
 from datapackage_pipelines.wrapper import ingest, spew
-from datapackage_pipelines.utilities.resources import streamable, internal_tabular
+from datapackage_pipelines.utilities.resources import streamable, internal_tabular, PATH_PLACEHOLDER, get_path, \
+    PROP_STREAMED_FROM
 from datapackage_pipelines.utilities.extended_json import json
 from datapackage_pipelines.utilities.resource_matcher import ResourceMatcher
 from datapackage_pipelines.utilities.tabulator_txt_parser import TXTParser
@@ -198,20 +199,23 @@ ignore_missing = parameters.get('ignore-missing', False)
 new_resource_iterator = []
 for resource in datapackage['resources']:
 
-    path = resource.get('path')
     if streamable(resource):
-        url = resource['url']
+        url = resource[PROP_STREAMED_FROM]
 
         name = resource['name']
         if not resources.match(name):
             continue
 
-        if 'path' not in resource:
+        path = get_path(resource)
+        if path is None or path == PATH_PLACEHOLDER:
             path = os.path.join('data', name + '.csv')
             resource['path'] = path
 
-        del resource['url']
+        del resource[PROP_STREAMED_FROM]
+
         rows = stream_reader(resource, url, ignore_missing or url == "")
+        assert internal_tabular(resource)
+
         new_resource_iterator.append(rows)
     elif internal_tabular(resource):
         new_resource_iterator.append(next(resource_iterator))

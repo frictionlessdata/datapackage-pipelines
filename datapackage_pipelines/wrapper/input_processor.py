@@ -3,9 +3,10 @@ import copy
 import logging
 
 import datapackage
-from jsontableschema.exceptions import InvalidCastError
-from jsontableschema.model import SchemaModel
+from tableschema.exceptions import ValidationError, CastError
+from tableschema import Schema
 
+from ..utilities.resources import PATH_PLACEHOLDER
 from ..utilities.extended_json import json
 
 
@@ -14,7 +15,8 @@ class ResourceIterator(object):
     def __init__(self, infile, spec, orig_spec,
                  validate=False, debug=False):
         self.spec = spec
-        self.table_schema = SchemaModel(orig_spec['schema'])
+        self.table_schema = Schema(orig_spec['schema'])
+        self.field_names = [f['name'] for f in orig_spec['schema']['fields']]
         self.validate = validate
         self.infile = infile
         self.debug = debug
@@ -36,18 +38,11 @@ class ResourceIterator(object):
             raise StopIteration()
         line = json.loadl(line)
         if self.validate:
-            for k, v in line.items():
-                try:
-                    self.table_schema.cast(k, v)
-                except (InvalidCastError, TypeError):
-                    field = self.table_schema.get_field(k)
-                    if field is None:
-                        raise ValueError('Validation failed: No such field %s',
-                                         k)
-                    else:
-                        raise ValueError('Validation failed: Bad value %r '
-                                         'for field %s with type %s',
-                                         v, k, field.get('type'))
+            to_validate = [line.get(f) for f in self.field_names]
+            try:
+                self.table_schema.cast_row(to_validate)
+            except (CastError, TypeError) as e:
+                raise ValueError('Validation failed for row %r' % line) from e
 
         return line
 
@@ -64,14 +59,26 @@ def process_input(infile, validate=False, debug=False):
     resources = dp.get('resources', [])
     original_resources = copy.deepcopy(resources)
 
-    profiles = list(dp.get('profiles', {}).keys())
-    profile = 'tabular'
-    if 'tabular' in profiles:
-        profiles.remove('tabular')
-    if len(profiles) > 0:
-        profile = profiles.pop(0)
-    schema = datapackage.schema.Schema(profile)
-    schema.validate(dp)
+    if len(dp.get('resources', [])) == 0:
+        # Currently datapackages with no resources are disallowed in the schema.
+        # Since this might happen in the early stages of a pipeline,
+        # we're adding this hack to avoid validation errors
+        dp_to_validate = copy.deepcopy(dp)
+        dp_to_validate['resources'] = [{
+            'name': '__placeholder__',
+            'path': PATH_PLACEHOLDER
+        }]
+    else:
+        dp_to_validate = dp
+    try:
+        datapackage.validate(dp_to_validate)
+    except ValidationError as e:
+        logging.info('FAILED TO VALIDATE %r', dp_to_validate)
+        for e in e.errors:
+            logging.error("Data Package validation error: %s at dp%s",
+                          e.message,
+                          "[%s]" % "][".join(repr(index) for index in e.path))
+        raise
 
     infile.readline().strip()
 
