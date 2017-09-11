@@ -23,7 +23,7 @@ NAME = PACKAGE.replace('_', '-')
 INSTALL_REQUIRES = [
     'celery',
     'requests',
-    'datapackage>=1.0',
+    'datapackage>=1.0.2',
     'tableschema>=1.0.0',
     'tableschema-sql>=0.9',
     'pyyaml',
