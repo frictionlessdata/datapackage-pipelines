@@ -53,6 +53,9 @@ for resource in datapackage['resources']:
             field['name'] = name
             needed_fields.remove(name)
 
+if len(target['schema']['primaryKey']) == 0:
+    del target['schema']['primaryKey']
+
 for name in needed_fields:
     target['schema']['fields'].append(dict(
         name=name, type='string'
