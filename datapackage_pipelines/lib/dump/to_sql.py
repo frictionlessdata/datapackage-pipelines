@@ -10,7 +10,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError
 
 from datapackage_pipelines.lib.dump.dumper_base import DumperBase
-
+from tableschema.exceptions import ValidationError
 
 def jsonize(obj):
     return json.dumps(obj)
@@ -82,9 +82,16 @@ class SQLDumper(DumperBase):
                 storage.delete('')
             if '' not in storage.buckets:
                 logging.info('Creating DB table %s', table_name)
-                storage.create('',
-                               self.normalise_schema_for_engine(self.engine.dialect.name,
-                                                                spec['schema']))
+                try:
+                    storage.create('',
+                                   self.normalise_schema_for_engine(self.engine.dialect.name,
+                                                                    spec['schema']))
+                except ValidationError as e:
+                    logging.error('Error validating schema %r', spec['schema'])
+                    for err in e.errors:
+                        logging.error('Error validating schema: %s', err)
+                    raise
+
             update_keys = None
             if mode == 'update':
                 update_keys = converted_resource.get('update_keys')

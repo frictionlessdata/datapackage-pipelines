@@ -2,6 +2,9 @@ import gzip
 import sys
 import os
 import logging
+
+from tableschema.exceptions import CastError
+
 from ..utilities.extended_json import json
 
 from .input_processor import process_input
@@ -57,15 +60,20 @@ def spew(dp, resources_iterator, stats=None):
             num_resources += 1
             for f in files:
                 f.write('\n')
-            for rec in res:
-                line = json.dumpl(rec,
-                                  sort_keys=True,
-                                  ensure_ascii=True)
-                # logging.error('SPEWING: {}'.format(line))
-                for f in files:
-                    f.write(line+'\n')
-                # logging.error('WROTE')
-                row_count += 1
+            try:
+                for rec in res:
+                    line = json.dumpl(rec,
+                                      sort_keys=True,
+                                      ensure_ascii=True)
+                    # logging.error('SPEWING: {}'.format(line))
+                    for f in files:
+                        f.write(line+'\n')
+                    # logging.error('WROTE')
+                    row_count += 1
+            except CastError as e:
+                for err in e.errors:
+                    logging.error('Failed to cast row: %s', err)
+                raise
         if num_resources != expected_resources:
             logging.error('Expected to see %d resource(s) but spewed %d',
                           expected_resources, num_resources)

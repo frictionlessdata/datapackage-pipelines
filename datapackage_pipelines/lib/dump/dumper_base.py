@@ -84,8 +84,10 @@ class DumperBase(object):
             to_cast = [row.get(f) for f in field_names]
             try:
                 schema.cast_row(to_cast)
-            except CastError:
+            except CastError as e:
                 logging.exception('Failed to cast row %r', row)
+                for err in e.errors:
+                    logging.error('Failed to cast row: %s', err)
                 raise
 
             for k in set(row.keys()) - set(field_names):
