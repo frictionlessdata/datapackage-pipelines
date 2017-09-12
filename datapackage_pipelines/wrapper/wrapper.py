@@ -93,7 +93,7 @@ def spew(dp, resources_iterator, stats=None):
                     assert aggregated_stats is None or \
                         isinstance(aggregated_stats, dict)
                 except json.JSONDecodeError:
-                    logging.error('Failed to parse stats: %r', stats_line)
+                    logging.exception('Failed to parse stats: %r', stats_line)
         if stats is not None:
             aggregated_stats.update(stats)
         stats_json = json.dumps(aggregated_stats,
@@ -103,7 +103,7 @@ def spew(dp, resources_iterator, stats=None):
             f.write('\n'+stats_json+'\n')
 
     except BrokenPipeError:
-        logging.error('Output pipe disappeared!')
+        logging.exception('Output pipe disappeared!')
         sys.stderr.close()
         sys.exit(1)
 

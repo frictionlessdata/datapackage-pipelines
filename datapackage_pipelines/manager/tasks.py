@@ -23,7 +23,7 @@ async def enqueue_errors(step, process, queue, debug):
         try:
             line = await out.readline()
         except ValueError:
-            logging.error('Received a too long log line (>64KB), discarded')
+            logging.exception('Received a too long log line (>64KB), discarded')
             continue
         if line == b'':
             break

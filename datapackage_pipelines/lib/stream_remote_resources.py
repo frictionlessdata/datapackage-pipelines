@@ -126,7 +126,7 @@ def stream_reader(_resource, _url, _ignore_missing):
                 try:
                     parser_cls = tabulator.helpers.import_attribute(tabulator.config.PARSERS[format])
                 except KeyError:
-                    logging.error("Unknown format %r", format)
+                    logging.exception("Unknown format %r", format)
                     raise
                 _params.update(
                     dict(x for x in __resource.items()
