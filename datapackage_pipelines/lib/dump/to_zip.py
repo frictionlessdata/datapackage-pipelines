@@ -14,7 +14,6 @@ class ZipDumper(FileDumper):
     def write_file_to_output(self, filename, path):
         self.zip_file.write(filename, arcname=path,
                             compress_type=zipfile.ZIP_DEFLATED)
-        os.unlink(filename)
 
     def finalize(self):
         self.zip_file.close()

@@ -17,7 +17,7 @@ class PathDumper(FileDumper):
         path_part = os.path.dirname(path)
         PathDumper.__makedirs(path_part)
 
-        shutil.move(filename, path)
+        shutil.copy(filename, path)
 
     @staticmethod
     def __makedirs(path):

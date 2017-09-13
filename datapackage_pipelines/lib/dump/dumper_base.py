@@ -186,6 +186,7 @@ class FileDumper(DumperBase):
         temp_file.close()
         DumperBase.inc_attr(datapackage, self.datapackage_bytes, filesize)
         self.write_file_to_output(temp_file_name, 'datapackage.json')
+        os.unlink(temp_file_name)
         super(FileDumper, self).handle_datapackage(datapackage, parameters, stats)
 
     def copy_non_tabular_resources(self, datapackage):
@@ -238,6 +239,7 @@ class FileDumper(DumperBase):
         filename = temp_file.name
         temp_file.close()
         self.write_file_to_output(filename, get_path(spec))
+        os.unlink(filename)
 
     def handle_resource(self, resource, spec, _, datapackage):
         if spec['name'] in self.file_formatters:
