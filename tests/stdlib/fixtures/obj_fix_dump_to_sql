@@ -18,6 +18,7 @@ dump.to_sql
     "resources": [
         {
             "name": "my-spiffy-resource",
+            "dpp:streaming": true,
             "path": "data/my-data.csv",
             "schema": {
                 "fields": [
@@ -38,6 +39,7 @@ dump.to_sql
     "resources": [
         {
             "name": "my-spiffy-resource",
+            "dpp:streaming": true,
             "path": "data/my-data.csv",
             "schema": {
                 "fields": [
@@ -53,4 +55,4 @@ dump.to_sql
 --
 {"myarray": "[\"2016-12-31\", \"2016-11-10T12:34:56\"]", "mydate": {"type{date}": "2016-12-31"}, "mynumber": 2.0, "myobject": "{\"n1\": {\"n2\": 78.99}}"}
 
-{"dataset_name": "test", "count_of_rows": 1, "bytes": null, "hash": "62ab341c8247d789ff73940ee7157617"}
+{"bytes": null, "count_of_rows": 1, "dataset_name": "test", "hash": "06a152f7eaf28a2d12e1cba3b0675a46"}

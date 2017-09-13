@@ -2,6 +2,7 @@ import itertools
 
 from datapackage_pipelines.wrapper import ingest, spew
 from datapackage_pipelines.utilities.resource_matcher import ResourceMatcher
+from datapackage_pipelines.utilities.resources import PROP_STREAMING
 
 parameters, datapackage, resource_iterator = ingest()
 
@@ -14,8 +15,9 @@ if 'path' not in target:
     target['path'] = 'data/' + target['name'] + '.csv'
 target.update(dict(
     mediatype='text/csv',
-    schema=dict(fields=[], primaryKey=[])
+    schema=dict(fields=[], primaryKey=[]),
 ))
+target[PROP_STREAMING] = True
 
 fields = parameters['fields']
 

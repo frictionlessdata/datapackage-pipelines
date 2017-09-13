@@ -9,6 +9,7 @@ dump.to_zip
     "resources": [
         {
             "name": "my-spiffy-resource",
+            "dpp:streaming": true,
             "path": "data/my-data.csv",
             "schema": {
                 "fields": [
@@ -29,6 +30,7 @@ dump.to_zip
     "resources": [
         {
             "name": "my-spiffy-resource",
+            "dpp:streaming": true,
             "path": "data/my-data.csv",
             "encoding": "utf-8",
             "format": "csv",
@@ -44,7 +46,7 @@ dump.to_zip
                     {"name": "mystring", "type": "string"},
                     {"name": "myinteger", "type": "integer"},
                     {"name": "mynumber", "type": "number", "groupChar": "", "decimalChar": "."},
-                    {"format": "fmt:%Y-%m-%d", "name": "mydate", "type": "date"}
+                    {"format": "%Y-%m-%d", "name": "mydate", "type": "date"}
                 ]
             }
         }
@@ -53,4 +55,4 @@ dump.to_zip
 --
 {"mystring":"a", "mynumber": 2.0, "mydate": {"type{date}": "2016-12-31"}}
 
-{"bytes": 707, "count_of_rows": 1, "dataset_name": "test", "hash": "3cea344a835bdf497028073c473a639c"}
+{"bytes": 726, "count_of_rows": 1, "dataset_name": "test", "hash": "a730863e99517930eab15f55036d309f"}

@@ -9,7 +9,7 @@ from ..utilities.extended_json import json
 
 from .input_processor import process_input
 
-from ..utilities.resources import internal_tabular
+from ..utilities.resources import streaming
 
 
 logging.basicConfig(level=logging.DEBUG,
@@ -49,7 +49,7 @@ def spew(dp, resources_iterator, stats=None):
         files.append(gzip.open(cache_filename+'.ongoing', 'wt'))
 
     expected_resources = \
-        len(list(filter(internal_tabular, dp.get('resources', []))))
+        len(list(filter(streaming, dp.get('resources', []))))
     row_count = 0
     try:
         for f in files:

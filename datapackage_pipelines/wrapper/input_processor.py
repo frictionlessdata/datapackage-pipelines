@@ -6,7 +6,7 @@ import datapackage
 from tableschema.exceptions import ValidationError, CastError
 from tableschema import Schema
 
-from ..utilities.resources import PATH_PLACEHOLDER
+from ..utilities.resources import PATH_PLACEHOLDER, streaming
 from ..utilities.extended_json import json
 
 
@@ -77,7 +77,7 @@ def process_input(infile, validate=False, debug=False):
     try:
         datapackage.validate(dp_to_validate)
     except ValidationError as e:
-        logging.info('FAILED TO VALIDATE %r', dp_to_validate)
+        logging.info('ABOUT TO VALIDATE %r', dp_to_validate)
         for e in e.errors:
             logging.error("Data Package validation error: %s at dp%s",
                           e.message,
@@ -92,7 +92,7 @@ def process_input(infile, validate=False, debug=False):
         # validate incoming data)
         ret = []
         for resource, orig_resource in zip(_resources, _original_resources):
-            if 'path' not in resource or 'schema' not in resource:
+            if not streaming(resource):
                 continue
 
             res_iter = ResourceIterator(infile,

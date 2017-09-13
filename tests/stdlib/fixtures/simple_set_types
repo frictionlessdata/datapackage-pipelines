@@ -12,6 +12,7 @@ set_types
     "resources": [
         {
             "name": "concat-a",
+            "dpp:streaming": true,
             "path": "concat-a.csv",
             "schema": { "fields": [
                 {"name": "t1", "type": "string"},
@@ -29,6 +30,7 @@ set_types
     "resources": [
         {
             "name": "concat-a",
+            "dpp:streaming": true,
             "path": "concat-a.csv",
             "schema": { "fields": [
                 {"name": "t1", "type": "number", "groupChar": ","}

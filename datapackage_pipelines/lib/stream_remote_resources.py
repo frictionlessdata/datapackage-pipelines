@@ -9,8 +9,8 @@ import tabulator
 from tableschema import Schema
 
 from datapackage_pipelines.wrapper import ingest, spew
-from datapackage_pipelines.utilities.resources import streamable, internal_tabular, PATH_PLACEHOLDER, get_path, \
-    PROP_STREAMED_FROM
+from datapackage_pipelines.utilities.resources import streamable, PATH_PLACEHOLDER, get_path, \
+    PROP_STREAMED_FROM, PROP_STREAMING, streaming
 from datapackage_pipelines.utilities.extended_json import json
 from datapackage_pipelines.utilities.resource_matcher import ResourceMatcher
 from datapackage_pipelines.utilities.tabulator_txt_parser import TXTParser
@@ -191,7 +191,7 @@ def stream_reader(_resource, _url, _ignore_missing):
             1, None)
 
 
-parameters, datapackage, resource_iterator = ingest()
+parameters, datapackage, resource_iterator = ingest(debug=True)
 
 resources = ResourceMatcher(parameters.get('resources'))
 ignore_missing = parameters.get('ignore-missing', False)
@@ -211,13 +211,13 @@ for resource in datapackage['resources']:
             path = os.path.join('data', name + '.csv')
             resource['path'] = path
 
-        del resource[PROP_STREAMED_FROM]
+        resource[PROP_STREAMING] = True
 
         rows = stream_reader(resource, url, ignore_missing or url == "")
-        assert internal_tabular(resource)
 
         new_resource_iterator.append(rows)
-    elif internal_tabular(resource):
+
+    elif streaming(resource):
         new_resource_iterator.append(next(resource_iterator))
 
 spew(datapackage, new_resource_iterator)

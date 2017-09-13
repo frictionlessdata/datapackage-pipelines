@@ -50,13 +50,13 @@ class CSVFormat(FileFormat):
             'groupChar': ''
         },
         'date': {
-            'format': 'fmt:' + DATE_FORMAT
+            'format': DATE_FORMAT
         },
         'time': {
-            'format': 'fmt:' + TIME_FORMAT
+            'format': TIME_FORMAT
         },
         'datetime': {
-            'format': 'fmt:' + DATETIME_FORMAT
+            'format': DATETIME_FORMAT
         },
     }
 
@@ -99,13 +99,13 @@ class JSONFormat(FileFormat):
 
     PYTHON_DIALECT = {
         'date': {
-            'format': 'fmt:' + DATE_FORMAT
+            'format': DATE_FORMAT
         },
         'time': {
-            'format': 'fmt:' + TIME_FORMAT
+            'format': TIME_FORMAT
         },
         'datetime': {
-            'format': 'fmt:' + DATETIME_FORMAT
+            'format': DATETIME_FORMAT
         },
     }
 

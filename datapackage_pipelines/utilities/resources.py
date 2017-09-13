@@ -5,23 +5,17 @@ def is_a_url(path):
             )
 
 
+def tabular(descriptor):
+    return 'schema' in descriptor
+
+
+def streaming(descriptor):
+    return descriptor.get(PROP_STREAMING)
+
+
 def streamable(descriptor):
-    return PROP_STREAMED_FROM in descriptor
-
-
-def internal_tabular(descriptor):
-    return 'path' in descriptor and \
-           not is_a_url(get_path(descriptor)) and \
-           get_path(descriptor) != PATH_PLACEHOLDER and \
-           'schema' in descriptor
-
-
-def non_tabular(descriptor):
-    return 'path' in descriptor and \
-           not is_a_url(get_path(descriptor)) and \
-           'schema' not in descriptor and \
-           streamable(descriptor)
-
+    return PROP_STREAMED_FROM in descriptor and \
+           not streaming(descriptor)
 
 def get_path(descriptor):
     path = descriptor.get('path')
@@ -37,4 +31,5 @@ def get_path(descriptor):
 
 
 PATH_PLACEHOLDER = '.'
-PROP_STREAMED_FROM = 'streamedFrom'
+PROP_STREAMED_FROM = 'dpp:streamedFrom'
+PROP_STREAMING = 'dpp:streaming'

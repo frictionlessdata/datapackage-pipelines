@@ -14,6 +14,7 @@ dump.to_sql
     "resources": [
         {
             "name": "my-spiffy-resource",
+            "dpp:streaming": true,
             "path": "data/my-data.csv",
             "schema": {
                 "fields": [
@@ -35,6 +36,7 @@ dump.to_sql
     "resources": [
         {
             "name": "my-spiffy-resource",
+            "dpp:streaming": true,
             "path": "data/my-data.csv",
             "schema": {
                 "fields": [
@@ -51,4 +53,4 @@ dump.to_sql
 --
 {"id": 1, "mystring":"a", "mynumber": 2.0, "mydate": {"type{date}": "2016-12-31"}}
 
-{"dataset_name": "test", "count_of_rows": 1, "bytes": null, "hash": "bd43ebdd608121b17f093f4dde070f3e"}
+{"bytes": null, "count_of_rows": 1, "dataset_name": "test", "hash": "f9bb6e9b25d2c3e2d1764a8287107bb4"}

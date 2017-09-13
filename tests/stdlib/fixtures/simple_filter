@@ -15,6 +15,7 @@ filter
     "resources": [
         {
             "name": "concat-a1",
+            "dpp:streaming": true,
             "path": "concat-a1.csv",
             "schema": { "fields": [
                 {"name": "a1", "type": "string"},
@@ -24,6 +25,7 @@ filter
         },
         {
             "name": "concat-a2",
+            "dpp:streaming": true,
             "path": "concat-a2.csv",
             "schema": { "fields": [
                 {"name": "a1", "type": "string"},
@@ -33,6 +35,7 @@ filter
         },
         {
             "name": "concat-c",
+            "dpp:streaming": true,
             "path": "concat-c.csv",
             "schema": { "fields": [
                 {"name": "c1", "type": "string"},
@@ -62,6 +65,7 @@ filter
     "resources": [
         {
             "name": "concat-a1",
+            "dpp:streaming": true,
             "path": "concat-a1.csv",
             "schema": { "fields": [
                 {"name": "a1", "type": "string"},
@@ -71,6 +75,7 @@ filter
         },
         {
             "name": "concat-a2",
+            "dpp:streaming": true,
             "path": "concat-a2.csv",
             "schema": { "fields": [
                 {"name": "a1", "type": "string"},
@@ -80,6 +85,7 @@ filter
         },
         {
             "name": "concat-c",
+            "dpp:streaming": true,
             "path": "concat-c.csv",
             "schema": { "fields": [
                 {"name": "c1", "type": "string"},

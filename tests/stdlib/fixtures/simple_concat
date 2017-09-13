@@ -17,6 +17,7 @@ concatenate
     "resources": [
         {
             "name": "concat-a",
+            "dpp:streaming": true,
             "path": "concat-a.csv",
             "schema": { "fields": [
                 {"name": "a1", "type": "string"},
@@ -26,6 +27,7 @@ concatenate
         },
         {
             "name": "concat-b",
+            "dpp:streaming": true,
             "path": "concat-b.csv",
             "schema": { "fields": [
                 {"name": "b1", "type": "string"},
@@ -35,6 +37,7 @@ concatenate
         },
         {
             "name": "concat-c",
+            "dpp:streaming": true,
             "path": "concat-c.csv",
             "schema": { "fields": [
                 {"name": "c1", "type": "string"},
@@ -62,6 +65,7 @@ concatenate
     "resources": [
         {
             "name": "target",
+            "dpp:streaming": true,
             "path": "data/target.csv",
             "mediatype": "text/csv",
             "schema": { "fields": [
@@ -70,7 +74,7 @@ concatenate
                 {"name": "c3", "type": "string"},
                 {"name": "d4", "type": "string"},
                 {"name": "e5", "type": "string"}
-            ], "primaryKey": []}
+            ]}
         }
     ]
 }

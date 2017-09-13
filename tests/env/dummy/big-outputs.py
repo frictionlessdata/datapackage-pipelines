@@ -3,6 +3,7 @@ import itertools
 import os
 
 from datapackage_pipelines.wrapper import ingest, spew
+from datapackage_pipelines.utilities.resources import PROP_STREAMING
 
 params, dp, res_iter = ingest()
 
@@ -18,7 +19,8 @@ dp['resources'].append({
         'fields': [
             {'name': 'a', 'type': 'string'}
         ]
-    }
+    },
+    PROP_STREAMING: True
 })
 
 res = iter([{'a': big_string}])

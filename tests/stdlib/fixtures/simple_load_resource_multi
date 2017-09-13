@@ -16,6 +16,7 @@ load_resource
     "resources": [
         {
             "name": "the-spiffy-resource",
+            "dpp:streaming": true,
             "profile": "data-resource",
             "path": "sample.csv",
             "encoding": "utf-8",
@@ -30,6 +31,7 @@ load_resource
         },
         {
             "name": "the-other-spiffy-resource",
+            "dpp:streaming": true,
             "profile": "data-resource",
             "path": "sample2.csv",
             "encoding": "utf-8",

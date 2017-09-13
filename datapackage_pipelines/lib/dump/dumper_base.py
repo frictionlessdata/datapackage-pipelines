@@ -8,7 +8,7 @@ import requests
 from tableschema.exceptions import CastError
 from tableschema.schema import Schema
 
-from ...utilities.resources import internal_tabular, non_tabular, get_path, PROP_STREAMED_FROM, is_a_url
+from ...utilities.resources import get_path, PROP_STREAMED_FROM, is_a_url, streaming, tabular
 from ...utilities.extended_json import json
 from ...wrapper import ingest, spew
 
@@ -159,7 +159,7 @@ class FileDumper(DumperBase):
 
         # Make sure all resources are proper CSVs
         for resource in datapackage['resources']:
-            if not internal_tabular(resource):
+            if not streaming(resource):
                 continue
             if force_format:
                 file_format = forced_format
@@ -190,7 +190,7 @@ class FileDumper(DumperBase):
 
     def copy_non_tabular_resources(self, datapackage):
         for resource in datapackage['resources']:
-            if non_tabular(resource):
+            if not streaming(resource):
                 url = resource[PROP_STREAMED_FROM]
                 delete = False
                 if is_a_url(url):

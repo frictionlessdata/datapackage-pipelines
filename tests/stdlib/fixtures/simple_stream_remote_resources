@@ -8,7 +8,7 @@ stream_remote_resources
     "resources": [
         {
             "name": "my-remote-resource",
-            "streamedFrom": "file://tests/data/sample.csv",
+            "dpp:streamedFrom": "file://tests/data/sample.csv",
             "path": "."
         }
     ]
@@ -21,6 +21,8 @@ stream_remote_resources
         {
             "name": "my-remote-resource",
             "path": "data/my-remote-resource.csv",
+            "dpp:streamedFrom": "file://tests/data/sample.csv",
+            "dpp:streaming": true,
             "schema": {
                 "fields": [
                     {"name": "first_name", "type": "string"},

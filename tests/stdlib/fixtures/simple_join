@@ -34,6 +34,7 @@ join
     "resources": [
         {
             "name": "got-characters",
+            "dpp:streaming": true,
             "path": "characters.csv",
             "schema": {
                 "fields": [
@@ -46,6 +47,7 @@ join
         },
         {
             "name": "got-houses",
+            "dpp:streaming": true,
             "path": "houses.csv",
             "schema": { "fields": [
                 {"name": "house", "type": "string"}
@@ -76,6 +78,7 @@ join
     "resources": [
         {
             "name": "got-houses",
+            "dpp:streaming": true,
             "path": "houses.csv",
             "schema": { "fields": [
                 {"name": "house", "type": "string"},

@@ -16,6 +16,7 @@ load_resource
     "resources": [
         {
             "name": "my-spiffy-resource",
+            "dpp:streaming": true,
             "profile": "data-resource",
             "path": "sample.csv",
             "encoding": "utf-8",
