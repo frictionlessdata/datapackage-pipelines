@@ -3,6 +3,7 @@ import collections
 
 from datapackage_pipelines.wrapper import ingest, spew
 from datapackage_pipelines.utilities.kvstore import KVStore
+from datapackage_pipelines.utilities.resources import PROP_STREAMING
 
 db = KVStore()
 
@@ -217,6 +218,7 @@ def process_datapackage(datapackage_):
                     source_spec,
                     {
                         'name': target_name,
+                        PROP_STREAMING: True,
                         'path': os.path.join('data', target_name + '.csv')
                     })
                 new_resources.append(resource)
