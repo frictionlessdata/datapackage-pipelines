@@ -191,7 +191,7 @@ def stream_reader(_resource, _url, _ignore_missing):
             1, None)
 
 
-parameters, datapackage, resource_iterator = ingest(debug=True)
+parameters, datapackage, resource_iterator = ingest()
 
 resources = ResourceMatcher(parameters.get('resources'))
 ignore_missing = parameters.get('ignore-missing', False)
