@@ -10,6 +10,10 @@ def identity(x):
     return x
 
 
+def json_dumps(x):
+    return json.dumps(x, ensure_ascii=False)
+
+
 class FileFormat():
 
     def prepare_resource(self, resource):
@@ -35,8 +39,8 @@ class FileFormat():
 class CSVFormat(FileFormat):
 
     SERIALIZERS = {
-        'array': json.dumps,
-        'object': json.dumps,
+        'array': json_dumps,
+        'object': json_dumps,
         'datetime': lambda d: d.strftime(DATETIME_FORMAT),
         'date': lambda d: d.strftime(DATE_FORMAT),
         'time': lambda d: d.strftime(TIME_FORMAT),

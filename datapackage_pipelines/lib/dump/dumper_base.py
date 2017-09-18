@@ -179,8 +179,8 @@ class FileDumper(DumperBase):
     def handle_datapackage(self, datapackage, parameters, stats):
         if parameters.get('handle-non-tabular', False):
             self.copy_non_tabular_resources(datapackage)
-        temp_file = tempfile.NamedTemporaryFile(mode="w+", delete=False)
-        json.dump(datapackage, temp_file, sort_keys=True, ensure_ascii=True)
+        temp_file = tempfile.NamedTemporaryFile(mode="w+", delete=False, encoding='utf-8')
+        json.dump(datapackage, temp_file, sort_keys=True, ensure_ascii=False)
         temp_file_name = temp_file.name
         filesize = temp_file.tell()
         temp_file.close()
