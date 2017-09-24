@@ -17,6 +17,7 @@ def streamable(descriptor):
     return PROP_STREAMED_FROM in descriptor and \
            not streaming(descriptor)
 
+
 def get_path(descriptor):
     path = descriptor.get('path')
     if isinstance(path, str):

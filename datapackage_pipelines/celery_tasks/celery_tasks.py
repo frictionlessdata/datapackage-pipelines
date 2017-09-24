@@ -17,7 +17,7 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
     # completed_trigger: the trigger for the pipeline that had just completed (when applicable)
     logging.debug("Update Pipelines (%s)", action)
     status_all_pipeline_ids = set(sts['id'] for sts in status.all_statuses())
-
+    executed_count = 0
     all_pipeline_ids = set()
     for spec in pipelines():
         pipeline_id = spec.pipeline_id
@@ -64,11 +64,15 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
                                         spec.path,
                                         'dirty-task' if completed_trigger is None else completed_trigger,
                                         pipeline_status.data['queued'])
+            executed_count += 1
+            if executed_count == 4:
+                break
 
-    extra_pipelines = status_all_pipeline_ids.difference(all_pipeline_ids)
-    for pipeline_id in extra_pipelines:
-        logging.info("Removing Pipeline: %s", pipeline_id)
-        status.deregister(pipeline_id)
+    if executed_count == 0:
+        extra_pipelines = status_all_pipeline_ids.difference(all_pipeline_ids)
+        for pipeline_id in extra_pipelines:
+            logging.info("Removing Pipeline: %s", pipeline_id)
+            status.deregister(pipeline_id)
 
 
 @celery_app.task
@@ -111,3 +115,4 @@ def execute_pipeline_task(pipeline_id,
 
         if success:
             update_pipelines.delay('complete', pipeline_id, trigger)
+            update_pipelines.delay('update', None, None)

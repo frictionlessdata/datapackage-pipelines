@@ -1,5 +1,4 @@
 import zipfile
-import os
 
 from datapackage_pipelines.lib.dump.dumper_base import FileDumper
 

@@ -30,18 +30,15 @@ def serve():
 
 
 def execute_if_needed(argument, spec, use_cache):
-    if len(spec.errors) != 0:
-        return None, False
     if ((argument == spec.pipeline_id) or
             (argument == 'all') or
             (argument == 'dirty' and spec.dirty)):
+        if len(spec.errors) != 0:
+            return (spec.pipeline_id, False, {}, ['init'] + list(map(str, spec.errors))), spec.pipeline_id == argument
         success, stats, errors = \
             execute_pipeline(spec,
                              use_cache=use_cache)
-        stop = False
-        if spec.pipeline_id == argument:
-            stop = True
-        return (spec.pipeline_id, success, stats, errors), stop
+        return (spec.pipeline_id, success, stats, errors), spec.pipeline_id == argument
     return None, False
 
 
@@ -66,6 +63,7 @@ or 'dirty' for running just the dirty ones."""
 
                 ret, stop = \
                     execute_if_needed(pipeline_id, spec, use_cache)
+
                 if ret is not None:
                     executed.add(spec.pipeline_id)
                     modified += 1
@@ -84,7 +82,8 @@ or 'dirty' for running just the dirty ones."""
                          ('\nERROR log from processor %s:\n+--------\n| ' % errors[0] +
                           '\n| '.join(errors[1:]) +
                           '\n+--------')
-                         if errors else '')
+                         if errors else ''
+                         )
 
     except KeyboardInterrupt:
         pass

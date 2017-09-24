@@ -29,7 +29,7 @@ class SourceSpecPipelineParser(BaseParser):
             yield PipelineSpec(pipeline_id=module_name,
                                path=dirpath,
                                errors=[error],
-                               pipeline_details={})
+                               pipeline_details={'pipeline': []})
             return
 
         if generator.internal_validate(source_spec):

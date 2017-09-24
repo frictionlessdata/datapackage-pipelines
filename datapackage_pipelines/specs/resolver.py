@@ -6,7 +6,14 @@ from importlib import import_module
 
 from .errors import SpecError
 
-PROCESSOR_PATH = os.environ.get('DPP_PROCESSOR_PATH', '').split(';')
+_processor_path = None
+
+
+def processor_path():
+    global _processor_path
+    if _processor_path is None:
+        _processor_path = os.environ.get('DPP_PROCESSOR_PATH', '').split(';')
+    return _processor_path
 
 
 def find_file_in_path(path, remove=0):
@@ -67,7 +74,7 @@ def resolve_executor(step, path, errors):
 
         resolvers.extend([
             find_file_in_path([path_])
-            for path_ in PROCESSOR_PATH
+            for path_ in processor_path()
         ])
         resolvers.append(find_file_in_path([os.path.dirname(__file__),
                                             '..', 'lib']))

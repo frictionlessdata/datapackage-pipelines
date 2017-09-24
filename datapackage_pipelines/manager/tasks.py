@@ -14,7 +14,7 @@ SINK = os.path.join(os.path.dirname(__file__),
                     '..', 'lib', 'internal', 'sink.py')
 
 
-async def enqueue_errors(step, process, queue):
+async def enqueue_errors(step, process, queue, debug):
     out = process.stderr
     errors = []
     while True:
@@ -35,7 +35,8 @@ async def enqueue_errors(step, process, queue):
                 if len(errors) > 1000:
                     errors.pop(1)
             line = "{}: {}".format(step['run'], line)
-            logging.info(line)
+            if debug:
+                logging.info(line)
             await queue.put(line)
     return errors
 
@@ -132,7 +133,7 @@ def find_caches(pipeline_steps, pipeline_cwd):
     return pipeline_steps
 
 
-async def construct_process_pipeline(pipeline_steps, pipeline_cwd, errors):
+async def construct_process_pipeline(pipeline_steps, pipeline_cwd, errors, debug=False):
     error_collectors = []
     processes = []
     error_queue = asyncio.Queue()
@@ -164,7 +165,7 @@ async def construct_process_pipeline(pipeline_steps, pipeline_cwd, errors):
         processes.append(process)
         rfd = new_rfd
         error_collectors.append(
-            asyncio.ensure_future(enqueue_errors(step, process, error_queue))
+            asyncio.ensure_future(enqueue_errors(step, process, error_queue, debug))
         )
 
     error_collectors.append(
@@ -210,7 +211,7 @@ async def async_execute_pipeline(pipeline_id,
     execution_log = []
 
     processes, stop_error_collecting = \
-        await construct_process_pipeline(pipeline_steps, pipeline_cwd, execution_log)
+        await construct_process_pipeline(pipeline_steps, pipeline_cwd, execution_log, trigger == 'manual')
 
     def kill_all_processes():
         for to_kill in processes:

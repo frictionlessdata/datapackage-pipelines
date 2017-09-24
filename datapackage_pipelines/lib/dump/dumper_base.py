@@ -8,7 +8,7 @@ import requests
 from tableschema.exceptions import CastError
 from tableschema.schema import Schema
 
-from ...utilities.resources import get_path, PROP_STREAMED_FROM, is_a_url, streaming, tabular
+from ...utilities.resources import get_path, PROP_STREAMED_FROM, is_a_url, streaming
 from ...utilities.extended_json import json
 from ...wrapper import ingest, spew
 

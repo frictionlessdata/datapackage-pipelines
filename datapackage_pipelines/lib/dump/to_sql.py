@@ -12,6 +12,7 @@ from sqlalchemy.exc import OperationalError
 from datapackage_pipelines.lib.dump.dumper_base import DumperBase
 from tableschema.exceptions import ValidationError
 
+
 def jsonize(obj):
     return json.dumps(obj)
 
