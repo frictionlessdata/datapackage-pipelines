@@ -203,6 +203,8 @@ async def async_execute_pipeline(pipeline_id,
         logging.info("ALREADY RUNNING %s, BAILING OUT", pipeline_id)
         return False, {}
 
+    debug = trigger == 'manual'
+
     status.running(pipeline_id, trigger, '')
 
     logging.info("RUNNING %s", pipeline_id)
@@ -212,7 +214,7 @@ async def async_execute_pipeline(pipeline_id,
     execution_log = []
 
     processes, stop_error_collecting = \
-        await construct_process_pipeline(pipeline_steps, pipeline_cwd, execution_log, trigger == 'manual')
+        await construct_process_pipeline(pipeline_steps, pipeline_cwd, execution_log, debug)
 
     def kill_all_processes():
         for to_kill in processes:
@@ -243,12 +245,14 @@ async def async_execute_pipeline(pipeline_id,
         for waiter in done:
             process, return_code = waiter.result()
             if return_code == 0:
-                logging.info("DONE %s", process.args)
+                if debug:
+                    logging.info("DONE %s", process.args)
                 processes = [p for p in processes if p.pid != process.pid]
             else:
                 if return_code > 0 and failed_index is None:
                     failed_index = index_for_pid[process.pid]
-                logging.error("FAILED %s: %s", process.args, return_code)
+                if debug:
+                    logging.error("FAILED %s: %s", process.args, return_code)
                 success = False
                 kill_all_processes()
 
