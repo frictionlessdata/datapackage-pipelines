@@ -152,7 +152,8 @@ async def construct_process_pipeline(pipeline_steps, pipeline_cwd, errors, debug
 
         new_rfd, wfd = os.pipe()
 
-        logging.info("- %s", step['run'])
+        if debug:
+            logging.info("- %s", step['run'])
         runner = runner_config.get_runner(step.get('runner'))
         args = runner.get_execution_args(step, pipeline_cwd, i)
         process = await create_process(args, pipeline_cwd, wfd, rfd)
