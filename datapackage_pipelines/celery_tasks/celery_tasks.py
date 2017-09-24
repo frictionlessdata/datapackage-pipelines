@@ -103,8 +103,11 @@ def execute_pipeline_task(pipeline_id,
                           trigger,
                           queue_time):
 
-    last_queue_time = status.get_status(pipeline_id).get('queued')
-    if queue_time in {0, last_queue_time}:
+    pipeline_status = status.get_status(pipeline_id)
+    last_queue_time = None
+    if pipeline_status is not None:
+        last_queue_time = pipeline_status.get('queued')
+    if queue_time in {0, last_queue_time} or last_queue_time is None:
         spec = PipelineSpec(pipeline_id=pipeline_id,
                             pipeline_details=pipeline_details,
                             path=pipeline_cwd)
