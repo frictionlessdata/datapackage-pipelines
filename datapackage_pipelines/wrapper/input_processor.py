@@ -79,9 +79,12 @@ def process_input(infile, validate=False, debug=False):
     except ValidationError as e:
         logging.info('ABOUT TO VALIDATE %r', dp_to_validate)
         for e in e.errors:
-            logging.error("Data Package validation error: %s at dp%s",
-                          e.message,
-                          "[%s]" % "][".join(repr(index) for index in e.path))
+            try:
+                logging.error("Data Package validation error: %s at dp%s",
+                              e.message,
+                              "[%s]" % "][".join(repr(index) for index in e.path))
+            except:
+                logging.error("Data Package validation error: %s", e)
         raise
 
     infile.readline().strip()
