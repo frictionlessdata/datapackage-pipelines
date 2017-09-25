@@ -44,7 +44,6 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
             logging.debug('Pipeline: %s (dirty: %s, %s != %s?)',
                           spec.pipeline_id, spec.dirty, executed_hashes.get(spec.pipeline_id), spec.cache_hash)
             if registered and spec.dirty and executed_hashes.get(spec.pipeline_id) != spec.cache_hash:
-                executed_hashes[spec.pipeline_id] = spec.cache_hash
                 run = True
         elif action == 'complete':
             if completed_pipeline_id in spec.dependencies:
@@ -58,6 +57,7 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
 
         if len(spec.errors) == 0 and run:
             logging.info('Executing task %s (from action "%s")', pipeline_id, action)
+            executed_hashes[spec.pipeline_id] = spec.cache_hash
             pipeline_status = status.queued(pipeline_id)
             execute_pipeline_task.delay(pipeline_id,
                                         spec.pipeline_details,
