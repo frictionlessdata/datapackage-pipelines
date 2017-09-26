@@ -43,7 +43,7 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
                 logging.info("NEW Pipeline: %s (registered? %s)", spec, registered)
             logging.debug('Pipeline: %s (dirty: %s, %s != %s?)',
                           spec.pipeline_id, spec.dirty, executed_hashes.get(spec.pipeline_id), spec.cache_hash)
-            if registered and spec.dirty and executed_hashes.get(spec.pipeline_id) != spec.cache_hash:
+            if (registered or spec.dirty) and executed_hashes.get(spec.pipeline_id) != spec.cache_hash:
                 run = True
         elif action == 'complete':
             if completed_pipeline_id in spec.dependencies:
