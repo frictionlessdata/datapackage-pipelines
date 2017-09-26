@@ -65,7 +65,8 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
                                         'dirty-task' if completed_trigger is None else completed_trigger,
                                         pipeline_status.data['queued'])
             executed_count += 1
-            if executed_count == 4:
+            if executed_count == 4 and action == 'update':
+                # Limit ops on update only
                 break
 
     if executed_count == 0:
