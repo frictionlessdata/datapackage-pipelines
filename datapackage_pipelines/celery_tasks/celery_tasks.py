@@ -119,4 +119,4 @@ def execute_pipeline_task(pipeline_id,
 
         if success:
             update_pipelines.delay('complete', pipeline_id, trigger)
-            update_pipelines.delay('update', None, None)
+        update_pipelines.delay('update', None, None)
