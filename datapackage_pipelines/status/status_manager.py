@@ -69,9 +69,12 @@ class PipelineStatus(object):
         if self.data['state'] not in {'REGISTERED',
                                       'SUCCEEDED',
                                       'FAILED',
-                                      'RUNNING'}:
+                                      'RUNNING',
+                                      'INVALID'}:
             logging.error('set_running: bad state %s', self.data['state'])
             return
+        if self.data['state'] == 'INVALID':
+            logging.warning('set_running: bad state %s', self.data['state'])
 
         cur_time = time.time()
         if not self.check_running():
