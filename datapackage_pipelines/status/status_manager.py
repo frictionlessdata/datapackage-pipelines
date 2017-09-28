@@ -63,7 +63,7 @@ class PipelineStatus(object):
         return self.data.get('state') == 'SUCCEEDED'
 
     def check_failed(self):
-        return self.data.get('state') == 'SUCCEEDED'
+        return self.data.get('state') == 'FAILED'
 
     def check_waiting(self):
         return self.data.get('state') in {'REGISTERED', 'INVALID'}

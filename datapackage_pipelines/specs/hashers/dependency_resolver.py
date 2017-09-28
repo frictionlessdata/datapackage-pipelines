@@ -33,7 +33,7 @@ def resolve_dependencies(spec, all_pipeline_ids):
                 )
             elif status.is_failed(pipeline_id) or status.is_invalid(pipeline_id):
                 spec.errors.append(
-                    SpecError('Dependency unsuccessful',
+                    SpecError('Dependency unsuccessful ({})'.format(status.get_status(pipeline_id)['state']),
                               'Cannot run until dependency "{}" is successfully '
                               'executed'.format(pipeline_id))
                 )
