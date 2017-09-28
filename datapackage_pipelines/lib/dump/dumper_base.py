@@ -204,7 +204,7 @@ class FileDumper(DumperBase):
                     delete = True
                 else:
                     filesize = os.stat(url).st_size
-                DumperBase.inc_attr(resource, self.resource_bytes, filesize)
+                DumperBase.set_attr(resource, self.resource_bytes, filesize)
                 DumperBase.inc_attr(datapackage, self.datapackage_bytes, filesize)
                 self.write_file_to_output(url, get_path(resource))
                 if delete:
