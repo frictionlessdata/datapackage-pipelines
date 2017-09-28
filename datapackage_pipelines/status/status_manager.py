@@ -62,8 +62,17 @@ class PipelineStatus(object):
     def check_successful(self):
         return self.data.get('state') == 'SUCCEEDED'
 
+    def check_failed(self):
+        return self.data.get('state') == 'SUCCEEDED'
+
     def check_waiting(self):
         return self.data.get('state') in {'REGISTERED', 'INVALID'}
+
+    def check_invalid(self):
+        return self.data.get('state') in {'INVALID'}
+
+    def check_registered(self):
+        return self.data.get('state') in {'REGISTERED'}
 
     def set_running(self, trigger, log):
         if self.data['state'] not in {'REGISTERED',
@@ -191,6 +200,21 @@ class StatusManager(object):
 
     def is_successful(self, _id):
         return PipelineStatus(self.backend, _id).check_successful()
+
+    def is_failed(self, _id):
+        return PipelineStatus(self.backend, _id).check_failed()
+
+    def is_invalid(self, _id):
+        return PipelineStatus(self.backend, _id).check_invalid()
+
+    def is_registered(self, _id):
+        return PipelineStatus(self.backend, _id).check_registered()
+
+    def get_errors(self, _id):
+        sts = self.get_status(_id)
+        if sts is not None:
+            return sts.get('error_log', [])
+        return []
 
     def running(self, _id, trigger=None, log=None):
         PipelineStatus(self.backend, _id).set_running(trigger, log)

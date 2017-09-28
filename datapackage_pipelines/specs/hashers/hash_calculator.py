@@ -21,6 +21,8 @@ class HashCalculator(object):
 
         else:
             cache_hash = resolve_dependencies(spec, self.all_pipeline_ids)
+
+            self.all_pipeline_ids[spec.pipeline_id] = spec
             if len(spec.errors) > 0:
                 return cache_hash
 
@@ -34,6 +36,5 @@ class HashCalculator(object):
                 cache_hash = m.hexdigest()
                 step['_cache_hash'] = cache_hash
 
-            self.all_pipeline_ids[spec.pipeline_id] = spec
 
         spec.cache_hash = cache_hash

@@ -64,9 +64,9 @@ def pipelines():
 
     specs = find_specs()
     hasher = HashCalculator()
-    deferred_amount = 0
     while specs is not None:
         deferred = []
+        found = False
 
         for spec in specs:
             if (spec.pipeline_details is not None and
@@ -75,27 +75,26 @@ def pipelines():
                 resolve_processors(spec)
                 process_schedules(spec)
 
-                if len(spec.errors) == 0:
-                    try:
-                        hasher.calculate_hash(spec)
-                    except DependencyMissingException:
-                        deferred.append(spec)
-                        continue
+                try:
+                    hasher.calculate_hash(spec)
+                    found = True
+                except DependencyMissingException as e:
+                    deferred.append((e.spec, e.missing))
+                    continue
 
                 calculate_dirty(spec)
 
             yield spec
 
-        if len(deferred) > 0:
-            if len(deferred) == deferred_amount:
-                for spec in deferred:
-                    spec.errors.append(
-                        SpecError('Missing dependency',
-                                  'Failed to find a pipeline dependency')
-                    )
-            deferred_amount = len(deferred)
-            specs = iter(deferred)
+        if found and len(deferred) > 0:
+            specs = iter((x[0] for x in deferred))
         else:
+            for spec, missing in deferred:
+                spec.errors.append(
+                    SpecError('Missing dependency',
+                              'Failed to find a dependency: {}'.format(missing))
+                )
+                yield spec
             specs = None
 
 
