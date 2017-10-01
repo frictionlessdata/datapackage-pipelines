@@ -25,7 +25,7 @@ INSTALL_REQUIRES = [
     'requests',
     'datapackage>=1.0.2',
     'tableschema>=1.0.2',
-    'tableschema-sql>=0.9',
+    'tableschema-sql>=0.10.0',
     'pyyaml',
     'mistune',
     'redis',
