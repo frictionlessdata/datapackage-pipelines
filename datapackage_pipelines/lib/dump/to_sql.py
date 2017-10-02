@@ -81,17 +81,19 @@ class SQLDumper(DumperBase):
             storage = Storage(self.engine, prefix=table_name)
             if mode == 'rewrite' and '' in storage.buckets:
                 storage.delete('')
+            schema = self.normalise_schema_for_engine(self.engine.dialect.name,
+                                                      spec['schema'])
             if '' not in storage.buckets:
                 logging.info('Creating DB table %s', table_name)
                 try:
-                    storage.create('',
-                                   self.normalise_schema_for_engine(self.engine.dialect.name,
-                                                                    spec['schema']))
+                    storage.create('', schema)
                 except ValidationError as e:
                     logging.error('Error validating schema %r', spec['schema'])
                     for err in e.errors:
                         logging.error('Error validating schema: %s', err)
                     raise
+            else:
+                storage.describe('', schema)
 
             update_keys = None
             if mode == 'update':
