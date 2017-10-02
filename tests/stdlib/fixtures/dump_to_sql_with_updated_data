@@ -50,6 +50,6 @@ dump.to_sql
     ]
 }
 --
-{"mystring":"a", "mynumber": 2.0, "mydate": {"type{date}": "2016-12-31"}, "updated": false, "updated_id": null}
+{"mystring":"a", "mynumber": {"type{decimal}": "2"}, "mydate": {"type{date}": "2016-12-31"}, "updated": false, "updated_id": null}
 
 {"bytes": null, "count_of_rows": 1, "dataset_name": "test", "hash": "1ae286a22a1dd3c17aa78a047dd778ef"}

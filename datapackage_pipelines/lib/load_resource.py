@@ -30,6 +30,8 @@ class ResourceLoader(object):
                 if tabular(orig_res.descriptor) and stream:
                     orig_res.descriptor[PROP_STREAMING] = True
                     selected_resources.append(orig_res.iter(keyed=True))
+                else:
+                    orig_res.descriptor[PROP_STREAMING] = False
 
         assert found, "Failed to find resource with index or name matching %r" % resource
         spew(self.dp, itertools.chain(self.res_iter, selected_resources))
