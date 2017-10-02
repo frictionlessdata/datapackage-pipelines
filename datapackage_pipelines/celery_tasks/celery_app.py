@@ -54,3 +54,4 @@ celery_app.conf.update(CELERYBEAT_SCHEDULE=CELERY_SCHEDULE,
                             MANAGEMENT_TASK_NAME: {'queue': 'datapackage-pipelines-management'},
                        })
 
+celery_app.send_task(MANAGEMENT_TASK_NAME, ('init', None, None))
