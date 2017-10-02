@@ -69,6 +69,7 @@ def pipelines():
         found = False
 
         for spec in specs:
+            error_num = len(spec.errors)
             if (spec.pipeline_details is not None and
                     validate_pipeline(spec.pipeline_details, spec.errors)):
 
@@ -83,6 +84,13 @@ def pipelines():
                     continue
 
                 calculate_dirty(spec)
+
+            if not error_num and len(spec.errors):
+                status.register(spec.pipeline_id,
+                                spec.cache_hash,
+                                spec.pipeline_details,
+                                spec.source_details,
+                                spec.errors)
 
             yield spec
 
