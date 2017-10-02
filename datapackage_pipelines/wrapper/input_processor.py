@@ -83,7 +83,7 @@ def process_input(infile, validate=False, debug=False):
                 logging.error("Data Package validation error: %s at dp%s",
                               e.message,
                               "[%s]" % "][".join(repr(index) for index in e.path))
-            except:
+            except AttributeError:
                 logging.error("Data Package validation error: %s", e)
         raise
 

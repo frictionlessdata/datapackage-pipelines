@@ -36,5 +36,4 @@ class HashCalculator(object):
                 cache_hash = m.hexdigest()
                 step['_cache_hash'] = cache_hash
 
-
         spec.cache_hash = cache_hash

@@ -378,6 +378,8 @@ Loads the resource specified in the `resource` parameter from the data package l
 
 All properties of the loaded resource will be copied - `path` and `schema` included.
 
+If the `stream` parameter is provided and is set to false, then the resource will be added to the datapackage but not streamed.
+
 *Example*:
 
 ```yaml
