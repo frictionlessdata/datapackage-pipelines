@@ -31,6 +31,11 @@ def resolve_dependencies(spec, all_pipeline_ids):
                     SpecError('Dirty dependency',
                               'Cannot run until dependency is executed: {}'.format(pipeline_id))
                 )
+            elif status.is_running(pipeline_id):
+                spec.errors.append(
+                    SpecError('Running dependency',
+                              'Cannot run until dependency finishes running: {}'.format(pipeline_id))
+                )
             elif status.is_failed(pipeline_id) or status.is_invalid(pipeline_id):
                 spec.errors.append(
                     SpecError('Dependency unsuccessful ({})'.format(status.get_status(pipeline_id)['state']),
