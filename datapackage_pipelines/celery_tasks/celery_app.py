@@ -37,6 +37,7 @@ for spec in pipelines():
         logging.info('SCHEDULING task %r: %r', spec.pipeline_id, spec.schedule)
 
 celery_app = Celery('dpp')
+
 celery_app.conf.update(CELERYBEAT_SCHEDULE=CELERY_SCHEDULE,
                        CELERY_TIMEZONE='UTC',
                        CELERY_REDIRECT_STDOUTS=False,
@@ -52,3 +53,4 @@ celery_app.conf.update(CELERYBEAT_SCHEDULE=CELERY_SCHEDULE,
                             SCHEDULED_TASK_NAME: {'queue': 'datapackage-pipelines-management'},
                             MANAGEMENT_TASK_NAME: {'queue': 'datapackage-pipelines-management'},
                        })
+
