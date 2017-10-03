@@ -143,7 +143,7 @@ class PipelineStatus(object):
 
         # Is pipeline dirty?
         dirty = self.data.setdefault('cache_hash', '') != cache_hash
-        dirty = dirty or self.data.get('state') != 'SUCCEEDED'
+        dirty = dirty or self.data.get('state') not in ('SUCCEEDED', 'INVALID', 'RUNNING')
         dirty = dirty and len(errors) == 0
 
         self.data.update({

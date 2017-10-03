@@ -7,7 +7,7 @@ from ..specs import pipelines, PipelineSpec
 from ..manager.tasks import execute_pipeline
 
 executed_hashes = {}
-
+already_init = False
 
 @celery_app.task
 def update_pipelines(action, completed_pipeline_id, completed_trigger):
@@ -16,6 +16,11 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
     # action=complete: iterate over all pipelines, trigger dependencies
     # completed_pipeline_id: pipeline id that had just completed (when applicable)
     # completed_trigger: the trigger for the pipeline that had just completed (when applicable)
+    global already_init
+    if action == 'init' and already_init:
+        return
+    already_init = True
+
     logging.debug("Update Pipelines (%s)", action)
     status_all_pipeline_ids = set(sts['id'] for sts in status.all_statuses())
     executed_count = 0
@@ -34,7 +39,7 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
             if spec.dirty:
                 run = True
         elif action == 'update':
-            registered = True
+            registered = False
             if spec.pipeline_id not in status_all_pipeline_ids:
                 registered = status.register(spec.pipeline_id,
                                              spec.cache_hash,

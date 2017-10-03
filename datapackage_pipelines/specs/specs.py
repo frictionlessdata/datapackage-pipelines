@@ -36,7 +36,7 @@ def process_schedules(spec):
 def calculate_dirty(spec):
     pipeline_status = status.get_status(spec.pipeline_id) or {}
     dirty = pipeline_status.get('cache_hash', '') != spec.cache_hash
-    dirty = dirty or pipeline_status.get('state') != 'SUCCEEDED'
+    dirty = dirty or pipeline_status.get('state') not in ('SUCCEEDED', 'INVALID', 'RUNNING')
     dirty = dirty and len(spec.errors) == 0
 
     spec.dirty = dirty
