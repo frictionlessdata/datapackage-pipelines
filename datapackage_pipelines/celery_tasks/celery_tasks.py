@@ -8,7 +8,23 @@ from ..specs import pipelines, PipelineSpec, register_all_pipelines
 from ..manager.tasks import execute_pipeline
 
 executed_hashes = {}
+dependencies = {}
+dependents = {}
 already_init = False
+
+
+def collect_dependencies(pipeline_ids):
+    if pipeline_ids is None:
+        return None
+    ret = set()
+    for pipeline_id in pipeline_ids:
+        deps = dependencies.get(pipeline_id)
+        if deps is not None:
+            for dep in deps:
+                ret.update(collect_dependencies(dep))
+            ret.update(deps)
+    return ret
+
 
 @celery_app.task
 def update_pipelines(action, completed_pipeline_id, completed_trigger):
@@ -29,7 +45,14 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
     status_all_pipeline_ids = set(sts['id'] for sts in status.all_statuses())
     executed_count = 0
     all_pipeline_ids = set()
-    for spec in pipelines():
+
+    if action == 'complete':
+        filter = collect_dependencies(dependents.get(completed_pipeline_id))
+        logging.info("DEPENDENTS Pipeline: %s <- %s", completed_pipeline_id, filter)
+    else:
+        filter = ('',)
+
+    for spec in pipelines(filter):
         pipeline_id = spec.pipeline_id
         all_pipeline_ids.add(pipeline_id)
 
@@ -40,6 +63,9 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
                             spec.pipeline_details,
                             spec.source_details,
                             spec.errors)
+            for dep in spec.dependencies:
+                dependents.setdefault(dep, set()).add(spec.pipeline_id)
+            dependencies[spec.pipeline_id] = spec.dependencies
             if spec.dirty:
                 run = True
         elif action == 'update':
@@ -82,7 +108,7 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
                 # Limit ops on update only
                 break
 
-    if executed_count == 0:
+    if executed_count == 0 and action != 'complete':
         extra_pipelines = status_all_pipeline_ids.difference(all_pipeline_ids)
         for pipeline_id in extra_pipelines:
             logging.info("Removing Pipeline: %s", pipeline_id)

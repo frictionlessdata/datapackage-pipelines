@@ -60,16 +60,21 @@ def find_specs(root_dir='.'):
                             yield PipelineSpec(path=dirpath, errors=[error])
 
 
-def pipelines():
+def pipelines(prefixes=None):
 
     specs = find_specs()
     hasher = HashCalculator()
+    if prefixes is None:
+        prefixes = ('',)
     while specs is not None:
         deferred = []
         found = False
 
         for spec in specs:
-            error_num = len(spec.errors)
+            if not any(spec.pipeline_id.startswith(prefix)
+                       for prefix in prefixes):
+                continue
+
             if (spec.pipeline_details is not None and
                     validate_pipeline(spec.pipeline_details, spec.errors)):
 
