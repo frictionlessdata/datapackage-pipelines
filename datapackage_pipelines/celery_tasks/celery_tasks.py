@@ -1,9 +1,10 @@
 import logging
 import os
 
-from datapackage_pipelines.status import status
+from ..status import status
+
 from .celery_app import celery_app
-from ..specs import pipelines, PipelineSpec
+from ..specs import pipelines, PipelineSpec, register_all_pipelines
 from ..manager.tasks import execute_pipeline
 
 executed_hashes = {}
@@ -17,8 +18,11 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
     # completed_pipeline_id: pipeline id that had just completed (when applicable)
     # completed_trigger: the trigger for the pipeline that had just completed (when applicable)
     global already_init
-    if action == 'init' and already_init:
-        return
+    if action == 'init':
+        if already_init:
+            return
+        else:
+            register_all_pipelines()
     already_init = True
 
     logging.debug("Update Pipelines (%s)", action)
