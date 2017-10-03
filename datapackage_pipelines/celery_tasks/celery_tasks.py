@@ -59,7 +59,8 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
                     run = True
 
         if len(spec.errors) == 0 and run:
-            logging.info('Executing task %s (from action "%s")', pipeline_id, action)
+            state = status.get_status(pipeline_id)['state']
+            logging.info('EXECUTING task %s @ %s (from action "%s")', pipeline_id, state, action)
             executed_hashes[spec.pipeline_id] = spec.cache_hash
             pipeline_status = status.queued(pipeline_id)
             execute_pipeline_task.delay(pipeline_id,

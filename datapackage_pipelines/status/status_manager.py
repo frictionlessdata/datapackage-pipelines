@@ -80,10 +80,10 @@ class PipelineStatus(object):
                                       'FAILED',
                                       'RUNNING',
                                       'INVALID'}:
-            logging.error('set_running: bad state %s', self.data['state'])
+            logging.error('set_running: %s: bad state %s', self.pipeline_id, self.data['state'])
             return
         if self.data['state'] == 'INVALID':
-            logging.warning('set_running: bad state %s', self.data['state'])
+            logging.warning('set_running: %s: bad state %s', self.pipeline_id, self.data['state'])
 
         cur_time = time.time()
         if not self.check_running():
