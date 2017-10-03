@@ -83,14 +83,11 @@ def pipelines():
                     deferred.append((e.spec, e.missing))
                     continue
 
-                calculate_dirty(spec)
-
-            if not error_num and len(spec.errors):
-                status.register(spec.pipeline_id,
-                                spec.cache_hash,
-                                spec.pipeline_details,
-                                spec.source_details,
-                                spec.errors)
+            spec.dirty = status.register(spec.pipeline_id,
+                                         spec.cache_hash,
+                                         spec.pipeline_details,
+                                         spec.source_details,
+                                         spec.errors)
 
             yield spec
 
