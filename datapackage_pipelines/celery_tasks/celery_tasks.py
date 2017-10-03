@@ -1,4 +1,5 @@
 import logging
+import os
 
 from datapackage_pipelines.status import status
 from .celery_app import celery_app
@@ -53,6 +54,8 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
                                     spec.pipeline_details,
                                     spec.source_details,
                                     spec.errors)
+                    logging.info("DEPENDENT Pipeline: %s (%d errors) (from ...%s)",
+                                 spec.pipeline_id, len(spec.errors), os.path.basename(completed_pipeline_id))
                     run = True
 
         if len(spec.errors) == 0 and run:
@@ -119,4 +122,3 @@ def execute_pipeline_task(pipeline_id,
 
         if success:
             update_pipelines.delay('complete', pipeline_id, trigger)
-        update_pipelines.delay('update', None, None)

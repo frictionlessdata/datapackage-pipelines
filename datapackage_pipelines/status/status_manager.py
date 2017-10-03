@@ -13,7 +13,7 @@ class PipelineStatus(object):
         'REGISTERED': {
             'success': None,
             'message': "Didn't run",
-            'error_log': ["Didn't run yet"]
+            'error_log': []
         },
         'INVALID': {
             'success': False,

@@ -9,9 +9,9 @@ if [ "$1" = "server" ]; then
     python /dpp/docker/github_config.py
     dpp init
 
-    echo "Deleting `redis-cli KEYS "*" | wc` keys"
-    redis-cli -n 6 KEYS "*" | xargs redis-cli -n 6 DEL
-    echo "Remaining `redis-cli KEYS "*" | wc` keys"
+    echo "Deleting `redis-cli -n 6 KEYS '*' | wc -l` keys"
+    redis-cli -n 6 FLUSHDB
+    echo "Remaining `redis-cli -n 6 KEYS '*' | wc -l` keys"
 
     python3 -m celery -b redis://localhost:6379/6 -A datapackage_pipelines.app -l INFO beat &
     python3 -m celery -b redis://localhost:6379/6 --concurrency=1 -A datapackage_pipelines.app -Q datapackage-pipelines-management -l INFO worker &
