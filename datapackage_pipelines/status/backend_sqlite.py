@@ -34,6 +34,13 @@ class Sqlite3Dict(object):
         conn.commit()
         conn.close()
 
+    def __delitem__(self, key):
+        conn = sqlite3.connect(self.filename)
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM d where _key=?', (key,))
+        conn.commit()
+        conn.close()
+
 
 class SqliteBackend(object):
 
@@ -47,6 +54,9 @@ class SqliteBackend(object):
 
     def set_status(self, pipeline_id, status):
         self.db[pipeline_id] = status
+
+    def del_status(self, pipeline_id):
+        del self.db[pipeline_id]
 
     def register_pipeline_id(self, pipeline_id):
         all_pipelines = self.db[self.ALL_PIPELINES_KEY]
@@ -66,6 +76,10 @@ class SqliteBackend(object):
 
     def reset(self):
         self.db[self.ALL_PIPELINES_KEY] = []
+
+    def all_pipeline_ids(self):
+        all_ids = sorted(self.db[self.ALL_PIPELINES_KEY])
+        return all_ids
 
     def all_statuses(self):
         all_ids = sorted(self.db[self.ALL_PIPELINES_KEY])

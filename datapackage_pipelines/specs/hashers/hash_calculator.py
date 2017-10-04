@@ -1,6 +1,7 @@
 import hashlib
 
-from datapackage_pipelines.utilities.extended_json import json
+from ...utilities.extended_json import json
+from ..parsers.base_parser import PipelineSpec
 
 from ..errors import SpecError
 from .dependency_resolver import resolve_dependencies
@@ -11,19 +12,19 @@ class HashCalculator(object):
     def __init__(self):
         self.all_pipeline_ids = {}
 
-    def calculate_hash(self, spec):
+    def calculate_hash(self, spec: PipelineSpec):
 
         cache_hash = None
         if spec.pipeline_id in self.all_pipeline_ids:
             message = 'Duplicate key {0} in {1}' \
                 .format(spec.pipeline_id, spec.path)
-            spec.errors.append(SpecError('Duplicate Pipeline Id', message))
+            spec.validation_errors.append(SpecError('Duplicate Pipeline Id', message))
 
         else:
             cache_hash = resolve_dependencies(spec, self.all_pipeline_ids)
 
             self.all_pipeline_ids[spec.pipeline_id] = spec
-            if len(spec.errors) > 0:
+            if len(spec.validation_errors) > 0:
                 return cache_hash
 
             for step in spec.pipeline_details['pipeline']:

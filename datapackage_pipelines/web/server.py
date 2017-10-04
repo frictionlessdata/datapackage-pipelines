@@ -5,6 +5,7 @@ import logging
 import slugify
 import yaml
 import mistune
+from copy import deepcopy
 from flask import Blueprint
 
 from flask import Flask, render_template, abort, redirect
@@ -18,6 +19,8 @@ register_all_pipelines()
 
 
 def datestr(x):
+    if x is None:
+        return ''
     return str(datetime.datetime.fromtimestamp(x))
 
 
@@ -33,7 +36,7 @@ def make_hierarchies(statuses):
 
     def group(l):
         pipelines = list(filter(lambda x: len(x['id']) == 1, l))
-        children_ = filter(lambda x: len(x['id']) > 1, l)
+        children_ = list(filter(lambda x: len(x['id']) > 1, l))
         groups_ = {}
         for child in children_:
             child_key = child['id'].pop(0)
@@ -59,16 +62,15 @@ def make_hierarchies(statuses):
                 del children_[k]
         return children_
 
-    statuses = sorted(statuses, key=lambda x: x['id'])
     statuses = [
-        {
+       {
             'id': st['id'].split('/'),
-            'title': st.get('pipeline', {}).get('title'),
+            'title': st.get('title'),
             'stats': st.get('stats'),
             'slug': st.get('slug')
-        }
-        for st in statuses
-    ]
+       }
+       for st in statuses
+   ]
     groups = group(statuses)
     children = groups.get('children', {})
     groups['children'] = flatten(children)
@@ -81,21 +83,36 @@ blueprint = Blueprint('dpp', 'dpp')
 
 @blueprint.route("")
 def main():
-    statuses = sorted(status.all_statuses(), key=lambda x: x.get('id'))
-    for pipeline in statuses:
-        for key in ['ended', 'last_success', 'started']:
-            if pipeline.get(key):
-                pipeline[key] = datestr(pipeline[key])
-        pipeline['class'] = {'INIT': 'primary',
-                             'REGISTERED': 'primary',
-                             'INVALID': 'danger',
-                             'RUNNING': 'warning',
-                             'SUCCEEDED': 'success',
-                             'FAILED': 'danger'
-                             }[pipeline.get('state', 'INIT')]
-
-        pipeline['slug'] = slugify.slugify(pipeline['id'])
-        pipeline['id'] = pipeline['id'].lstrip('./')
+    all_pipeline_ids = sorted(status.all_pipeline_ids())
+    statuses = []
+    for pipeline_id in all_pipeline_ids:
+        pipeline_status = status.get(pipeline_id)
+        ex = pipeline_status.get_last_execution()
+        success_ex = pipeline_status.get_last_successful_execution()
+        pipeline_obj = {
+            'id': pipeline_id.lstrip('./'),
+            'title': pipeline_status.pipeline_details.get('title'),
+            'stats': ex.stats if ex else None,
+            'slug': slugify.slugify(pipeline_id),
+            'trigger': ex.trigger if ex else None,
+            'error_log': pipeline_status.errors(),
+            'state': pipeline_status.state(),
+            'pipeline': pipeline_status.pipeline_details,
+            'message': pipeline_status.state().capitalize(),
+            'dirty': pipeline_status.dirty(),
+            'runnable': pipeline_status.runnable(),
+            'class': {'INIT': 'primary',
+                      'QUEUED': 'primary',
+                      'INVALID': 'danger',
+                      'RUNNING': 'warning',
+                      'SUCCEEDED': 'success',
+                      'FAILED': 'danger'
+                      }[pipeline_status.state()],
+            'ended': datestr(ex.finish_time) if ex else None,
+            'started': datestr(ex.start_time) if ex else None,
+            'last_success': datestr(success_ex.finish_time) if success_ex else None,
+        }
+        statuses.append(pipeline_obj)
 
     def state_and_not_dirty(state, p):
         return p.get('state') == state and not p.get('dirty')
@@ -103,16 +120,17 @@ def main():
     def state_or_dirty(state, p):
         return p.get('state') == state or p.get('dirty')
 
+    logging.info('%r', statuses[1])
     categories = [
         ['ALL', 'All Pipelines', lambda _, __: True],
-        ['INVALID', "Can't start", state_and_not_dirty],
-        ['REGISTERED', 'Waiting to run', state_or_dirty],
+        ['INVALID', "Can't start", lambda _, p: not p['runnable']],
+        ['QUEUED', 'Waiting to run', lambda state, p: p['state'] == state],
         ['RUNNING', 'Running', state_and_not_dirty],
         ['FAILED', 'Failed Execution', state_and_not_dirty],
         ['SUCCEEDED', 'Successful Execution', state_and_not_dirty],
     ]
     for item in categories:
-        item.append([p for p in statuses
+        item.append([p for p in deepcopy(statuses)
                      if item[2](item[0], p)])
         item.append(len(item[-1]))
         item.append(make_hierarchies(item[-2]))
@@ -126,31 +144,57 @@ def main():
 def pipeline_raw_api(pipeline_id):
     if not pipeline_id.startswith('./'):
         pipeline_id = './' + pipeline_id
-    pipeline_status = status.get_status(pipeline_id)
-    if pipeline_status is None:
+    pipeline_status = status.get(pipeline_id)
+    if not pipeline_status.pipeline_details:
         abort(404)
-    return jsonify(pipeline_status)
+    last_execution = pipeline_status.get_last_execution()
+    last_successful_execution = pipeline_status.get_last_successful_execution()
+    ret = {
+        "id": pipeline_id,
+        "cache_hash": pipeline_status.cache_hash,
+        "dirty": pipeline_status.dirty(),
+
+        "queued": last_execution.queue_time if last_execution else None,
+        "started": last_execution.start_time if last_execution else None,
+        "ended": last_execution.finish_time if last_execution else None,
+        "reason": last_execution.log if last_execution else None,
+        "error_log": pipeline_status.errors(),
+        "stats": last_execution.stats if last_execution else None,
+        "success": last_execution.success if last_execution else None,
+        "last_success": last_successful_execution.finish_time if last_successful_execution else None,
+        "trigger": last_execution.trigger if last_execution else None,
+
+        "pipeline": pipeline_status.pipeline_details,
+        "source": pipeline_status.source_spec,
+        "message": pipeline_status.state().capitalize(),
+        "state": pipeline_status.state(),
+    }
+
+    return jsonify(ret)
 
 
 @blueprint.route("api/<field>/<path:pipeline_id>")
 def pipeline_api(field, pipeline_id):
-    fields = {
-        'log': 'reason',
-        'pipeline': 'pipeline',
-        'source': 'source'
-    }
-    field = fields.get(field)
+
     if not pipeline_id.startswith('./'):
         pipeline_id = './' + pipeline_id
-    pipeline_status = status.get_status(pipeline_id)
-    if pipeline_status is None or field is None:
+    pipeline_status = status.get(pipeline_id)
+    if not pipeline_status.pipeline_details:
         abort(404)
-    ret = pipeline_status[field]
-    if ret is not None:
-        if field != 'reason':
-            ret = yamlize(ret)
+
+    ret = None
+    if field == 'pipeline':
+        ret = pipeline_status.pipeline_details
+        ret = yamlize(ret)
+    elif field =='source':
+        ret = pipeline_status.source_spec
+        ret = yamlize(ret)
+    elif field == 'log':
+        ex = pipeline_status.get_last_execution()
+        ret = ex.log if ex else ''
     else:
-        ret = ''
+        abort(400)
+
     ret = ret.split('\n')
     ret = {'text': ret}
     return jsonify(ret)

@@ -4,8 +4,8 @@ import os
 from concurrent.futures import CancelledError
 from json.decoder import JSONDecodeError
 
-from datapackage_pipelines.specs.specs import resolve_executor
-from datapackage_pipelines.status import status
+from ..specs.specs import resolve_executor
+from ..status import status
 from ..utilities.extended_json import json
 
 from .runners import runner_config
@@ -197,17 +197,19 @@ async def async_execute_pipeline(pipeline_id,
                                  pipeline_steps,
                                  pipeline_cwd,
                                  trigger,
+                                 execution_id,
                                  use_cache):
 
-    if status.is_running(pipeline_id):
-        logging.info("ALREADY RUNNING %s, BAILING OUT", pipeline_id)
+    ps = status.get(pipeline_id)
+    if not ps.start_execution(execution_id):
+        logging.info("%s START EXECUTION FAILED %s, BAILING OUT", execution_id[:8], pipeline_id)
         return False, {}, []
 
     debug = trigger == 'manual'
 
-    status.running(pipeline_id, trigger, '')
+    ps.update_execution(execution_id, '')
 
-    logging.info("RUNNING %s", pipeline_id)
+    logging.info("%s RUNNING %s", execution_id[:8], pipeline_id)
 
     if use_cache:
         pipeline_steps = find_caches(pipeline_steps, pipeline_cwd)
@@ -246,39 +248,36 @@ async def async_execute_pipeline(pipeline_id,
             process, return_code = waiter.result()
             if return_code == 0:
                 if debug:
-                    logging.info("DONE %s", process.args)
+                    logging.info("%s DONE %s", execution_id[:8], process.args)
                 processes = [p for p in processes if p.pid != process.pid]
             else:
                 if return_code > 0 and failed_index is None:
                     failed_index = index_for_pid[process.pid]
                 if debug:
-                    logging.error("FAILED %s: %s", process.args, return_code)
+                    logging.error("%s FAILED %s: %s", execution_id[:8], process.args, return_code)
                 success = False
                 kill_all_processes()
 
-        status.running(pipeline_id,
-                       trigger,
-                       '\n'.join(execution_log))
+        if success and not ps.update_execution(execution_id,
+                                   '\n'.join(execution_log)):
+            logging.error("%s FAILED to update %s", execution_id[:8], pipeline_id)
+            success = False
+            kill_all_processes()
 
     stats, error_log = await stop_error_collecting(failed_index)
     if success is False:
         stats = None
 
-    cache_hash = ''
-    if len(pipeline_steps) > 0:
-        cache_hash = pipeline_steps[-1]['_cache_hash']
+    ps.update_execution(execution_id, '\n'.join(execution_log))
+    ps.finish_execution(execution_id, success, stats, error_log)
 
-    status.idle(pipeline_id,
-                success,
-                '\n'.join(execution_log),
-                cache_hash,
-                stats,
-                error_log)
+    logging.info("DONE %s %s", 'V' if success else 'X', pipeline_id)
 
     return success, stats, error_log
 
 
 def execute_pipeline(spec,
+                     execution_id,
                      trigger='manual',
                      use_cache=True):
 
@@ -289,6 +288,7 @@ def execute_pipeline(spec,
                                                      spec.pipeline_details.get('pipeline', []),
                                                      spec.path,
                                                      trigger,
+                                                     execution_id,
                                                      use_cache))
     try:
         return loop.run_until_complete(pipeline_task)

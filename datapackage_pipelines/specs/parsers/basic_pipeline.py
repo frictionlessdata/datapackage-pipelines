@@ -1,4 +1,5 @@
 import os
+from typing import Iterator
 
 from .base_parser import BaseParser, PipelineSpec
 
@@ -12,7 +13,7 @@ class BasicPipelineParser(BaseParser):
         return filename == cls.SPEC_FILENAME
 
     @classmethod
-    def to_pipeline(cls, spec, fullpath):
+    def to_pipeline(cls, spec, fullpath) -> Iterator[PipelineSpec]:
         dirpath = os.path.dirname(fullpath)
 
         for pipeline_id, pipeline_details in spec.items():

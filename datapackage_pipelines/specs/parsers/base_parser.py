@@ -4,25 +4,23 @@ class PipelineSpec(object):
                  pipeline_id=None,
                  pipeline_details=None,
                  source_details=None,
-                 errors=None,
+                 validation_errors=None,
                  dependencies=None,
-                 dirty=None,
                  cache_hash='',
                  schedule=None):
         self.path = path
         self.pipeline_id = pipeline_id
         self.pipeline_details = pipeline_details
         self.source_details = source_details
-        self.errors = [] if errors is None else errors
+        self.validation_errors = [] if validation_errors is None else validation_errors
         self.dependencies = [] if dependencies is None else dependencies
-        self.dirty = dirty
         self.cache_hash = cache_hash
         self.schedule = schedule
 
     def __str__(self):
-        return 'PipelineSpec({}, dirty={}, errors={}, ' \
+        return 'PipelineSpec({}, validation_errors={}, ' \
                'dependencies={}, cache_hash={})'\
-            .format(self.pipeline_id, self.dirty, self.errors,
+            .format(self.pipeline_id, self.validation_errors,
                     self.dependencies, self.cache_hash)
 
     def __repr__(self):
