@@ -35,6 +35,10 @@ class RedisBackend(object):
         if self.is_init():
             self.redis.set(pipeline_id, json.dumps(status, ensure_ascii=True))
 
+    def del_status(self, pipeline_id):
+        if self.is_init():
+            self.redis.delete(pipeline_id)
+
     def register_pipeline_id(self, pipeline_id):
         if self.is_init():
             self.redis.sadd('all-pipelines', pipeline_id.strip())
@@ -46,6 +50,11 @@ class RedisBackend(object):
     def reset(self):
         if self.is_init():
             self.redis.delete('all-pipelines')
+
+    def all_pipeline_ids(self):
+        if self.is_init():
+            return [x.decode('utf-8') for x in self.redis.smembers('all-pipelines')]
+        return []
 
     def all_statuses(self):
         if self.is_init():

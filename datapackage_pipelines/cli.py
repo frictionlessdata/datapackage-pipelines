@@ -1,8 +1,9 @@
 import click
+from .utilities.execution_id import gen_execution_id
 
 from .manager.logging_config import logging
 
-from .specs import pipelines, register_all_pipelines
+from .specs import pipelines, register_all_pipelines, PipelineSpec
 from .status import status
 from .manager import execute_pipeline, finalize
 
@@ -12,12 +13,13 @@ from .manager import execute_pipeline, finalize
 def cli(ctx):
     if ctx.invoked_subcommand is None:
         click.echo('Available Pipelines:')
-        for spec in pipelines():
+        for spec in pipelines(): # type: PipelineSpec
+            ps = status.get(spec.pipeline_id)
             click.echo('- {} {}{}'
                        .format(spec.pipeline_id,
-                               '(*)' if spec.dirty else '',
-                               '(E)' if len(spec.errors) > 0 else ''))
-            for error in spec.errors:
+                               '(*)' if ps.dirty() else '',
+                               '(E)' if len(spec.validation_errors) > 0 else ''))
+            for error in spec.validation_errors:
                 click.echo('\t{}: {}'.format(error.short_msg,
                                              error.long_msg))
 
@@ -30,13 +32,16 @@ def serve():
 
 
 def execute_if_needed(argument, spec, use_cache):
+    ps = status.get(spec.pipeline_id)
     if ((argument == spec.pipeline_id) or
             (argument == 'all') or
-            (argument == 'dirty' and spec.dirty)):
-        if len(spec.errors) != 0:
-            return (spec.pipeline_id, False, {}, ['init'] + list(map(str, spec.errors))), spec.pipeline_id == argument
+            (argument == 'dirty' and ps.dirty())):
+        if len(spec.validation_errors) != 0:
+            return (spec.pipeline_id, False, {}, ['init'] + list(map(str, spec.validation_errors))), spec.pipeline_id == argument
+        eid = gen_execution_id()
+        ps.queue_execution(eid, 'manual')
         success, stats, errors = \
-            execute_pipeline(spec,
+            execute_pipeline(spec, eid,
                              use_cache=use_cache)
         return (spec.pipeline_id, success, stats, errors), spec.pipeline_id == argument
     return None, False

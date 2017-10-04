@@ -28,7 +28,7 @@ class SourceSpecPipelineParser(BaseParser):
             error = SpecError('Unknown source kind', message)
             yield PipelineSpec(pipeline_id=module_name,
                                path=dirpath,
-                               errors=[error],
+                               validation_errors=[error],
                                pipeline_details={'pipeline': []})
             return
 
@@ -56,7 +56,7 @@ class SourceSpecPipelineParser(BaseParser):
                     .format(e, fullpath)
                 error = SpecError('Error converting source', message)
                 yield PipelineSpec(pipeline_id=pipeline_id,
-                                   path=dirpath, errors=[error],
+                                   path=dirpath, validation_errors=[error],
                                    pipeline_details={'pipeline': []})
         else:
             message = 'Invalid source description for "{}" in {}' \
@@ -64,5 +64,5 @@ class SourceSpecPipelineParser(BaseParser):
             error = SpecError('Invalid Source', message)
             yield PipelineSpec(pipeline_id=pipeline_id,
                                path=dirpath,
-                               errors=[error],
+                               validation_errors=[error],
                                pipeline_details={'pipeline': []})
