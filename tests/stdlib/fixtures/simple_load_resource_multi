@@ -15,7 +15,7 @@ load_resource
     "name": "test",
     "resources": [
         {
-            "dpp:streamedFrom": "tests/data/datapackage2.json",
+            "dpp:streamedFrom": "%(base)s/tests/data/sample.csv",
             "name": "the-spiffy-resource",
             "dpp:streaming": true,
             "profile": "data-resource",
@@ -31,7 +31,7 @@ load_resource
             }
         },
         {
-            "dpp:streamedFrom": "tests/data/datapackage2.json",
+            "dpp:streamedFrom": "%(base)s/tests/data/sample2.csv",
             "name": "the-other-spiffy-resource",
             "dpp:streaming": true,
             "profile": "data-resource",

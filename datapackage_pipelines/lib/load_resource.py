@@ -27,7 +27,7 @@ class ResourceLoader(object):
             if resource_index == i or \
                     (name_matcher is not None and name_matcher.match(orig_res.descriptor.get('name'))):
                 found = True
-                orig_res.descriptor[PROP_STREAMED_FROM] = url
+                orig_res.descriptor[PROP_STREAMED_FROM] = orig_res.source
                 self.dp['resources'].append(orig_res.descriptor)
                 if tabular(orig_res.descriptor) and stream:
                     orig_res.descriptor[PROP_STREAMING] = True
