@@ -59,7 +59,7 @@ class ProcessorFixtureTestsBase(object):
         # Hacky way to form cwd for resource path and ignore  other formating like %Y-%m-%d
         try:
             dp_out = dp_out % ({"base": os.getcwd()})
-        except:
+        except: #noqa
             pass
         dp_out = rejsonize(dp_out)
         dp_in = rejsonize(dp_in)
