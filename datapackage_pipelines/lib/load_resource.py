@@ -4,7 +4,8 @@ import datapackage
 
 from datapackage_pipelines.wrapper import ingest, spew
 from datapackage_pipelines.utilities.resource_matcher import ResourceMatcher
-from datapackage_pipelines.utilities.resources import tabular, PROP_STREAMING
+from datapackage_pipelines.utilities.resources import tabular, PROP_STREAMING, \
+    PROP_STREAMED_FROM
 
 
 class ResourceLoader(object):
@@ -26,6 +27,7 @@ class ResourceLoader(object):
             if resource_index == i or \
                     (name_matcher is not None and name_matcher.match(orig_res.descriptor.get('name'))):
                 found = True
+                orig_res.descriptor[PROP_STREAMED_FROM] = url
                 self.dp['resources'].append(orig_res.descriptor)
                 if tabular(orig_res.descriptor) and stream:
                     orig_res.descriptor[PROP_STREAMING] = True
