@@ -56,6 +56,11 @@ class ProcessorFixtureTestsBase(object):
         processor, params, dp_in, data_in, dp_out, data_out = parts
         processor_file = self._get_processor_file(processor)
         params = rejsonize(params)
+        # Hacky way to form cwd for resource path and ignore  other formating like %Y-%m-%d
+        try:
+            dp_out = dp_out % ({"base": os.getcwd()})
+        except: #noqa
+            pass
         dp_out = rejsonize(dp_out)
         dp_in = rejsonize(dp_in)
         data_in = (dp_in + '\n\n' + data_in).encode('utf8')
