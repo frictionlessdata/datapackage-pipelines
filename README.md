@@ -1088,6 +1088,7 @@ co2-information-cdiac:
     -
         ...
   schedule:
+    # minute hour day_of_week day_of_month month_of_year
     crontab: '0 * * * *'
 ```
 
