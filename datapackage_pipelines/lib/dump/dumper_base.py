@@ -1,3 +1,4 @@
+import functools
 import os
 import shutil
 import tempfile
@@ -197,6 +198,7 @@ class FileDumper(DumperBase):
                 if is_a_url(url):
                     tmp = tempfile.NamedTemporaryFile(delete=False)
                     stream = requests.get(url, stream=True).raw
+                    stream.read = functools.partial(stream.read, decode_content=True)
                     shutil.copyfileobj(stream, tmp)
                     filesize = tmp.tell()
                     tmp.close()
