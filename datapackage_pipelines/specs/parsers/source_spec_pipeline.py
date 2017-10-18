@@ -43,6 +43,10 @@ class SourceSpecPipelineParser(BaseParser):
                                                    os.path.join(dirpath, filename))
                     else:
                         pipeline_id = os.path.join(dirpath, pipeline_id)
+                        for dependency in pipeline_details.get('dependencies', []):
+                            if 'pipeline' in dependency:
+                                if not dependency['pipeline'].startswith('./'):
+                                    dependency['pipeline'] = os.path.join(dirpath, dependency['pipeline'])
                         yield PipelineSpec(path=pipeline_details.get('__path', dirpath),
                                            pipeline_id=pipeline_id,
                                            pipeline_details=pipeline_details,
