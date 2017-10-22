@@ -11,7 +11,7 @@
 
 ### Pipelines
 
-The basic concept in this framework is the pipeline. 
+The basic concept in this framework is the pipeline.
 
 A pipeline has a list of processing steps, and it generates a single *data package* as its output. Each step is executed in a _processor_ and consists of the following stages:
 
@@ -70,9 +70,9 @@ In this example we see one pipeline called `worldbank-co2-emissions`. Its pipeli
 - `set_types`: This processor assigns data types to fields in the data. In this example, field headers looking like years will be assigned the `number` type.
 - `dump.to_zip`: Create a zipped and validated datapackage with the provided file name.
 
-### Mechanics 
+### Mechanics
 
-An important aspect of how the pipelines are run is the fact that data is passed in streams from one processor to another. If we get "technical" here, then each processor is run in its own dedicated process, where the datapackage is read from its `stdin` and output to its `stdout`. The important thing to note here is that no processor holds the entire data set at any point. 
+An important aspect of how the pipelines are run is the fact that data is passed in streams from one processor to another. If we get "technical" here, then each processor is run in its own dedicated process, where the datapackage is read from its `stdin` and output to its `stdout`. The important thing to note here is that no processor holds the entire data set at any point.
 
 This limitation is by design - to keep the memory and disk requirements of each processor limited and independent of the dataset size.
 
@@ -104,7 +104,7 @@ INFO :Main:DONE lib/stream_remote_resources.py
 INFO :Main:dump.to_zip: INFO :Main:Processed 264 rows
 INFO :Main:DONE lib/dump/to_zip.py
 INFO :Main:RESULTS:
-INFO :Main:SUCCESS: ./worldbank-co2-emissions 
+INFO :Main:SUCCESS: ./worldbank-co2-emissions
                     {'dataset-name': 'co2-emissions', 'total_row_count': 264}
 ```
 
@@ -130,7 +130,7 @@ Running `dpp` without any argument, will show the list of available pipelines. T
 
 Each pipeline has an identifier, composed of the path to the `pipeline-spec.yaml` file and the name of the pipeline, as defined within that description file.
 
-In order to run a pipeline, you use `dpp run <pipeline-id>`. 
+In order to run a pipeline, you use `dpp run <pipeline-id>`.
 
 You can also use `dpp run all` for running all pipelines and `dpp run dirty` to run the just the _dirty_ pipelines (more on that later on).
 
@@ -142,8 +142,8 @@ As previously seen, processors are referenced by name.
 
 This name is, in fact, the name of a Python script containing the processing code (minus the `.py` extension). When trying to find where is the actual code that needs to be executed, the processor resolver will search in these predefined locations:
 
-- First of all, it will try to find a custom processor with that name in the directory of the `pipeline-spec.yaml` file. 
-  Processor names support the dot notation, so you could write `mycode.custom_processor` and it will try to find a processor named `custom_processor.py` in the `mycode` directory, in the same path as the pipeline spec file. 
+- First of all, it will try to find a custom processor with that name in the directory of the `pipeline-spec.yaml` file.
+  Processor names support the dot notation, so you could write `mycode.custom_processor` and it will try to find a processor named `custom_processor.py` in the `mycode` directory, in the same path as the pipeline spec file.
   For this specific resolving phase, if you would write `..custom_processor` it will try to find that processor in the parent directory of the pipeline spec file.
   (read on for instructions on how to write custom processors)
 - In case the processor name looks like `myplugin.somename`, it will try to find a processor named `somename` in the `myplugin` plugin. That is - it will see if there's an installed plugin which is called `myplugin`, and if so, whether that plugin publishes a processor called `somename` (more on plugins below).
@@ -152,13 +152,13 @@ This name is, in fact, the name of a Python script containing the processing cod
 
 ### Caching
 
-By setting the `cached` property on a specific pipeline step to `True`, this step's output will be stored on disk (in the `.cache` directory, in the same location as the `pipeline-spec.yaml` file). 
+By setting the `cached` property on a specific pipeline step to `True`, this step's output will be stored on disk (in the `.cache` directory, in the same location as the `pipeline-spec.yaml` file).
 
-Rerunning the pipeline will make use of that cache, thus avoiding the execution of the cached step and its precursors. 
+Rerunning the pipeline will make use of that cache, thus avoiding the execution of the cached step and its precursors.
 
 Internally, a hash is calculated for each step in the pipeline - which is based on the processor's code, it parameters and the hash of its predecessor. If a cache file exists with exactly the same hash as a specific step, then we can remove it (and its predecessors) and use that cache file as an input to the pipeline
 
-This way, the cache becomes invalid in case the code or execution parameters changed (either for the cached processor or in any of the preceding processors). 
+This way, the cache becomes invalid in case the code or execution parameters changed (either for the cached processor or in any of the preceding processors).
 
 ### Dirty tasks and keeping state
 
@@ -185,11 +185,11 @@ Example:
 ```yaml
 cat-vs-dog-populations:
   dependencies:
-    - 
+    -
       pipeline: ./geo/region-areal
-    - 
+    -
       datapackage: http://pets.net/data/dogs-per-region/datapackage.json
-    - 
+    -
       datapackage: http://pets.net/data/dogs-per-region
   ...
 ```
@@ -224,7 +224,7 @@ Any allowed property (according to the [spec]([http://specs.frictionlessdata.io/
 
 ```yaml
 - run: add_metadata
-  parameters: 
+  parameters:
     name: routes-to-mordor
     license: CC-BY-SA-4
     author: Frodo Baggins <frodo@shire.me>
@@ -234,7 +234,7 @@ Any allowed property (according to the [spec]([http://specs.frictionlessdata.io/
 
 ### ***`add_resource`***
 
-Adds a new external tabular resource to the data-package. 
+Adds a new external tabular resource to the data-package.
 
 _Parameters_:
 
@@ -246,8 +246,8 @@ Note that `url` also supports `env://<environment-variable>`, which indicates th
 
 Parameters are basically arguments that are passed to a `tabulator.Stream` instance (see the [API](https://github.com/frictionlessdata/tabulator-py#api-reference)).
 Other than those, you can pass a `constants` parameter which should be a mapping of headers to string values.
-When used in conjunction with `stream_remote_resources`, these constant values will be added to each generated row 
-(as well as to the default schema). 
+When used in conjunction with `stream_remote_resources`, these constant values will be added to each generated row
+(as well as to the default schema).
 
 You may also provide a schema here, or use the default schema generated by the `stream_remote_resources` processor.
 In case `path` is specified, it will be used. If not, the `stream_remote_resources` processor will assign a `path` for you with a `csv` extension.
@@ -256,7 +256,7 @@ In case `path` is specified, it will be used. If not, the `stream_remote_resourc
 
 ```yaml
 - run: add_resource
-  parameters: 
+  parameters:
     url: http://example.com/my-excel-file.xlsx
     sheet: 1
     headers: 2
@@ -285,17 +285,17 @@ _Parameters_:
 
   If omitted, all resources in datapackage are streamed.
 
-- `ignore-missing` - if true, then missing resources won't raise an error but will be treated as 'empty' (i.e. with zero rows). 
+- `ignore-missing` - if true, then missing resources won't raise an error but will be treated as 'empty' (i.e. with zero rows).
   Resources with empty URLs will be treated the same (i.e. will generate an 'empty' resource).
 
 *Example*:
 
 ```yaml
 - run: stream_remote_resources
-  parameters: 
+  parameters:
     resources: ['2014-data', '2015-data']
 - run: stream_remote_resources
-  parameters: 
+  parameters:
     resources: '201[67]-data'
 ```
 
@@ -304,7 +304,7 @@ To enable this behavior, add the following attribute to the resource: `"format":
 
 ### ***`set_types`***
 
-Sets data types and type options to fields in streamed resources, and make sure that the data still validates with the new types. 
+Sets data types and type options to fields in streamed resources, and make sure that the data still validates with the new types.
 
 This allows to make modifications to the existing table schema, and usually to the default schema from `stream_remote_resources`.
 
@@ -335,7 +335,7 @@ _Parameters_:
   parameters:
     resources: example-resource
     types:
-      age: 
+      age:
         type: integer
       "yearly_score_[0-9]{4}":
         type: number
@@ -347,7 +347,7 @@ _Parameters_:
 
 ### ***`load_metadata`***
 
-Loads metadata from an existing data-package. 
+Loads metadata from an existing data-package.
 
 _Parameters_:
 
@@ -359,22 +359,22 @@ All properties of the loaded datapackage will be copied (except the `resources`)
 
 ```yaml
 - run: load_metadata
-  parameters: 
+  parameters:
     url: http://example.com/my-datapackage/datapackage.json
 ```
 
 ### ***`load_resource`***
 
-Loads a tabular resource from an existing data-package. 
+Loads a tabular resource from an existing data-package.
 
 _Parameters_:
 
 Loads the resource specified in the `resource` parameter from the data package located at `url`.
 
-`resource` can be 
+`resource` can be
    - List of strings, interpreted as resource names to load
    - String, interpreted as a regular expression to be used to match resource names
-   - an integer, indicating the index of the resource in the data package (0-based) 
+   - an integer, indicating the index of the resource in the data package (0-based)
 
 All properties of the loaded resource will be copied - `path` and `schema` included.
 
@@ -384,7 +384,7 @@ If the `stream` parameter is provided and is set to false, then the resource wil
 
 ```yaml
 - run: load_resource
-  parameters: 
+  parameters:
     url: http://example.com/my-datapackage/datapackage.json
     resource: my-resource
 - run: load_resource
@@ -423,7 +423,7 @@ _Parameters_:
 
 ```yaml
 - run: concatenate
-  parameters: 
+  parameters:
     target:
       name: multi-year-report
       path: data/multi-year-report.csv
@@ -442,11 +442,11 @@ The output contains two fields:
 
 ### ***`join`***
 
-Joins two streamed resources. 
+Joins two streamed resources.
 
-"Joining" in our case means taking the *target* resource, and adding fields to each of its rows by looking up data in the _source_ resource. 
+"Joining" in our case means taking the *target* resource, and adding fields to each of its rows by looking up data in the _source_ resource.
 
-A special case for the join operation is when there is no target stream, and all unique rows from the source are used to create it. 
+A special case for the join operation is when there is no target stream, and all unique rows from the source are used to create it.
 This mode is called _deduplication_ mode - The target resource will be created and  deduplicated rows from the source will be added to it.
 
 _Parameters_:
@@ -460,13 +460,13 @@ _Parameters_:
 - `target` - Target resource to hold the joined data. Should define at least the following properties:
   - `name` - as in `source`
   - `key` - as in `source`, or `null` for creating the target resource and performing _deduplication_.
-- `fields` - mapping of fields from the source resource to the target resource. 
+- `fields` - mapping of fields from the source resource to the target resource.
   Keys should be field names in the target resource.
   Values can define two attributes:
   - `name` - field name in the source (by default is the same as the target field name)
 
-  - `aggregate` - aggregation strategy (how to handle multiple _source_ rows with the same key). Can take the following options: 
-    - `sum` - summarise aggregated values. 
+  - `aggregate` - aggregation strategy (how to handle multiple _source_ rows with the same key). Can take the following options:
+    - `sum` - summarise aggregated values.
       For numeric values it's the arithmetic sum, for strings the concatenation of strings and for other types will error.
 
     - `avg` - calculate the average of aggregated values.
@@ -488,8 +488,8 @@ _Parameters_:
     - `count` - count the number of occurrences of a specific key
       For this method, specifying `name` is not required. In case it is specified, `count` will count the number of non-null values for that source field.
 
-    - `set` - collect all distinct values of the aggregated field, unordered 
-    
+    - `set` - collect all distinct values of the aggregated field, unordered
+
     - `array` - collect all values of the aggregated field, in order of appearance
 
     - `any` - pick any value.
@@ -507,7 +507,7 @@ _Important: the "source" resource **must** appear before the "target" resource i
 
 ```yaml
 - run: join
-  parameters: 
+  parameters:
     source:
       name: world_population
       key: ["country_code"]
@@ -552,7 +552,7 @@ A more complex example:
 
 ```yaml
 - run: join
-  parameters: 
+  parameters:
     source:
       name: screen_actor_salaries
       key: "{production} ({year})"
@@ -603,16 +603,16 @@ The resulting dataset could look like:
 
 ### ***`filter`***
 
-Filter streamed resources. 
+Filter streamed resources.
 
-`filter` accepts equality and inequality conditions and tests each row in the selected resources. If none of the conditions validate, the row will be discarded. 
+`filter` accepts equality and inequality conditions and tests each row in the selected resources. If none of the conditions validate, the row will be discarded.
 
 _Parameters_:
 
 - `resources` - Which resources to apply the filter on. Same semantics as `resources` in `stream_remote_resources`.
 - `in` - Mapping of keys to values which translate to `row[key] == value` conditions
 - `out` - Mapping of keys to values which translate to `row[key] != value` conditions
-  
+
 Both `in` and `out` should be a list of objects.
 
 *Examples*:
@@ -620,16 +620,16 @@ Both `in` and `out` should be a list of objects.
 Filtering just American and European countries, leaving out countries whose main language is English:
 ```yaml
 - run: filter
-  parameters: 
+  parameters:
     resources: world_population
     in:
-      - continent: america 
-      - continent: europe 
+      - continent: america
+      - continent: europe
 - run: filter
-  parameters: 
+  parameters:
     resources: world_population
     out:
-      - language: english 
+      - language: english
 ```
 
 ### ***`dump.to_sql`***
@@ -647,9 +647,9 @@ _Parameters_:
     Possible values:
       - `rewrite` (the default) - rewrite the table, all previous data (if any) will be deleted.
       - `append` - write new rows without changing already existing data.
-      - `update` - update the table based on a set of "update keys". 
+      - `update` - update the table based on a set of "update keys".
         For each new row, see if there already an existing row in the DB which can be updated (that is, an existing row
-        with the same values in all of the update keys). 
+        with the same values in all of the update keys).
         If so - update the rest of the columns in the existing row. Otherwise - insert a new row to the DB.
   - `update_keys` - Only applicable for the `update` mode. A list of field names that should be used to check for row existence.
         If left unspecified, will use the schema's `primaryKey` as default.
@@ -677,6 +677,7 @@ _Parameters_:
 - `format` - Specifies the type of output files to be generated (if `force-format` is true): `csv` (the default) or `json`
 - `handle-non-tabular` - Specifies whether non tabular resources (i.e. resources without a `schema`) should be dumped as well to the resulting datapackage.
     (See note below for more details)
+- `add-filehash-to-path`: Specifies whether to include file hash into the resource path
 - `counters` - Specifies whether to count rows, bytes or md5 hash of the data and where it should be stored. An object with the following properties:
     - `datapackage-rowcount`: Where should a total row count of the datapackage be stored (default: `count_of_rows`)
     - `datapackage-bytes`: Where should a total byte count of the datapackage be stored (default: `bytes`)
@@ -694,9 +695,10 @@ Saves the datapackage to a zipped archive.
 _Parameters_:
 
 - `out-file` - Name of the output file where the zipped data will be stored
-- `force-format` and `format` - Same as in `dump.to_path` 
-- `handle-non-tabular` - Same as in `dump.to_path` 
-- `counters` - Same as in `dump.to_path` 
+- `force-format` and `format` - Same as in `dump.to_path`
+- `handle-non-tabular` - Same as in `dump.to_path`
+- `add-filehash-to-path` - Same as in `dump.to_path`
+- `counters` - Same as in `dump.to_path`
 
 #### *Note*
 
@@ -725,7 +727,7 @@ def modify_datapackage(datapackage, parameters, stats):
     # Do something with datapackage
     return datapackage
 
-def process_row(row, row_index, 
+def process_row(row, row_index,
                 resource_descriptor, resource_index,
                 parameters, stats):
     # Do something with row
@@ -834,7 +836,7 @@ def new_resource_iterator(resource_iterator_):
             yield row
     for resource in resource_iterator_:
         yield resource_processor(resource)
-        
+
 spew(datapackage, new_resource_iterator(resource_iterator), stats)
 ```
 
@@ -848,11 +850,11 @@ We finish the processing by calling `spew()`, which sends the processed data to 
 
 `spew` writes the data it receives in the following order:
 
-- First, the `datapackage` parameter is written to the stream. 
+- First, the `datapackage` parameter is written to the stream.
   This means that all modifications to the data-package descriptor must be done _before_ `spew` is called.
   One common pitfall is to modify the data-package descriptor inside the resource iterator - try to avoid that, as the descriptor that the next processor will receive will be wrong.
 - Then it starts iterating on the resources. For each resource, it iterates on its rows and writes each row to the stream.
-  This iteration process eventually causes an iteration on the original resource iterator (the one that's returned from `ingest`). In turn, this causes the process' input stream to be read. Because of the way buffering in operating systems work, "slow" processors will read their input slowly, causing the ones before them to sleep on IO while their more CPU intensive counterparts finish their processing. "quick" processors will not work aimlessly, but instead will either sleep while waiting for incoming data or while waiting for their output buffer to drain. 
+  This iteration process eventually causes an iteration on the original resource iterator (the one that's returned from `ingest`). In turn, this causes the process' input stream to be read. Because of the way buffering in operating systems work, "slow" processors will read their input slowly, causing the ones before them to sleep on IO while their more CPU intensive counterparts finish their processing. "quick" processors will not work aimlessly, but instead will either sleep while waiting for incoming data or while waiting for their output buffer to drain.
   What is achieved here is that all rows in the data are processed more or less at the same time, and that no processor works too "far ahead" on rows that might fail in subsequent processing steps.
 - Finally, the stats are written to the stream. This means that stats can be modified during the iteration, and only the value after the iteration finishes will be used.
 
@@ -889,7 +891,7 @@ def new_resource_iterator(resource_iterator_):
 
     first_resource = next(resource_iterator_)
     yield(resource_processor(first_resource))
-    
+
     for resource in resource_iterator_:
         yield resource
 
@@ -987,7 +989,7 @@ A source descriptor is a yaml file containing information which is used to creat
 
 This class should inherit from `GeneratorBase` and should implement two methods:
 
-- `generate_pipeline` - 
+- `generate_pipeline` -
    which receives the source description and returns an iterator of tuples of the form `(id, details)`.
    `id` might be a pipeline id, in which case details would be an object containing the pipeline definition.
    If `id` is of the form `:module:`, then the details are treated as a source spec from the specified module. This way a generator might generate other source specs.

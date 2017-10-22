@@ -9,7 +9,7 @@ import requests
 from tableschema.exceptions import CastError
 from tableschema.schema import Schema
 
-from ...utilities.resources import get_path, PROP_STREAMED_FROM, is_a_url, streaming
+from ...utilities.resources import get_path, PROP_STREAMED_FROM, is_a_url, streaming, insert_hash_in_path
 from ...utilities.extended_json import json
 from ...wrapper import ingest, spew
 
@@ -28,6 +28,7 @@ class DumperBase(object):
         self.resource_rowcount = counters.get('resource-rowcount', 'count_of_rows')
         self.resource_bytes = counters.get('resource-bytes', 'bytes')
         self.resource_hash = counters.get('resource-hash', 'hash')
+        self.add_filehash_to_path = self.__params.get('add-filehash-to-path', False)
 
     def __call__(self):
         self.initialize(self.__params)
@@ -194,23 +195,24 @@ class FileDumper(DumperBase):
         for resource in datapackage['resources']:
             if not streaming(resource):
                 url = resource[PROP_STREAMED_FROM]
-                delete = False
+                tmp = tempfile.NamedTemporaryFile(delete=False)
                 if is_a_url(url):
-                    tmp = tempfile.NamedTemporaryFile(delete=False)
                     stream = requests.get(url, stream=True).raw
                     stream.read = functools.partial(stream.read, decode_content=True)
                     shutil.copyfileobj(stream, tmp)
-                    filesize = tmp.tell()
-                    tmp.close()
-                    url = tmp.name
-                    delete = True
                 else:
-                    filesize = os.stat(url).st_size
+                    shutil.copyfile(url, tmp.name)
+                filesize = tmp.tell()
+                url = tmp.name
+                # Update resource path with hash if requested
+                if self.add_filehash_to_path:
+                    hasher = FileDumper.hash_handler(tmp)
+                    insert_hash_in_path(resource, hasher.hexdigest())
+                tmp.close()
                 DumperBase.set_attr(resource, self.resource_bytes, filesize)
                 DumperBase.inc_attr(datapackage, self.datapackage_bytes, filesize)
                 self.write_file_to_output(url, get_path(resource))
-                if delete:
-                    os.unlink(url)
+                os.unlink(url)
 
     def write_file_to_output(self, filename, path):
         raise NotImplementedError()
@@ -229,12 +231,10 @@ class FileDumper(DumperBase):
 
         # File Hash:
         if self.resource_hash:
-            temp_file.seek(0)
-            hasher = hashlib.md5()
-            data = 'x'
-            while len(data) > 0:
-                data = temp_file.read(1024)
-                hasher.update(data.encode('utf8'))
+            hasher = FileDumper.hash_handler(temp_file)
+            # Update path with hash
+            if self.add_filehash_to_path:
+                insert_hash_in_path(spec, hasher.hexdigest())
             DumperBase.set_attr(spec, self.resource_hash, hasher.hexdigest())
 
         # Finalise
@@ -263,3 +263,16 @@ class FileDumper(DumperBase):
                                        datapackage)
         else:
             return resource
+
+    @staticmethod
+    def hash_handler(tfile):
+        tfile.seek(0)
+        hasher = hashlib.md5()
+        data = 'x'
+        while len(data) > 0:
+            data = tfile.read(1024)
+            try:
+                hasher.update(data.encode('utf8'))
+            except AttributeError:
+                hasher.update(data)
+        return hasher
