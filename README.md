@@ -677,7 +677,7 @@ _Parameters_:
 - `format` - Specifies the type of output files to be generated (if `force-format` is true): `csv` (the default) or `json`
 - `handle-non-tabular` - Specifies whether non tabular resources (i.e. resources without a `schema`) should be dumped as well to the resulting datapackage.
     (See note below for more details)
-- `add-filehash-to-path`: Specifies whether to include file hash into the resource path
+- `add-filehash-to-path`: Specifies whether to include file hash into the resource path. Defaults to `False`
 - `counters` - Specifies whether to count rows, bytes or md5 hash of the data and where it should be stored. An object with the following properties:
     - `datapackage-rowcount`: Where should a total row count of the datapackage be stored (default: `count_of_rows`)
     - `datapackage-bytes`: Where should a total byte count of the datapackage be stored (default: `bytes`)
