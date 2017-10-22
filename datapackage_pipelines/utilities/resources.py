@@ -1,5 +1,6 @@
 import os
 
+
 def is_a_url(path):
     return (path is not None and isinstance(path, str) and
             (path.startswith('http://') or
@@ -32,6 +33,7 @@ def get_path(descriptor):
     assert path is None, '%r' % path
     return None
 
+
 def insert_hash_in_path(descriptor, hash):
     path = descriptor.get('path')
     if isinstance(path, str):
@@ -46,6 +48,7 @@ def insert_hash_in_path(descriptor, hash):
             hashed = os.path.join(hash, path_list.pop(-1))
             path_list.append(hashed)
             descriptor['path'] = ['/'.join(path_list)]
+
 
 PATH_PLACEHOLDER = '.'
 PROP_STREAMED_FROM = 'dpp:streamedFrom'
