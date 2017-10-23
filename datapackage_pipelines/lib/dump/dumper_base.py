@@ -291,6 +291,6 @@ class FileDumper(DumperBase):
             data = tfile.read(1024)
             if isinstance(data, str):
                 hasher.update(data.encode('utf8'))
-            if isinstance(data, bytes):
+            elif isinstance(data, bytes):
                 hasher.update(data)
         return hasher
