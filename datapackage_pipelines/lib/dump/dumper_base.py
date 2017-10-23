@@ -9,6 +9,7 @@ import requests
 from tableschema.exceptions import CastError
 from tableschema.schema import Schema
 
+from ...utilities.stat_utils import STATS_DPP_KEY, STATS_OUT_DP_URL_KEY
 from ...utilities.resources import get_path, PROP_STREAMED_FROM, is_a_url, streaming
 from ...utilities.extended_json import json
 from ...wrapper import ingest, spew
@@ -186,7 +187,9 @@ class FileDumper(DumperBase):
         filesize = temp_file.tell()
         temp_file.close()
         DumperBase.inc_attr(datapackage, self.datapackage_bytes, filesize)
-        self.write_file_to_output(temp_file_name, 'datapackage.json')
+        location = self.write_file_to_output(temp_file_name, 'datapackage.json')
+        if location is not None:
+            stats.setdefault(STATS_DPP_KEY, {})[STATS_OUT_DP_URL_KEY] = location
         os.unlink(temp_file_name)
         super(FileDumper, self).handle_datapackage(datapackage, parameters, stats)
 

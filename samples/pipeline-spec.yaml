@@ -55,14 +55,28 @@ worldbank-co2-emissions:
             co2_emisonss_wb:
               resource-name: global-data
 
-worldbank-co2-emissions-2:
+worldbank-co2-emissions-isr:
   dependencies:
     - pipeline: ./worldbank-co2-emissions
-    - datapackage: co2-emisonss-wb/datapackage.json
-  pipeline: 
+  pipeline:
    -
       run: add_metadata
       parameters:
-        name: 'co2-emissions'
-        title: 'CO2 emissions (metric tons per capita)'
+        name: 'co2-emissions-israel'
+        title: 'CO2 emissions for Israel'
         homepage: 'http://worldbank.org/'
+   -
+      run: load_resource
+      parameters:
+        url: dependency://./worldbank-co2-emissions
+        resource: 0
+   -
+      run: filter
+      parameters:
+        in:
+          - {'Country Code': 'ISR'}
+   -
+      run: dump.to_path
+      parameters:
+          out-path: co2-emisonss-wb-israel
+          force-format: false

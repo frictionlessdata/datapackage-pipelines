@@ -75,7 +75,7 @@ class PipelineStatus(object):
         return None
 
     def queue_execution(self, execution_id, trigger):
-        for ex in self.executions: # type: PipelineExecution
+        for ex in self.executions:  # type: PipelineExecution
             if not ex.invalidate():
                 break
         execution = PipelineExecution(self.backend,
@@ -84,7 +84,7 @@ class PipelineStatus(object):
         assert execution.queue_execution(trigger)
         self.executions.insert(0, execution)
         while len(self.executions) > 10:
-            last = self.executions.pop() # type: PipelineExecution
+            last = self.executions.pop()  # type: PipelineExecution
             last.delete()
         self.__save()
 

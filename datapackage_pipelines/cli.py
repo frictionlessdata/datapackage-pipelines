@@ -1,9 +1,11 @@
 import click
+
+from .utilities.stat_utils import user_facing_stats
 from .utilities.execution_id import gen_execution_id
 
 from .manager.logging_config import logging
 
-from .specs import pipelines, register_all_pipelines, PipelineSpec
+from .specs import pipelines, register_all_pipelines, PipelineSpec #noqa
 from .status import status
 from .manager import execute_pipeline, finalize
 
@@ -13,7 +15,7 @@ from .manager import execute_pipeline, finalize
 def cli(ctx):
     if ctx.invoked_subcommand is None:
         click.echo('Available Pipelines:')
-        for spec in pipelines(): # type: PipelineSpec
+        for spec in pipelines():  # type: PipelineSpec
             ps = status.get(spec.pipeline_id)
             click.echo('- {} {}{}'
                        .format(spec.pipeline_id,
@@ -37,7 +39,8 @@ def execute_if_needed(argument, spec, use_cache):
             (argument == 'all') or
             (argument == 'dirty' and ps.dirty())):
         if len(spec.validation_errors) != 0:
-            return (spec.pipeline_id, False, {}, ['init'] + list(map(str, spec.validation_errors))), spec.pipeline_id == argument
+            return (spec.pipeline_id, False, {}, ['init'] + list(map(str, spec.validation_errors))), \
+                   spec.pipeline_id == argument
         eid = gen_execution_id()
         ps.queue_execution(eid, 'manual')
         success, stats, errors = \
@@ -80,6 +83,7 @@ or 'dirty' for running just the dirty ones."""
 
         logging.info('RESULTS:')
         for pipeline_id, success, stats, errors in results:
+            stats = user_facing_stats(stats)
             logging.info('%s: %s %s%s',
                          'SUCCESS' if success else 'FAILURE',
                          pipeline_id,

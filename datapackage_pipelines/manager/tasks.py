@@ -4,8 +4,10 @@ import os
 from concurrent.futures import CancelledError
 from json.decoder import JSONDecodeError
 
+
 from ..specs.specs import resolve_executor
 from ..status import status
+from ..utilities.stat_utils import STATS_DPP_KEY, STATS_OUT_DP_URL_KEY
 from ..utilities.extended_json import json
 
 from .runners import runner_config
@@ -198,7 +200,8 @@ async def async_execute_pipeline(pipeline_id,
                                  pipeline_cwd,
                                  trigger,
                                  execution_id,
-                                 use_cache):
+                                 use_cache,
+                                 dependencies):
 
     ps = status.get(pipeline_id)
     if not ps.start_execution(execution_id):
@@ -217,6 +220,10 @@ async def async_execute_pipeline(pipeline_id,
 
     processes, stop_error_collecting = \
         await construct_process_pipeline(pipeline_steps, pipeline_cwd, execution_log, debug)
+
+    processes[0].stdin.write(json.dumps(dependencies).encode('utf8') + b'\n')
+    processes[0].stdin.write(b'{"name": "_", "resources": []}\n')
+    processes[0].stdin.close()
 
     def kill_all_processes():
         for to_kill in processes:
@@ -283,13 +290,24 @@ def execute_pipeline(spec,
 
     loop = asyncio.get_event_loop()
 
+    dependencies = {}
+    for dep in spec.pipeline_details.get('dependencies', []):
+        if 'pipeline' in dep:
+            dep_pipeline_id = dep['pipeline']
+            pipeline_execution = status.get(dep_pipeline_id).get_last_successful_execution()
+            if pipeline_execution is not None:
+                result_dp = pipeline_execution.stats.get(STATS_DPP_KEY, {}).get(STATS_OUT_DP_URL_KEY)
+                if result_dp is not None:
+                    dependencies[dep_pipeline_id] = result_dp
+
     pipeline_task = \
         asyncio.ensure_future(async_execute_pipeline(spec.pipeline_id,
                                                      spec.pipeline_details.get('pipeline', []),
                                                      spec.path,
                                                      trigger,
                                                      execution_id,
-                                                     use_cache))
+                                                     use_cache,
+                                                     dependencies))
     try:
         return loop.run_until_complete(pipeline_task)
     except KeyboardInterrupt:
