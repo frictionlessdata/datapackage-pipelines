@@ -14,7 +14,7 @@ from flask_jsonpify import jsonify
 
 from datapackage_pipelines.status import status
 from datapackage_pipelines.specs import register_all_pipelines
-from utilities.stat_utils import user_facing_stats
+from datapackage_pipelines.utilities.stat_utils import user_facing_stats
 
 register_all_pipelines()
 
