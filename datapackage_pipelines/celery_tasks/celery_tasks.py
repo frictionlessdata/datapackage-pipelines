@@ -61,7 +61,6 @@ def queue_pipeline(spec: PipelineSpec, trigger):
         return False
 
 
-
 @celery_app.task
 def update_pipelines(action, completed_pipeline_id, completed_trigger):
     # action=init: register all pipelines, trigger anything that's dirty
@@ -125,9 +124,9 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
         psle = ps.get_last_execution()
         last_successful = psle.success is True if psle is not None else False
         if ps.runnable() and \
-                    (ps.dirty() or
-                     (completed_trigger=='scheduled') or
-                     (action=='init' and not last_successful)):
+                (ps.dirty() or
+                 (completed_trigger == 'scheduled') or
+                 (action == 'init' and not last_successful)):
             queued = queue_pipeline(spec, 'dirty-task-%s' % action if completed_trigger is None else completed_trigger)
             if queued:
                 executed_count += 1

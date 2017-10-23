@@ -18,6 +18,7 @@ class PathDumper(FileDumper):
         PathDumper.__makedirs(path_part)
 
         shutil.copy(filename, path)
+        return path
 
     @staticmethod
     def __makedirs(path):

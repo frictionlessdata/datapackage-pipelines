@@ -1,12 +1,8 @@
-import logging
 import os
-import time
 
 from .backend_redis import RedisBackend
 from .backend_sqlite import SqliteBackend
-from typing import Optional
 from .pipeline_status import PipelineStatus
-from .pipeline_execution import PipelineExecution
 
 
 class StatusManager(object):
@@ -43,5 +39,6 @@ class StatusManager(object):
 
     def deregister(self, pipeline_id):
         return self.get(pipeline_id).deregister()
+
 
 status: StatusManager = StatusManager(os.environ.get('DPP_REDIS_HOST'))

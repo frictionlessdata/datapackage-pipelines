@@ -14,6 +14,7 @@ from flask_jsonpify import jsonify
 
 from datapackage_pipelines.status import status
 from datapackage_pipelines.specs import register_all_pipelines
+from utilities.stat_utils import user_facing_stats
 
 register_all_pipelines()
 
@@ -70,7 +71,7 @@ def make_hierarchies(statuses):
             'slug': st.get('slug')
        }
        for st in statuses
-   ]
+    ]
     groups = group(statuses)
     children = groups.get('children', {})
     groups['children'] = flatten(children)
@@ -92,7 +93,7 @@ def main():
         pipeline_obj = {
             'id': pipeline_id.lstrip('./'),
             'title': pipeline_status.pipeline_details.get('title'),
-            'stats': ex.stats if ex else None,
+            'stats': user_facing_stats(ex.stats) if ex else None,
             'slug': slugify.slugify(pipeline_id),
             'trigger': ex.trigger if ex else None,
             'error_log': pipeline_status.errors(),
@@ -186,7 +187,7 @@ def pipeline_api(field, pipeline_id):
     if field == 'pipeline':
         ret = pipeline_status.pipeline_details
         ret = yamlize(ret)
-    elif field =='source':
+    elif field == 'source':
         ret = pipeline_status.source_spec
         ret = yamlize(ret)
     elif field == 'log':

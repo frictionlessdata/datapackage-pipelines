@@ -19,6 +19,12 @@ logging.basicConfig(level=logging.DEBUG,
 cache = ''
 first = True
 
+dependency_datapackage_urls = {}
+
+
+def get_dependency_datapackage_url(pipeline_id):
+    return dependency_datapackage_urls.get(pipeline_id)
+
 
 def ingest(debug=False):
     global cache
@@ -31,10 +37,9 @@ def ingest(debug=False):
         validate = sys.argv[3] == 'True'
         cache = sys.argv[4]
 
-    if first:
-        return params, {'name': '_', 'resources': []}, []
+    datapackage, resource_iterator, dependency_dp = process_input(sys.stdin, validate, debug)
+    dependency_datapackage_urls.update(dependency_dp)
 
-    datapackage, resource_iterator = process_input(sys.stdin, validate, debug)
     return params, datapackage, resource_iterator
 
 

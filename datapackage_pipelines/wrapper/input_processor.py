@@ -54,12 +54,18 @@ class ResourceIterator(object):
         return self.__next__()
 
 
-def process_input(infile, validate=False, debug=False):
-
-    dp_json = infile.readline().strip()
-    if dp_json == '':
+def read_json(infile, proxy=False):
+    line_json = infile.readline().strip()
+    if line_json == '':
         sys.exit(-3)
-    dp = json.loads(dp_json)
+    if proxy:
+        print(line_json)
+    return json.loads(line_json)
+
+
+def process_input(infile, validate=False, debug=False):
+    dependency_dp = read_json(infile, True)
+    dp = read_json(infile)
     resources = dp.get('resources', [])
     original_resources = copy.deepcopy(resources)
 
@@ -104,4 +110,4 @@ def process_input(infile, validate=False, debug=False):
             ret.append(res_iter)
         return iter(ret)
 
-    return dp, resources_iterator(resources, original_resources)
+    return dp, resources_iterator(resources, original_resources), dependency_dp

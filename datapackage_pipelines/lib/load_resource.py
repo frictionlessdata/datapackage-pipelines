@@ -2,7 +2,7 @@ import itertools
 
 import datapackage
 
-from datapackage_pipelines.wrapper import ingest, spew
+from datapackage_pipelines.wrapper import ingest, spew, get_dependency_datapackage_url
 from datapackage_pipelines.utilities.resource_matcher import ResourceMatcher
 from datapackage_pipelines.utilities.resources import tabular, PROP_STREAMING, \
     PROP_STREAMED_FROM
@@ -15,6 +15,11 @@ class ResourceLoader(object):
 
     def __call__(self):
         url = self.parameters['url']
+        dep_prefix = 'dependency://'
+        if url.startswith(dep_prefix):
+            dependency = url[len(dep_prefix):].strip()
+            url = get_dependency_datapackage_url(dependency)
+            assert url is not None, "Failed to fetch output datapackage for dependency '%s'" % dependency
         resource = self.parameters['resource']
         stream = self.parameters.get('stream', True)
         name_matcher = ResourceMatcher(resource) if isinstance(resource, str) else None

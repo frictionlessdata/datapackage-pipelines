@@ -77,9 +77,11 @@ class ProcessorFixtureTestsBase(object):
 
     def _test_single_fixture(self, processor, parameters, data_in,
                              dp_out, data_out, env):
-        """Test a single processor with the given fixture parameters"""
-        output = self._run_processor(processor, parameters, data_in, env)
-        self.test_fixture(output, dp_out, data_out)
+        """Test a single processor with the given fixture parameters.
+           Handle dependencies info adding and removal
+        """
+        output = self._run_processor(processor, parameters, b'{}\n' + data_in, env)
+        self.test_fixture(output[3:], dp_out, data_out)
 
     @staticmethod
     def test_fixture(processor_output, dp_out, data_out):

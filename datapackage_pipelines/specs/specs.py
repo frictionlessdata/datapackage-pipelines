@@ -1,5 +1,5 @@
 import os
-from typing import Iterator
+from typing import Iterator  #noqa
 
 import yaml
 from datapackage_pipelines.status import status

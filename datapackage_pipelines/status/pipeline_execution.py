@@ -1,7 +1,5 @@
 import time
 
-import logging
-
 
 class PipelineExecution(object):
 
