@@ -33,9 +33,16 @@ def serve():
     app.run(host='0.0.0.0', debug=True, port=5000)
 
 
+def match_pipeline_id(arg, pipeline_id):
+    if arg.endswith('*'):
+        return pipeline_id.startswith(arg[:-1])
+    else:
+        return pipeline_id == arg
+
+
 def execute_if_needed(argument, spec, use_cache):
     ps = status.get(spec.pipeline_id)
-    if (spec.pipeline_id.startswith(argument) or
+    if (match_pipeline_id(argument, spec.pipeline_id) or
             (argument == 'all') or
             (argument == 'dirty' and ps.dirty())):
         if len(spec.validation_errors) != 0:

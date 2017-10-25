@@ -147,9 +147,9 @@ def generic_process_resources(resource_iterator,
 
 
 def process(modify_datapackage=None,
-            process_row=None):
+            process_row=None, debug=False):
     stats = {}
-    parameters, datapackage, resource_iterator = ingest()
+    parameters, datapackage, resource_iterator = ingest(debug=debug)
     if modify_datapackage is not None:
         datapackage = modify_datapackage(datapackage, parameters, stats)
 
