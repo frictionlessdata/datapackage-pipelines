@@ -29,6 +29,7 @@ class DumperBase(object):
         self.resource_rowcount = counters.get('resource-rowcount', 'count_of_rows')
         self.resource_bytes = counters.get('resource-bytes', 'bytes')
         self.resource_hash = counters.get('resource-hash', 'hash')
+        self.add_filehash_to_path = self.__params.get('add-filehash-to-path', False)
 
     def __call__(self):
         self.initialize(self.__params)
@@ -98,6 +99,19 @@ class DumperBase(object):
                     logging.warning('Encountered field %r, not in schema', k)
 
             yield row
+
+    @staticmethod
+    def insert_hash_in_path(descriptor, hash):
+        path = descriptor.get('path')
+        if isinstance(path, list):
+            if len(path) > 0:
+                path = path[0]
+
+        assert isinstance(path, str), '%r' % path
+
+        dir_name = os.path.dirname(path)
+        file_name = os.path.basename(path)
+        descriptor['path'] = os.path.join(dir_name, hash, file_name)
 
     def row_counter(self, datapackage, resource_spec, resource):
         counter = 0
@@ -204,10 +218,16 @@ class FileDumper(DumperBase):
                     stream.read = functools.partial(stream.read, decode_content=True)
                     shutil.copyfileobj(stream, tmp)
                     filesize = tmp.tell()
+                    if self.add_filehash_to_path:
+                        hasher = FileDumper.hash_handler(tmp)
+                        DumperBase.insert_hash_in_path(resource, hasher.hexdigest())
                     tmp.close()
                     url = tmp.name
                     delete = True
                 else:
+                    if self.add_filehash_to_path:
+                        hasher = FileDumper.hash_handler(open(url, 'rb'))
+                        DumperBase.insert_hash_in_path(resource, hasher.hexdigest())
                     filesize = os.stat(url).st_size
                 DumperBase.set_attr(resource, self.resource_bytes, filesize)
                 DumperBase.inc_attr(datapackage, self.datapackage_bytes, filesize)
@@ -232,12 +252,10 @@ class FileDumper(DumperBase):
 
         # File Hash:
         if self.resource_hash:
-            temp_file.seek(0)
-            hasher = hashlib.md5()
-            data = 'x'
-            while len(data) > 0:
-                data = temp_file.read(1024)
-                hasher.update(data.encode('utf8'))
+            hasher = FileDumper.hash_handler(temp_file)
+            # Update path with hash
+            if self.add_filehash_to_path:
+                DumperBase.insert_hash_in_path(spec, hasher.hexdigest())
             DumperBase.set_attr(spec, self.resource_hash, hasher.hexdigest())
 
         # Finalise
@@ -266,3 +284,16 @@ class FileDumper(DumperBase):
                                        datapackage)
         else:
             return resource
+
+    @staticmethod
+    def hash_handler(tfile):
+        tfile.seek(0)
+        hasher = hashlib.md5()
+        data = 'x'
+        while len(data) > 0:
+            data = tfile.read(1024)
+            if isinstance(data, str):
+                hasher.update(data.encode('utf8'))
+            elif isinstance(data, bytes):
+                hasher.update(data)
+        return hasher
