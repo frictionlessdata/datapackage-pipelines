@@ -75,14 +75,6 @@ def dedupe(headers):
     return _dedupped_headers
 
 
-def row_skipper(rows_to_skip):
-    def _func(extended_rows):
-        for number, headers, row in extended_rows:
-            if number > rows_to_skip:
-                yield (number-rows_to_skip, headers, row)
-    return _func
-
-
 def add_constants(extra_headers, extra_values):
     def _func(extended_rows):
         for number, headers, row in extended_rows:
@@ -121,7 +113,6 @@ def stream_reader(_resource, _url, _ignore_missing):
     def get_opener(__url, __resource):
         def opener():
             _params = dict(headers=1)
-            skip_rows = __resource.get('skip_rows', 0)
             format = __resource.get("format")
             if format == "txt":
                 # datapackage-pipelines processing requires having a header row
@@ -143,7 +134,7 @@ def stream_reader(_resource, _url, _ignore_missing):
                 _params.update(
                     dict(x for x in __resource.items()
                          if x[0] in {'headers', 'scheme', 'encoding', 'sample_size', 'allow_html',
-                                     'force_strings', 'force_parse'}))
+                                     'force_strings', 'force_parse', 'skip_rows'}))
 
             _params['format'] = format
 
@@ -151,8 +142,7 @@ def stream_reader(_resource, _url, _ignore_missing):
             constant_headers = list(constants.keys())
             constant_values = [constants.get(k) for k in constant_headers]
             _stream = tabulator.Stream(__url, **_params,
-                                       post_parse=[row_skipper(skip_rows),
-                                                   suffix_remover(format),
+                                       post_parse=[suffix_remover(format),
                                                    add_constants(constant_headers, constant_values)])
             try:
                 _stream.open()
