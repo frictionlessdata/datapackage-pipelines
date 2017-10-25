@@ -135,6 +135,8 @@ def stream_reader(_resource, _url, _ignore_missing):
                     dict(x for x in __resource.items()
                          if x[0] in {'headers', 'scheme', 'encoding', 'sample_size', 'allow_html',
                                      'force_strings', 'force_parse', 'skip_rows'}))
+                if isinstance(_params.get('skip_rows'), int):  # Backwards compatibility
+                    _params['skip_rows'] = list(range(1, _params.get('skip_rows') + 1))
 
             _params['format'] = format
 

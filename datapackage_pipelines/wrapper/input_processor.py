@@ -83,7 +83,7 @@ def process_input(infile, validate=False, debug=False):
     try:
         datapackage.validate(dp_to_validate)
     except ValidationError as e:
-        logging.info('ABOUT TO VALIDATE %r', dp_to_validate)
+        logging.info('FAILED TO VALIDATE %r', dp_to_validate)
         for e in e.errors:
             try:
                 logging.error("Data Package validation error: %s at dp%s",
