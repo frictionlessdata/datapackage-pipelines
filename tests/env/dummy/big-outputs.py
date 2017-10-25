@@ -20,6 +20,7 @@ dp['resources'].append({
             {'name': 'a', 'type': 'string'}
         ]
     },
+    'very-large-prop': '*' * 100 * 1024,
     PROP_STREAMING: True
 })
 
