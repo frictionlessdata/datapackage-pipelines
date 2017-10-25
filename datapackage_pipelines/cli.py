@@ -35,7 +35,7 @@ def serve():
 
 def execute_if_needed(argument, spec, use_cache):
     ps = status.get(spec.pipeline_id)
-    if ((argument == spec.pipeline_id) or
+    if (spec.pipeline_id.startswith(argument) or
             (argument == 'all') or
             (argument == 'dirty' and ps.dirty())):
         if len(spec.validation_errors) != 0:
