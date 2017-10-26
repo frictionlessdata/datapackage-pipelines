@@ -88,7 +88,7 @@ class SQLDumper(DumperBase):
                 try:
                     storage.create('', schema)
                 except ValidationError as e:
-                    logging.error('Error validating schema %r', spec['schema'])
+                    logging.exception('Error validating schema %r', spec['schema'])
                     for err in e.errors:
                         logging.error('Error validating schema: %s', err)
                     raise
