@@ -4,7 +4,6 @@ import os
 from concurrent.futures import CancelledError
 from json.decoder import JSONDecodeError
 
-
 from ..specs.specs import resolve_executor
 from ..status import status
 from ..utilities.stat_utils import STATS_DPP_KEY, STATS_OUT_DP_URL_KEY

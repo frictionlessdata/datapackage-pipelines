@@ -66,3 +66,22 @@ pipeline-test-big-outputs:
     - run: big-outputs
     - run: big-outputs
 
+
+pipeline-test-hooks:
+  pipeline:
+    -
+      run: add_metadata
+      parameters:
+        name: 'hook-tests'
+    -
+      run: add_resource
+      parameters:
+        name: "treasury"
+        url: "https://raw.githubusercontent.com/openspending/fiscal-data-package-demos/master/al-treasury-spending/data/treasury.csv"
+    -
+      run: dump.to_path
+      parameters:
+          out-path: hooks-outputs
+
+  hooks:
+    - http://localhost:9000/update

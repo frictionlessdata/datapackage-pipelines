@@ -2,6 +2,7 @@ from typing import Optional
 
 import logging
 
+from .hook_sender import hook_sender
 from .pipeline_execution import PipelineExecution
 
 
@@ -86,6 +87,7 @@ class PipelineStatus(object):
         while len(self.executions) > 10:
             last = self.executions.pop()  # type: PipelineExecution
             last.delete()
+        self.update_hooks('queue')
         self.__save()
 
     def validate_execution_id(self, execution_id):
@@ -101,16 +103,19 @@ class PipelineStatus(object):
     def start_execution(self, execution_id):
         if not self.validate_execution_id(execution_id):
             return False
+        self.update_hooks('start')
         return self.executions[0].start_execution()
 
     def finish_execution(self, execution_id, success, stats, error_log):
         if self.validate_execution_id(execution_id):
+            self.update_hooks('finish', success, error_log)
             return self.executions[0].finish_execution(success, stats, error_log)
         return False
 
     def update_execution(self, execution_id, log):
         if self.validate_execution_id(execution_id):
             return self.executions[0].update_execution(log)
+        self.update_hooks('progress')
         return False
 
     def deregister(self):
@@ -131,3 +136,17 @@ class PipelineStatus(object):
             return 'SUCCEEDED'
         else:
             return 'FAILED'
+
+    def update_hooks(self, event, success=None, errors=None):
+        hooks = self.pipeline_details.get('hooks')
+        if hooks is not None:
+            payload = {
+                'pipeline_id': self.pipeline_id,
+                'event': event,
+            }
+            if success is not None:
+                payload['success'] = success
+            if errors is not None:
+                payload['errors'] = errors
+            for hook in hooks:
+                hook_sender.send(hook, payload)

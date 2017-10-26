@@ -1124,3 +1124,19 @@ To make things easier, you can spin up the web dashboard which provides an overv
 To start the web server run `dpp serve` from the command line and browse to http://localhost:5000
 
 The environment variable `DPP_BASE_PATH` will determine whether dashboard will be served from root or from another base path (example value: `/pipelines/`).
+
+## Integrating with other services
+
+Datapackage-pipelines can call a predefined webhook on any pipeline event. This might allow for potential integrations with other applications.
+
+In order to add a webhook in a specific pipeline, add a `hooks` property in the pipeline definition, which should be a list of URLs.
+Whenever that pipline is queued, starts running or finishes running, all the urls will be POSTed with this payload:
+```json
+{
+  "pipline": "<pipeline-id>",
+  "event": "queue/start/progress/finish",
+  "success": true/false (when applicable),
+  "errors": [list-of-errors, when applicable]
+}
+```
+
