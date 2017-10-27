@@ -632,6 +632,28 @@ Filtering just American and European countries, leaving out countries whose main
       - language: english
 ```
 
+### ***`sort`***
+
+Sort streamed resources by key.
+
+`sort` accepts a list of resources and a key (as a Python format string on row fields).
+It will output the rows for each resource, sorted according to the key (in ascending order). 
+
+_Parameters_:
+
+- `resources` - Which resources to sort. Same semantics as `resources` in `stream_remote_resources`.
+- `sort-by` - String, which would be interpreted as a Python format string used to form the key (e.g. `{<field_name_1>}:{field_name_2}`)
+
+*Examples*:
+
+Filtering just American and European countries, leaving out countries whose main language is English:
+```yaml
+- run: sort
+  parameters:
+    resources: world_population
+    sort-by: "{country_name}" 
+```
+
 ### ***`dump.to_sql`***
 
 Saves the datapackage to an SQL database.
