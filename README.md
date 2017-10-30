@@ -868,7 +868,11 @@ The above code snippet shows the structure of most low-level processors.
 
 We always start with calling `ingest()` - this method gives us the execution parameters, the data-package descriptor (as outputed from the previous step) and an iterator on all streamed resources' rows.
 
-We finish the processing by calling `spew()`, which sends the processed data to the next processor in the pipeline. `spew` receives a modified data-package descriptor, a (possibly new) iterator on the resources and a stats object which will be added to stats from previous steps and returned to the user upon completion of the pipeline.
+We finish the processing by calling `spew()`, which sends the processed data to the next processor in the pipeline. `spew` receives:
+* A modified data-package descriptor;
+* A (possibly new) iterator on the resources;
+* A stats object which will be added to stats from previous steps and returned to the user upon completion of the pipeline, and;
+* Optionally, a `finalizer` function that will be called after it has finished iterating on the resources, but before signalling to other processors that it's finished. You could use it to close any open files, for example.
 
 #### A more in-depth explanation
 
@@ -880,7 +884,8 @@ We finish the processing by calling `spew()`, which sends the processed data to 
 - Then it starts iterating on the resources. For each resource, it iterates on its rows and writes each row to the stream.
   This iteration process eventually causes an iteration on the original resource iterator (the one that's returned from `ingest`). In turn, this causes the process' input stream to be read. Because of the way buffering in operating systems work, "slow" processors will read their input slowly, causing the ones before them to sleep on IO while their more CPU intensive counterparts finish their processing. "quick" processors will not work aimlessly, but instead will either sleep while waiting for incoming data or while waiting for their output buffer to drain.
   What is achieved here is that all rows in the data are processed more or less at the same time, and that no processor works too "far ahead" on rows that might fail in subsequent processing steps.
-- Finally, the stats are written to the stream. This means that stats can be modified during the iteration, and only the value after the iteration finishes will be used.
+- Then the stats are written to the stream. This means that stats can be modified during the iteration, and only the value after the iteration finishes will be used.
+- Finally, the `finalizer` method is called (if we received one).
 
 #### A few examples
 

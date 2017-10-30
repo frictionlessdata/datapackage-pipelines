@@ -35,13 +35,16 @@ class DumperBase(object):
         self.initialize(self.__params)
         self.__datapackage = \
             self.prepare_datapackage(self.__datapackage, self.__params)
-        spew(self.__datapackage,
-             self.handle_resources(self.__datapackage,
-                                   self.__res_iter,
-                                   self.__params,
-                                   self.stats),
-             self.stats)
-        self.finalize()
+
+        spew(
+            self.__datapackage,
+            self.handle_resources(self.__datapackage,
+                                  self.__res_iter,
+                                  self.__params,
+                                  self.stats),
+            self.stats,
+            finalizer=self.finalize
+        )
 
     def prepare_datapackage(self, datapackage, _):
         return datapackage

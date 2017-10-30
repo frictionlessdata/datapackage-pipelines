@@ -43,7 +43,7 @@ def ingest(debug=False):
     return params, datapackage, resource_iterator
 
 
-def spew(dp, resources_iterator, stats=None):
+def spew(dp, resources_iterator, stats=None, finalizer=None):
     files = [sys.stdout]
 
     cache_filename = ''
@@ -100,18 +100,28 @@ def spew(dp, resources_iterator, stats=None):
                                 sort_keys=True,
                                 ensure_ascii=True)
         for f in files:
-            f.write('\n'+stats_json+'\n')
+            f.write('\n'+stats_json)
 
     except BrokenPipeError:
         logging.error('Output pipe disappeared!')
-        sys.stderr.close()
+        sys.stderr.flush()
         sys.exit(1)
 
+    sys.stdout.flush()
     if row_count > 0:
         logging.info('Processed %d rows', row_count)
 
+    if finalizer is not None:
+        finalizer()
+
     for f in files:
-        f.close()
+        f.write('\n')  # Signal to other processors that we're done
+        if f == sys.stdout:
+            # Can't close sys.stdout, otherwise any subsequent
+            # call to print() will throw an exception
+            f.flush()
+        else:
+            f.close()
 
     if len(cache) > 0:
         os.rename(cache_filename+'.ongoing', cache_filename)
