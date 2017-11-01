@@ -12,6 +12,7 @@ from flask import Flask, render_template, abort, redirect
 from flask_cors import CORS
 from flask_jsonpify import jsonify
 
+from datapackage_pipelines.celery_tasks.celery_tasks import execute_update_pipelines
 from datapackage_pipelines.status import status
 from datapackage_pipelines.specs import register_all_pipelines
 from datapackage_pipelines.utilities.stat_utils import user_facing_stats
@@ -121,7 +122,6 @@ def main():
     def state_or_dirty(state, p):
         return p.get('state') == state or p.get('dirty')
 
-    logging.info('%r', statuses[1])
     categories = [
         ['ALL', 'All Pipelines', lambda _, __: True],
         ['INVALID', "Can't start", lambda _, p: not p['runnable']],
@@ -139,6 +139,12 @@ def main():
                            categories=categories,
                            yamlize=yamlize,
                            markdown=markdown)
+
+
+@blueprint.route("api/refresh")
+def refresh():
+    execute_update_pipelines()
+    return jsonify({'ok': True})
 
 
 @blueprint.route("api/raw/status")

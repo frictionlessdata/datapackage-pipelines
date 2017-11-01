@@ -5,9 +5,13 @@ from ..utilities.execution_id import gen_execution_id
 
 from ..status import status
 
-from .celery_app import celery_app
+from .celery_common import get_celery_app
 from ..specs import pipelines, PipelineSpec, register_all_pipelines
 from ..manager.tasks import execute_pipeline
+
+
+celery_app = get_celery_app()
+
 
 executed_hashes = {}
 dependencies = {}
@@ -22,9 +26,6 @@ def build_dependents():
             logging.debug('%s <- %s', spec.pipeline_id, dep)
             dependents.setdefault(dep, set()).add(spec.pipeline_id)
         dependencies[spec.pipeline_id] = spec.dependencies
-
-
-build_dependents()
 
 
 def collect_dependencies(pipeline_ids):
@@ -61,7 +62,11 @@ def queue_pipeline(spec: PipelineSpec, trigger):
         return False
 
 
-@celery_app.task
+def execute_update_pipelines():
+    update_pipelines.delay('update', None, None)
+
+
+@celery_app.task(ignore_result=True)
 def update_pipelines(action, completed_pipeline_id, completed_trigger):
     # action=init: register all pipelines, trigger anything that's dirty
     # action=update: iterate over all pipelines, register new ones, trigger dirty ones
@@ -141,7 +146,7 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
             status.deregister(pipeline_id)
 
 
-@celery_app.task
+@celery_app.task(ignore_result=True)
 def execute_scheduled_pipeline(pipeline_id):
     for spec in pipelines([pipeline_id]):
         if spec.pipeline_id == pipeline_id:
@@ -151,7 +156,7 @@ def execute_scheduled_pipeline(pipeline_id):
             queue_pipeline(spec, 'scheduled')
 
 
-@celery_app.task
+@celery_app.task(ignore_result=True)
 def execute_pipeline_task(pipeline_id,
                           pipeline_details,
                           pipeline_cwd,
