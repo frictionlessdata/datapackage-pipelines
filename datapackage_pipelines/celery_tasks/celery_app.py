@@ -1,6 +1,6 @@
 from celery.schedules import crontab
 
-from .celery_common import get_celery_app, MANAGEMENT_TASK_NAME, SCHEDULED_TASK_NAME, REGULAR_TASK_NAME
+from .celery_common import get_celery_app, MANAGEMENT_TASK_NAME, SCHEDULED_TASK_NAME
 from .celery_tasks import build_dependents
 from datapackage_pipelines.specs import pipelines
 
@@ -28,6 +28,7 @@ for spec in pipelines():
         logging.info('SCHEDULING task %r: %r', spec.pipeline_id, spec.schedule)
 
 
+logging.error('CELERY INITIALIZING')
 celery_app = get_celery_app(CELERYBEAT_SCHEDULE=CELERY_SCHEDULE)
 build_dependents()
 celery_app.send_task(MANAGEMENT_TASK_NAME, ('init', None, None))
