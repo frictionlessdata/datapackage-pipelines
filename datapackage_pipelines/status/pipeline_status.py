@@ -109,7 +109,7 @@ class PipelineStatus(object):
     def finish_execution(self, execution_id, success, stats, error_log):
         if self.validate_execution_id(execution_id):
             self.update_hooks('finish', success=success, errors=error_log, stats=stats)
-            return self.executions[0].finish_execution(success, error_log, stats)
+            return self.executions[0].finish_execution(success, stats, error_log)
         return False
 
     def update_execution(self, execution_id, log):
@@ -137,7 +137,7 @@ class PipelineStatus(object):
         else:
             return 'FAILED'
 
-    def update_hooks(self, event, *, success=None, errors=None, stats=None, log=log):
+    def update_hooks(self, event, *, success=None, errors=None, stats=None, log=None):
         hooks = self.pipeline_details.get('hooks')
         if hooks is not None:
             payload = {
@@ -151,6 +151,6 @@ class PipelineStatus(object):
             if stats is not None:
                 payload['stats'] = stats
             if log is not None:
-                payload['log'] = log
+                payload['log'] = log[-100:]
             for hook in hooks:
                 hook_sender.send(hook, payload)

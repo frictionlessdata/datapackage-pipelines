@@ -11,14 +11,19 @@ from datapackage_pipelines.status import status
 
 
 called_hooks = []
-
+progresses = 0
 
 class SaveHooks(BaseHTTPRequestHandler):
 
     def do_POST(self):
+        global progresses
         content_len = int(self.headers.get('content-length', 0))
         post_body = self.rfile.read(content_len)
-        called_hooks.append(json.loads(post_body))
+        hook = json.loads(post_body)
+        if hook['event'] != 'progress':
+            called_hooks.append(hook)
+        else:
+            progresses += 1
         self.send_response(200)
         self.end_headers()
         return
@@ -26,6 +31,7 @@ class SaveHooks(BaseHTTPRequestHandler):
 
 def test_pipeline():
     '''Tests a few pipelines.'''
+    global progresses
 
     server = HTTPServer(('', 9000), SaveHooks)
     thread = threading.Thread(target = server.serve_forever, daemon=True)
@@ -42,5 +48,9 @@ def test_pipeline():
     assert called_hooks == [
         {"pipeline_id": "./tests/env/dummy/pipeline-test-hooks", "event": "queue"},
         {"pipeline_id": "./tests/env/dummy/pipeline-test-hooks", "event": "start"},
-        {"pipeline_id": "./tests/env/dummy/pipeline-test-hooks", "event": "finish", "success": True}
+        {"pipeline_id": "./tests/env/dummy/pipeline-test-hooks", "event": "finish", "success": True,
+         'stats': {'.dpp': {'out-datapackage-url': 'hooks-outputs/datapackage.json'},
+                   'bytes': 258, 'count_of_rows': None,
+                   'dataset_name': 'hook-tests', 'hash': 'f3f25f5ecd8e7e2c35d83139178072b8'}}
     ]
+    assert progresses >= 1
