@@ -89,7 +89,7 @@ class PipelineExecution(object):
     def update_execution(self, log):
         if self.queue_time is None or self.start_time is None or self.finish_time is not None:
             return False
-        self.log = log
+        self.log = '\n'.join(log)
         self.__save()
         return True
 

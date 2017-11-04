@@ -209,7 +209,7 @@ async def async_execute_pipeline(pipeline_id,
 
     debug = trigger == 'manual'
 
-    ps.update_execution(execution_id, '')
+    ps.update_execution(execution_id, [])
 
     logging.info("%s RUNNING %s", execution_id[:8], pipeline_id)
 
@@ -264,8 +264,7 @@ async def async_execute_pipeline(pipeline_id,
                 success = False
                 kill_all_processes()
 
-        if success and not ps.update_execution(execution_id,
-                                   '\n'.join(execution_log)):
+        if success and not ps.update_execution(execution_id, execution_log):
             logging.error("%s FAILED to update %s", execution_id[:8], pipeline_id)
             success = False
             kill_all_processes()
@@ -274,7 +273,7 @@ async def async_execute_pipeline(pipeline_id,
     if success is False:
         stats = None
 
-    ps.update_execution(execution_id, '\n'.join(execution_log))
+    ps.update_execution(execution_id, execution_log)
     ps.finish_execution(execution_id, success, stats, error_log)
 
     logging.info("DONE %s %s", 'V' if success else 'X', pipeline_id)
