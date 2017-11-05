@@ -112,9 +112,10 @@ class PipelineStatus(object):
             return self.executions[0].finish_execution(success, stats, error_log)
         return False
 
-    def update_execution(self, execution_id, log):
+    def update_execution(self, execution_id, log, hooks=False):
         if self.validate_execution_id(execution_id):
-            self.update_hooks('progress', log=log)
+            if hooks:
+                self.update_hooks('progress', log=log)
             return self.executions[0].update_execution(log)
         return False
 
