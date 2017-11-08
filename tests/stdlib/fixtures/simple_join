@@ -20,7 +20,11 @@ join
             "aggregate": "avg"
         },
         "representative": {
-            "name": "first_name"
+            "name": "first_name",
+            "aggregate": "last"
+        },
+        "representative_age": {
+            "name": "age"
         },
         "number_of_characters": {
             "aggregate": "count"
@@ -41,7 +45,7 @@ join
                     {"name": "first_name", "type": "string"},
                     {"name": "last_name", "type": "string"},
                     {"name": "house", "type": "string"},
-                    {"name": "age", "type": "number"}
+                    {"name": "age", "type": "number", "units": "Westerosian Years"}
                 ]
             }
         },
@@ -85,14 +89,15 @@ join
                 {"name": "avg_age", "type": "number"},
                 {"name": "max_age", "type": "number"},
                 {"name": "number_of_characters", "type": "integer"},
-                {"name": "representative", "type": "string"}
+                {"name": "representative", "type": "string"},
+                {"name": "representative_age", "type": "number", "units": "Westerosian Years"}
             ]}
         }
     ]
 }
 --
-{"avg_age": 31.666666666666668, "house": "House of Lannister", "max_age": 34, "number_of_characters": 3, "representative": "Cersei"}
-{"avg_age": 11.4, "house": "House of Stark", "max_age": 17, "number_of_characters": 5, "representative": "Rickon"}
-{"avg_age": 16.0, "house": "House of Targaryen", "max_age": 16, "number_of_characters": 1, "representative": "Daenerys"}
+{"avg_age": 31.666666666666668, "house": "House of Lannister", "max_age": 34, "number_of_characters": 3, "representative": "Cersei", "representative_age": 34}
+{"avg_age": 11.4, "house": "House of Stark", "max_age": 17, "number_of_characters": 5, "representative": "Rickon", "representative_age": 5}
+{"avg_age": 16.0, "house": "House of Targaryen", "max_age": 16, "number_of_characters": 1, "representative": "Daenerys", "representative_age": 16}
 
 {}

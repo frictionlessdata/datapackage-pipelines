@@ -1,3 +1,4 @@
+import copy
 import os
 import collections
 
@@ -24,48 +25,58 @@ def identity(x):
 
 
 Aggregator = collections.namedtuple('Aggregator',
-                                    ['func', 'finaliser', 'dataType'])
+                                    ['func', 'finaliser', 'dataType', 'copyProperties'])
 AGGREGATORS = {
     'sum': Aggregator(lambda curr, new:
                       new + curr if curr is not None else new,
                       identity,
-                      None),
+                      None,
+                      False),
     'avg': Aggregator(lambda curr, new:
                       (curr[0] + 1, new + curr[1])
                       if curr is not None
                       else (1, new),
                       lambda value: value[1] / value[0],
-                      None),
+                      None,
+                      False),
     'max': Aggregator(lambda curr, new:
                       max(new, curr) if curr is not None else new,
                       identity,
-                      None),
+                      None,
+                      False),
     'min': Aggregator(lambda curr, new:
                       min(new, curr) if curr is not None else new,
                       identity,
-                      None),
+                      None,
+                      False),
     'first': Aggregator(lambda curr, new:
                         curr if curr is not None else new,
                         identity,
-                        None),
+                        None,
+                        True),
     'last': Aggregator(lambda curr, new: new,
                        identity,
-                       None),
+                       None,
+                       True),
     'count': Aggregator(lambda curr, new:
                         curr+1 if curr is not None else 1,
                         identity,
-                        'integer'),
+                        'integer',
+                        False),
     'any': Aggregator(lambda curr, new: new,
                       identity,
-                      None),
+                      None,
+                      True),
     'set': Aggregator(lambda curr, new:
                       curr.union({new}) if curr is not None else {new},
                       lambda value: list(value) if value is not None else [],
-                      'array'),
+                      'array',
+                      False),
     'array': Aggregator(lambda curr, new:
                         curr + [new] if curr is not None else [new],
                         identity,
-                        'array'),
+                        'array',
+                        False),
 }
 
 parameters, datapackage, resource_iterator = ingest()
@@ -182,11 +193,15 @@ def process_target_resource(source_spec, resource):
         spec = fields[field]
         agg = spec['aggregate']
         data_type = AGGREGATORS[agg].dataType
+        copy_properties = AGGREGATORS[agg].copyProperties
+        to_copy = {}
         if data_type is None:
             source_field = \
                 next(filter(lambda f, spec_=spec:
                             f['name'] == spec_['name'],
                             source_spec['schema']['fields']))
+            if copy_properties:
+                to_copy = copy.deepcopy(source_field)
             data_type = source_field['type']
         try:
             existing_field = next(iter(filter(
@@ -195,10 +210,11 @@ def process_target_resource(source_spec, resource):
             assert existing_field['type'] == data_type, \
                 'Reusing %s but with different data types: %s != %s' % (field, existing_field['type'], data_type)
         except StopIteration:
-            target_fields.append({
+            to_copy.update({
                 'name': field,
                 'type': data_type
             })
+            target_fields.append(to_copy)
     return resource
 
 
