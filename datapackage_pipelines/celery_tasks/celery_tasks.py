@@ -127,8 +127,10 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
                         spec.source_details,
                         spec.validation_errors,
                         spec.cache_hash)
-                logging.info("DEPENDENT Pipeline: %s (%d errors) (from ...%s)",
-                             spec.pipeline_id, len(spec.validation_errors), os.path.basename(completed_pipeline_id))
+                logging.info("DEPENDENT Pipeline: %s (%d errors) (from ...%s), trigger=%s",
+                             spec.pipeline_id, len(spec.validation_errors),
+                             os.path.basename(completed_pipeline_id),
+                             completed_trigger)
             else:
                 continue
 

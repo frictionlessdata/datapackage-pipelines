@@ -11,6 +11,7 @@ import sys
 import json
 import mock
 import importlib
+import pytest
 
 
 class ProcessorFixtureTestsBase(object):
@@ -88,8 +89,17 @@ class ProcessorFixtureTestsBase(object):
         '''Receives processor output and performs standard tests. Can be
         overridden in subclasses.'''
         (actual_dp, *actual_data) = processor_output.split('\n\n', 1)
-        assert actual_dp.strip() == dp_out.strip(), \
-            "unexpected value for output datapackage:\n{!r}\n{!r}".format(actual_dp, dp_out)
+        if actual_dp.strip() != dp_out.strip():
+            print("unexpected value for output datapackage:\n{!r}\n{!r}".format(actual_dp, dp_out),
+                  file=sys.stderr)
+        actual_dp = json.loads(actual_dp)
+        dp_out = json.loads(dp_out)
+        for ares, eres in zip(actual_dp.get('resources', []), dp_out.get('resources', [])):
+            assert ares.get('schema', {}).get('fields') == eres.get('schema', {}).get('fields')
+            assert ares.get('schema', {}) == eres.get('schema', {})
+            assert ares == eres
+        assert actual_dp == dp_out
+
         if len(actual_data) > 0:
             actual_data = actual_data[0]
             actual_data = actual_data.split('\n')
@@ -106,11 +116,14 @@ class ProcessorFixtureTestsBase(object):
                         .format(line_msg)
                 else:
                     rj_actual = rejsonize(actual)
-                    assert rj_actual == rejsonize(expected), \
-                        "{}: unexpected data: {} (expected {})".format(line_msg, rj_actual, expected)
+                    if rj_actual != rejsonize(expected):
+                        print("{}: unexpected data: {} (expected {})".format(line_msg, rj_actual, expected),
+                              file=sys.stderr)
+                    assert json.loads(actual) == json.loads(expected)
 
 
 def rejsonize(s):
+    ret = json.dumps(json.loads(s), sort_keys=True, ensure_ascii=False)
     return json.dumps(json.loads(s), sort_keys=True, ensure_ascii=True)
 
 
