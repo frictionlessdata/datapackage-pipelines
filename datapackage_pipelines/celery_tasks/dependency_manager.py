@@ -51,7 +51,8 @@ class DependencyManager(object):
             for dep in spec.dependencies:
                 self.redis.sadd(self.dependents_key(dep), self.encode(spec.pipeline_id))
             self.redis.delete(self.dependencies_key(spec.pipeline_id))
-            self.redis.sadd(self.dependencies_key(spec.pipeline_id), self.encode(spec.dependencies))
+            for dep in self.encode(spec.dependencies):
+                self.redis.sadd(self.dependencies_key(spec.pipeline_id), dep)
 
     def get_dependencies(self, pipeline_id):
         if self.is_init():
