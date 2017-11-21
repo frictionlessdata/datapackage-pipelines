@@ -207,7 +207,7 @@ async def async_execute_pipeline(pipeline_id,
         logging.info("%s START EXECUTION FAILED %s, BAILING OUT", execution_id[:8], pipeline_id)
         return False, {}, []
 
-    debug = trigger == 'manual'
+    debug = trigger == 'manual' or os.environ.get('DPP_DEBUG')
 
     ps.update_execution(execution_id, [])
 
