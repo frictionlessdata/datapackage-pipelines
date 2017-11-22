@@ -11,7 +11,6 @@ import sys
 import json
 import mock
 import importlib
-import pytest
 
 
 class ProcessorFixtureTestsBase(object):
@@ -123,7 +122,6 @@ class ProcessorFixtureTestsBase(object):
 
 
 def rejsonize(s):
-    ret = json.dumps(json.loads(s), sort_keys=True, ensure_ascii=False)
     return json.dumps(json.loads(s), sort_keys=True, ensure_ascii=True)
 
 
