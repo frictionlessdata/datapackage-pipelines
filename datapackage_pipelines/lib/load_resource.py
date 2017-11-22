@@ -28,6 +28,7 @@ class ResourceLoader(object):
         selected_resources = []
         found = False
         dp = datapackage.DataPackage(url)
+        dp = self.process_datapackage(dp)
         for i, orig_res in enumerate(dp.resources):
             if resource_index == i or \
                     (name_matcher is not None and name_matcher.match(orig_res.descriptor.get('name'))):
@@ -42,6 +43,9 @@ class ResourceLoader(object):
 
         assert found, "Failed to find resource with index or name matching %r" % resource
         spew(self.dp, itertools.chain(self.res_iter, selected_resources))
+
+    def process_datapackage(self, dp_):
+        return dp_
 
 
 if __name__ == '__main__':
