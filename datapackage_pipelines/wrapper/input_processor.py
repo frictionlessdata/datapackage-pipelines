@@ -60,7 +60,10 @@ def read_json(infile, proxy=False):
         sys.exit(-3)
     if proxy:
         print(line_json)
-    return json.loads(line_json)
+    try:
+        return json.loads(line_json)
+    except json.JSONDecodeError:
+        logging.exception("Failed to decode line %r\nPerhaps there's a rogue print statement somewhere?", line_json)
 
 
 def process_input(infile, validate=False, debug=False):
