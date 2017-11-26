@@ -200,23 +200,26 @@ async def async_execute_pipeline(pipeline_id,
                                  trigger,
                                  execution_id,
                                  use_cache,
-                                 dependencies):
+                                 dependencies,
+                                 debug):
 
+    if debug:
+        logging.info("%s Async task starting", execution_id[:8])
     ps = status.get(pipeline_id)
     if not ps.start_execution(execution_id):
         logging.info("%s START EXECUTION FAILED %s, BAILING OUT", execution_id[:8], pipeline_id)
         return False, {}, []
 
-    debug = trigger == 'manual' or os.environ.get('DPP_DEBUG')
-
     ps.update_execution(execution_id, [])
 
-    logging.info("%s RUNNING %s", execution_id[:8], pipeline_id)
-
     if use_cache:
+        if debug:
+            logging.info("%s Searching for existing caches", execution_id[:8])
         pipeline_steps = find_caches(pipeline_steps, pipeline_cwd)
     execution_log = []
 
+    if debug:
+        logging.info("%s Building process chain:", execution_id[:8])
     processes, stop_error_collecting = \
         await construct_process_pipeline(pipeline_steps, pipeline_cwd, execution_log, debug)
 
@@ -286,8 +289,13 @@ def execute_pipeline(spec,
                      trigger='manual',
                      use_cache=True):
 
+    debug = trigger == 'manual' or os.environ.get('DPP_DEBUG')
+    logging.info("%s RUNNING %s", execution_id[:8], spec.pipeline_id)
+
     loop = asyncio.get_event_loop()
 
+    if debug:
+        logging.info("%s Collecting dependencies", execution_id[:8])
     dependencies = {}
     for dep in spec.pipeline_details.get('dependencies', []):
         if 'pipeline' in dep:
@@ -298,6 +306,8 @@ def execute_pipeline(spec,
                 if result_dp is not None:
                     dependencies[dep_pipeline_id] = result_dp
 
+    if debug:
+        logging.info("%s Running async task", execution_id[:8])
     pipeline_task = \
         asyncio.ensure_future(async_execute_pipeline(spec.pipeline_id,
                                                      spec.pipeline_details.get('pipeline', []),
@@ -305,8 +315,11 @@ def execute_pipeline(spec,
                                                      trigger,
                                                      execution_id,
                                                      use_cache,
-                                                     dependencies))
+                                                     dependencies,
+                                                     debug))
     try:
+        if debug:
+            logging.info("%s Waiting for completion", execution_id[:8])
         return loop.run_until_complete(pipeline_task)
     except KeyboardInterrupt:
         logging.info("Caught keyboard interrupt. Cancelling tasks...")
