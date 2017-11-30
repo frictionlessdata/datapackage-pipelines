@@ -14,7 +14,7 @@ if [ "$1" = "server" ]; then
     redis-cli -n 6 FLUSHDB
     echo "Remaining `redis-cli -n 6 KEYS '*' | wc -l` keys"
 
-    python3 -m celery -b $DPP_CELERY_BROKER -A datapackage_pipelines.app -l INFO beat &
+    SCHEDULER=1 python3 -m celery -b $DPP_CELERY_BROKER -A datapackage_pipelines.app -l INFO beat &
     python3 -m celery -b $DPP_CELERY_BROKER --concurrency=1 -A datapackage_pipelines.app -Q datapackage-pipelines-management -l INFO worker &
     python3 -m celery -b $DPP_CELERY_BROKER --concurrency=4 -A datapackage_pipelines.app -Q datapackage-pipelines -l INFO worker &
     dpp serve
