@@ -56,17 +56,17 @@ def queue_pipeline(spec: PipelineSpec, trigger):
     if ps.runnable():
         eid = gen_execution_id()
         logging.info('%s QUEUEING %s task %s', eid[:8], trigger.upper(), spec.pipeline_id)
-        ps.queue_execution(eid, trigger)
-        execute_pipeline_task.delay(spec.pipeline_id,
-                                    spec.pipeline_details,
-                                    spec.path,
-                                    trigger,
-                                    eid)
-        return True
+        if ps.queue_execution(eid, trigger):
+            execute_pipeline_task.delay(spec.pipeline_id,
+                                        spec.pipeline_details,
+                                        spec.path,
+                                        trigger,
+                                        eid)
+            return True
     else:
         logging.warning('Skipping %s task %s, as it has errors %r',
                         trigger.upper(), spec.pipeline_id, spec.validation_errors)
-        return False
+    return False
 
 
 def execute_update_pipelines():

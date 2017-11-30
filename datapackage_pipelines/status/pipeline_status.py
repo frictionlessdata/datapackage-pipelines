@@ -76,9 +76,13 @@ class PipelineStatus(object):
         return None
 
     def queue_execution(self, execution_id, trigger):
-        for ex in self.executions:  # type: PipelineExecution
-            if not ex.invalidate():
-                break
+        last_exec = self.get_last_execution()
+        if last_exec.finish_time is None:
+            logging.info('%s %s is ALREADY RUNNING, BAILING', execution_id[:8], self.pipeline_id)
+            return False
+        # for ex in self.executions:  # type: PipelineExecution
+        #     if not ex.invalidate():
+        #         break
         execution = PipelineExecution(self.backend,
                                       self.pipeline_id, self.pipeline_details, self.cache_hash,
                                       trigger, execution_id, save=False)
@@ -89,6 +93,7 @@ class PipelineStatus(object):
             last.delete()
         self.update_hooks('queue')
         self.__save()
+        return True
 
     def validate_execution_id(self, execution_id):
         if len(self.executions) == 0:

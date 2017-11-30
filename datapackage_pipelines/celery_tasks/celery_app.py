@@ -33,7 +33,7 @@ if os.environ.get('SCHEDULER'):
 
         ps = status.get(spec.pipeline_id)
         ex = ps.get_last_execution()
-        if not ex.finish_time:
+        if ex is not None and not ex.finish_time:
             ex.finish_execution(False, {}, ['Cancelled'])
 
     kw = dict(CELERYBEAT_SCHEDULE=CELERY_SCHEDULE)
