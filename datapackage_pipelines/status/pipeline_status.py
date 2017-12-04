@@ -77,7 +77,7 @@ class PipelineStatus(object):
 
     def queue_execution(self, execution_id, trigger):
         last_exec = self.get_last_execution()
-        if last_exec.finish_time is None:
+        if last_exec is not None and last_exec.finish_time is None:
             logging.info('%s %s is ALREADY RUNNING, BAILING', execution_id[:8], self.pipeline_id)
             return False
         # for ex in self.executions:  # type: PipelineExecution
