@@ -279,7 +279,7 @@ async def async_execute_pipeline(pipeline_id,
     ps.update_execution(execution_id, execution_log, hooks=True)
     ps.finish_execution(execution_id, success, stats, error_log)
 
-    logging.info("DONE %s %s", 'V' if success else 'X', pipeline_id)
+    logging.info("DONE %s %s %r", 'V' if success else 'X', pipeline_id, stats)
 
     return success, stats, error_log
 
