@@ -91,8 +91,8 @@ class PipelineStatus(object):
         while len(self.executions) > 10:
             last = self.executions.pop()  # type: PipelineExecution
             last.delete()
-        self.update_hooks('queue')
         self.__save()
+        self.update_hooks('queue', blocking=True)
         return True
 
     def validate_execution_id(self, execution_id):
@@ -143,7 +143,7 @@ class PipelineStatus(object):
         else:
             return 'FAILED'
 
-    def update_hooks(self, event, *, success=None, errors=None, stats=None, log=None):
+    def update_hooks(self, event, *, success=None, errors=None, stats=None, log=None, blocking=False):
         hooks = self.pipeline_details.get('hooks')
         if hooks is not None:
             payload = {
@@ -159,4 +159,4 @@ class PipelineStatus(object):
             if log is not None:
                 payload['log'] = log[-100:]
             for hook in hooks:
-                hook_sender.send(hook, payload)
+                hook_sender.send(hook, payload, blocking=blocking)

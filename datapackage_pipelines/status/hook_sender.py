@@ -19,8 +19,11 @@ def _send(hook, payload):
 
 
 class HookSender():
-    def send(self, hook, payload):
-        tpe.submit(_send, hook, payload)
+    def send(self, hook, payload, blocking=False):
+        if blocking:
+            _send(hook, payload)
+        else:
+            tpe.submit(_send, hook, payload)
 
 
 hook_sender = HookSender()
