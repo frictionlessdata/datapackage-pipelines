@@ -20,12 +20,11 @@ key_calc = KeyCalc(parameters['sort-by'])
 
 def sorter(resource):
     db = KVStore()
-    for row in resource:
-        key = key_calc(row)
-        db.setdefault(key, []).append(row)
+    for row_num, row in enumerate(resource):
+        key = key_calc(row) + "-{}".format(row_num)
+        db[key] = row
     for key in db.keys():
-        for row in db[key]:
-            yield row
+        yield db[key]
 
 
 def new_resource_iterator(resource_iterator_):
