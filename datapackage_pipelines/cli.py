@@ -1,4 +1,5 @@
 import click
+import sys
 
 from .utilities.stat_utils import user_facing_stats
 from .utilities.execution_id import gen_execution_id
@@ -49,11 +50,13 @@ def execute_if_needed(argument, spec, use_cache):
             return (spec.pipeline_id, False, {}, ['init'] + list(map(str, spec.validation_errors))), \
                    spec.pipeline_id == argument
         eid = gen_execution_id()
-        ps.queue_execution(eid, 'manual')
-        success, stats, errors = \
-            execute_pipeline(spec, eid,
-                             use_cache=use_cache)
-        return (spec.pipeline_id, success, stats, errors), spec.pipeline_id == argument
+        if ps.queue_execution(eid, 'manual'):
+            success, stats, errors = \
+                execute_pipeline(spec, eid,
+                                 use_cache=use_cache)
+            return (spec.pipeline_id, success, stats, errors), spec.pipeline_id == argument
+        else:
+            return (spec.pipeline_id, False, None, ['Already Running']), spec.pipeline_id == argument
     return None, False
 
 
@@ -64,6 +67,7 @@ def run(pipeline_id, use_cache):
     """Run a pipeline by pipeline-id.
 Use 'all' for running all pipelines,
 or 'dirty' for running just the dirty ones."""
+    exitcode = 0
     register_all_pipelines()
     try:
         results = []
@@ -89,8 +93,10 @@ or 'dirty' for running just the dirty ones."""
                     break
 
         logging.info('RESULTS:')
+        errd = False
         for pipeline_id, success, stats, errors in results:
             stats = user_facing_stats(stats)
+            errd = errd or errors
             logging.info('%s: %s %s%s',
                          'SUCCESS' if success else 'FAILURE',
                          pipeline_id,
@@ -100,11 +106,15 @@ or 'dirty' for running just the dirty ones."""
                           '\n+--------')
                          if errors else ''
                          )
+        if errd:
+            exitcode = 1
 
     except KeyboardInterrupt:
         pass
     finally:
         finalize()
+
+    return exitcode
 
 
 @cli.command()
@@ -114,4 +124,4 @@ def init():
 
 
 if __name__ == "__main__":
-    cli()
+    sys.exit(cli())

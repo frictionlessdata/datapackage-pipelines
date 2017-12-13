@@ -1,5 +1,8 @@
+import os
 import sqlite3
 from datapackage_pipelines.utilities.extended_json import json
+
+DPP_DB_FILENAME = os.environ.get('DPP_DB_FILENAME', '.dpp.db')
 
 
 class Sqlite3Dict(object):
@@ -47,7 +50,7 @@ class SqliteBackend(object):
     ALL_PIPELINES_KEY = 'all-pipelines'
 
     def __init__(self):
-        self.db = Sqlite3Dict('.dpp.db')
+        self.db = Sqlite3Dict(DPP_DB_FILENAME)
 
     def get_status(self, pipeline_id):
         return self.db[pipeline_id]
