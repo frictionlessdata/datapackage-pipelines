@@ -1,0 +1,48 @@
+sort
+--
+{
+    "resources": ["data"],
+    "sort-by": "{year}"
+}
+--
+{
+    "name": "test",
+    "resources": [
+        {
+            "name": "data",
+            "dpp:streaming": true,
+            "path": "data.csv",
+            "schema": { "fields": [
+                {"name": "year", "type": "integer"},
+                {"name": "data", "type": "string"}
+            ]}
+        }
+    ]
+}
+--
+{"year":"2016","data":"foo"}
+{"year":"2017","data":"baz"}
+{"year":"2017","data":"bax"}
+{"year":"2015","data":""}
+--
+{
+    "name": "test",
+    "resources": [
+        {
+            "name": "data",
+            "dpp:streaming": true,
+            "path": "data.csv",
+            "schema": { "fields": [
+                {"name": "year", "type": "integer"},
+                {"name": "data", "type": "string"}
+            ]}
+        }
+    ]
+}
+--
+{"year":"2015","data":""}
+{"year":"2016","data":"foo"}
+{"year":"2017","data":"baz"}
+{"year":"2017","data":"bax"}
+
+{}

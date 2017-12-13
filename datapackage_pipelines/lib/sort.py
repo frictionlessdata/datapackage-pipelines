@@ -22,9 +22,10 @@ def sorter(resource):
     db = KVStore()
     for row in resource:
         key = key_calc(row)
-        db[key] = row
+        db.setdefault(key, []).append(row)
     for key in db.keys():
-        yield db[key]
+        for row in db[key]:
+            yield row
 
 
 def new_resource_iterator(resource_iterator_):
