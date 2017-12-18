@@ -1,6 +1,3 @@
-import copy
-import logging
-
 from datapackage_pipelines.wrapper import ingest, spew
 from datapackage_pipelines.utilities.resource_matcher import ResourceMatcher
 
