@@ -637,7 +637,7 @@ Filtering just American and European countries, leaving out countries whose main
 Sort streamed resources by key.
 
 `sort` accepts a list of resources and a key (as a Python format string on row fields).
-It will output the rows for each resource, sorted according to the key (in ascending order). 
+It will output the rows for each resource, sorted according to the key (in ascending order).
 
 _Parameters_:
 
@@ -651,7 +651,32 @@ Filtering just American and European countries, leaving out countries whose main
 - run: sort
   parameters:
     resources: world_population
-    sort-by: "{country_name}" 
+    sort-by: "{country_name}"
+```
+
+### ***`remove_columns`***
+
+Delete column from streamed resources
+
+`remove_columns` accepts a list of resources and list of columns to remove
+
+_Note: if multiple resources provided, all of them should contain all columns to delete_
+
+_Parameters_:
+
+- `resources` - Which resources to delete columns from. Same semantics as `resources` in `stream_remote_resources`.
+- `columns` - List of column names to be removed
+
+*Examples*:
+
+Deleting `country_name` and `census_2000` columns from `world_population` resource:
+```yaml
+- run: remove_columns
+  parameters:
+    resources: world_population
+    columns:
+      - country_name
+      - census_2000
 ```
 
 ### ***`dump.to_sql`***
@@ -1166,4 +1191,3 @@ Whenever that pipeline is queued, starts running or finishes running, all the ur
   "errors": [list-of-errors, when applicable]
 }
 ```
-
