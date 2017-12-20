@@ -654,27 +654,27 @@ Filtering just American and European countries, leaving out countries whose main
     sort-by: "{country_name}"
 ```
 
-### ***`remove_columns`***
+### ***`delete_fields`***
 
-Delete column from streamed resources
+Delete fields (columns) from streamed resources
 
-`remove_columns` accepts a list of resources and list of columns to remove
+`delete_fields` accepts a list of resources and list of fields to remove
 
-_Note: if multiple resources provided, all of them should contain all columns to delete_
+_Note: if multiple resources provided, all of them should contain all fields to delete_
 
 _Parameters_:
 
 - `resources` - Which resources to delete columns from. Same semantics as `resources` in `stream_remote_resources`.
-- `columns` - List of column names to be removed
+- `fields` - List of field (column) names to be removed
 
 *Examples*:
 
 Deleting `country_name` and `census_2000` columns from `world_population` resource:
 ```yaml
-- run: remove_columns
+- run: delete_fields
   parameters:
     resources: world_population
-    columns:
+    fields:
       - country_name
       - census_2000
 ```

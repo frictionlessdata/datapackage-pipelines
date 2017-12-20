@@ -4,25 +4,30 @@ from datapackage_pipelines.utilities.resource_matcher import ResourceMatcher
 parameters, datapackage, resource_iterator = ingest()
 
 resources = ResourceMatcher(parameters.get('resources'))
-columns = parameters.get('columns', [])
+fields = parameters.get('fields', [])
 
 
 def delete_fields(datapackage_):
     dp_resources = datapackage_.get('resources', [])
     for resource_ in dp_resources:
         if resources.match(resource_['name']):
-            fields = resource_['schema'].get('fields', [])
-            assert all([col in [f['name'] for f in fields] for col in columns]), \
-                "Can't remove non-existing column(s)"
-            new_fields = [f for f in fields if f['name'] not in columns]
+            dp_fields = resource_['schema'].get('fields', [])
+            field_names = [f['name'] for f in dp_fields]
+            non_existings = [f for f in fields if f not in field_names]
+
+            assert len(non_existings) == 0, \
+                "Can't find following field(s): %s" % '; '.join(non_existings)
+
+            new_fields = list(
+                filter(lambda x: x['name'] not in fields, dp_fields))
             resource_['schema']['fields'] = new_fields
     return datapackage_
 
 
 def process_resource(rows):
     for row in rows:
-        for column in columns:
-            del row[column]
+        for field in fields:
+            del row[field]
         yield row
 
 

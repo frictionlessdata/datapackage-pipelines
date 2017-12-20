@@ -1,7 +1,7 @@
-remove_columns
+delete_fields
 --
 {
-    "columns": ["last_name", "age"],
+    "fields": ["last_name", "age"],
     "resources": "got-characters"
 }
 --
