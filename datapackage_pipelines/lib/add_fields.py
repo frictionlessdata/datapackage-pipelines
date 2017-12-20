@@ -1,6 +1,5 @@
 import functools
 import collections
-import logging
 
 from datapackage_pipelines.wrapper import ingest, spew
 from datapackage_pipelines.utilities.resource_matcher import ResourceMatcher
