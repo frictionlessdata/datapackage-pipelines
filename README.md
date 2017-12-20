@@ -637,7 +637,7 @@ Filtering just American and European countries, leaving out countries whose main
 Sort streamed resources by key.
 
 `sort` accepts a list of resources and a key (as a Python format string on row fields).
-It will output the rows for each resource, sorted according to the key (in ascending order). 
+It will output the rows for each resource, sorted according to the key (in ascending order).
 
 _Parameters_:
 
@@ -651,8 +651,83 @@ Filtering just American and European countries, leaving out countries whose main
 - run: sort
   parameters:
     resources: world_population
-    sort-by: "{country_name}" 
+    sort-by: "{country_name}"
 ```
+
+### ***`add_fields`***
+
+Add field(s) to streamed resources
+
+`add_fields` accepts a list of resources and fields to add to existing resource. It will output the rows for each resource with new field(s) (columns) in it. `add_fields` allows to perform various operations before inserting value into targeted field.
+
+_Parameters_:
+
+- `resources` - Which resources to sort. Same semantics as `resources` in `stream_remote_resources`.
+- `fields` - List of the fields with their metadata to be added to resource
+  - `operation`: operation to perform on values of pre-defined columns of the same row. available operation:
+    - `constant` - add a constant value
+    - `sum` - summed value for given columns in a row.
+    - `avg` - average value from given columns in a row.
+    - `min` - minimum value among given columns in a row.
+    - `max` - maximum value among given columns in a row.
+    - `multiply` - product of given columns in a row.
+    - `join` - joins two or more column values in a row (separated by comma)
+    - `format` - Python format string used to form the value Eg:  `my name is {first_name}`
+  - `target` - name of the new field
+  - `nullas` - value if column is empty (default: 0)
+  - `type` - valid [table-shcema](https://frictionlessdata.io/specs/table-schema/#types-and-formats) type (default: `any`)
+  - `columns` - list of columns the operations should be performed on (Not required in case of `format` and `constant`)
+  - `formated-string` - Python format string with exiting column values Eg: `{first_name} {last_name}` (operation should be set to `format`)
+  - `constant` - constant value for field (operation should be set to `constant`)
+
+*Examples*:
+
+Following example add 4 new field to `salaries` resource performing various operations
+
+```yaml
+run: add_fields
+parameters:
+  resources: salaries
+  fields:
+    -
+      operation: sum
+      target: total
+      type: integer
+      columns:
+        - jan
+        - feb
+        - may
+    -
+      operation: avg
+      target: average
+      type: number
+      columns:
+        - jan
+        - feb
+        - may
+    -
+      operation: format
+      target: full_name
+      formated-string: '{first_name} {last_name}'
+    -
+      operation: constant
+      target: status
+      constant: single
+```
+
+We have one resource (`salaries`) with data that looks like:
+
+| first_name | last_name | jan | feb | mar |
+| ---------- | --------- | --- | --- | --- |
+| John       | Doe       | 100 | 200 | 300 |
+| ...        |           |     |     |     |
+
+The resulting dataset could look like:
+
+| first_name | last_name | last_name | jan | feb | mar | average | total | status |
+| ---------- | --------- | --------- | --- | --- | --- | ------- | ----- | ------ |
+| John       | Doe       | John Doe  | 100 | 200 | 300 | 200     | 600   | single |
+| ...        |           |           |     |     |     |         |       |        | 
 
 ### ***`dump.to_sql`***
 
@@ -1166,4 +1241,3 @@ Whenever that pipeline is queued, starts running or finishes running, all the ur
   "errors": [list-of-errors, when applicable]
 }
 ```
-
