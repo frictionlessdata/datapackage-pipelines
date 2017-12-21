@@ -1,4 +1,4 @@
-add_fields
+add_computed_field
 --
 {
     "resources": ["salaries"],
@@ -7,46 +7,47 @@ add_fields
         "operation": "min",
         "target": "min",
         "type": "integer",
-        "columns": ["jan", "feb", "mar"]
+        "source": ["jan", "feb", "mar"]
       },
       {
         "operation": "max",
         "target": "max",
         "type": "integer",
-        "columns": ["jan", "feb", "mar"]
+        "source": ["jan", "feb", "mar"]
       },
       {
         "operation": "avg",
         "target": "avg",
         "type": "number",
-        "columns": ["jan", "feb", "mar"]
+        "source": ["jan", "feb", "mar"]
       },
       {
         "operation": "multiply",
         "target": "bonus",
         "type": "integer",
-        "columns": ["mar", "jan"]
+        "source": ["mar", "jan"]
       },
       {
         "operation": "sum",
         "target": "total",
         "type": "integer",
-        "columns": ["mar", "jan", "feb", "bonus"]
+        "source": ["mar", "jan", "feb", "bonus"]
       },
       {
         "operation": "constant",
         "target": "constant_value",
-        "constant": "TODO: Change the world"
+        "with": "TODO: Change the world"
       },
       {
         "operation": "format",
         "target": "full_name",
-        "formated-string": "{first_name} {last_name}"
+        "with": "{first_name} {last_name}"
       },
       {
         "operation": "join",
         "target": "joined_values",
-        "columns": ["first_name", "last_name"]
+        "source": ["first_name", "last_name"],
+        "with": ","
       }
     ]
 }
@@ -93,8 +94,8 @@ add_fields
               {"name": "bonus", "type": "integer"},
               {"name": "total", "type": "integer"},
               {"name": "constant_value", "type": "any"},
-              {"name": "full_name", "type": "any"},
-              {"name": "joined_values", "type": "any"}
+              {"name": "full_name", "type": "string"},
+              {"name": "joined_values", "type": "string"}
             ]}
         }
     ]

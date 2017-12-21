@@ -654,16 +654,16 @@ Filtering just American and European countries, leaving out countries whose main
     sort-by: "{country_name}"
 ```
 
-### ***`add_fields`***
+### ***`add_computed_field`***
 
 Add field(s) to streamed resources
 
-`add_fields` accepts a list of resources and fields to add to existing resource. It will output the rows for each resource with new field(s) (columns) in it. `add_fields` allows to perform various operations before inserting value into targeted field.
+`add_computed_field` accepts a list of resources and fields to add to existing resource. It will output the rows for each resource with new field(s) (columns) in it. `add_computed_field` allows to perform various operations before inserting value into targeted field.
 
 _Parameters_:
 
-- `resources` - Which resources to sort. Same semantics as `resources` in `stream_remote_resources`.
-- `fields` - List of the fields with their metadata to be added to resource
+- `resources` - Resources to add field. Same semantics as `resources` in `stream_remote_resources`.
+- `fields` - List of operations to be performed on the targeted fields.
   - `operation`: operation to perform on values of pre-defined columns of the same row. available operation:
     - `constant` - add a constant value
     - `sum` - summed value for given columns in a row.
@@ -671,18 +671,18 @@ _Parameters_:
     - `min` - minimum value among given columns in a row.
     - `max` - maximum value among given columns in a row.
     - `multiply` - product of given columns in a row.
-    - `join` - joins two or more column values in a row (separated by comma)
-    - `format` - Python format string used to form the value Eg:  `my name is {first_name}`
-  - `target` - name of the new field
-  - `nullas` - value if column is empty (default: 0)
-  - `type` - valid [table-shcema](https://frictionlessdata.io/specs/table-schema/#types-and-formats) type (default: `any`)
-  - `columns` - list of columns the operations should be performed on (Not required in case of `format` and `constant`)
-  - `formated-string` - Python format string with exiting column values Eg: `{first_name} {last_name}` (operation should be set to `format`)
-  - `constant` - constant value for field (operation should be set to `constant`)
+    - `join` - joins two or more column values in a row.
+    - `format` - Python format string used to form the value Eg:  `my name is {first_name}`.
+  - `target` - name of the new field.
+  - `source` - list of columns the operations should be performed on (Not required in case of `format` and `constant`).
+  - `with` - String passed to `constant`, `format` or `join` operations
+    - in `constant` - used as constant value
+    - in `format` - used as Python format string with existing column values Eg: `{first_name} {last_name}`
+    - in `join` - used as delimiter
 
 *Examples*:
 
-Following example add 4 new field to `salaries` resource performing various operations
+Following example adds 4 new field to `salaries` resource
 
 ```yaml
 run: add_fields
@@ -692,27 +692,25 @@ parameters:
     -
       operation: sum
       target: total
-      type: integer
-      columns:
+      source:
         - jan
         - feb
         - may
     -
       operation: avg
       target: average
-      type: number
-      columns:
+      source:
         - jan
         - feb
         - may
     -
       operation: format
       target: full_name
-      formated-string: '{first_name} {last_name}'
+      with: '{first_name} {last_name}'
     -
       operation: constant
       target: status
-      constant: single
+      with: single
 ```
 
 We have one resource (`salaries`) with data that looks like:
@@ -727,7 +725,7 @@ The resulting dataset could look like:
 | first_name | last_name | last_name | jan | feb | mar | average | total | status |
 | ---------- | --------- | --------- | --- | --- | --- | ------- | ----- | ------ |
 | John       | Doe       | John Doe  | 100 | 200 | 300 | 200     | 600   | single |
-| ...        |           |           |     |     |     |         |       |        | 
+| ...        |           |           |     |     |     |         |       |        |
 
 ### ***`dump.to_sql`***
 
