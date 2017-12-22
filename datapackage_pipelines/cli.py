@@ -96,7 +96,7 @@ or 'dirty' for running just the dirty ones."""
         errd = False
         for pipeline_id, success, stats, errors in results:
             stats = user_facing_stats(stats)
-            errd = errd or errors
+            errd = errd or errors or not success
             logging.info('%s: %s %s%s',
                          'SUCCESS' if success else 'FAILURE',
                          pipeline_id,
@@ -114,7 +114,7 @@ or 'dirty' for running just the dirty ones."""
     finally:
         finalize()
 
-    return exitcode
+    exit(exitcode)
 
 
 @cli.command()
