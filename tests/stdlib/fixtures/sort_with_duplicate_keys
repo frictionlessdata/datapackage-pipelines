@@ -20,10 +20,18 @@ sort
     ]
 }
 --
-{"year":"2016","data":"foo"}
-{"year":"2017","data":"baz"}
-{"year":"2017","data":"bax"}
-{"year":"2015","data":""}
+{"year":"2016","data":"foo","i":0}
+{"year":"2017","data":"baz","i":1}
+{"year":"2017","data":"bax","i":2}
+{"year":"2015","data":"","i":3}
+{"year":"2015","data":"","i":4}
+{"year":"2015","data":"","i":5}
+{"year":"2015","data":"","i":6}
+{"year":"2015","data":"","i":7}
+{"year":"2015","data":"","i":8}
+{"year":"2015","data":"","i":9}
+{"year":"2015","data":"","i":10}
+{"year":"2015","data":"","i":11}
 --
 {
     "name": "test",
@@ -40,9 +48,17 @@ sort
     ]
 }
 --
-{"year":"2015","data":""}
-{"year":"2016","data":"foo"}
-{"year":"2017","data":"baz"}
-{"year":"2017","data":"bax"}
+{"year":"2015","data":"","i":3}
+{"year":"2015","data":"","i":4}
+{"year":"2015","data":"","i":5}
+{"year":"2015","data":"","i":6}
+{"year":"2015","data":"","i":7}
+{"year":"2015","data":"","i":8}
+{"year":"2015","data":"","i":9}
+{"year":"2015","data":"","i":10}
+{"year":"2015","data":"","i":11}
+{"year":"2016","data":"foo","i":0}
+{"year":"2017","data":"baz","i":1}
+{"year":"2017","data":"bax","i":2}
 
 {}
