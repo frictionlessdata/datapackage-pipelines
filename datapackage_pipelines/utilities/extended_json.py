@@ -59,6 +59,13 @@ class CommonJSONDecoder(_json.JSONDecoder):
                     .strptime(obj["type{datetime}"], DATETIME_FORMAT)
             except ValueError:
                 pass
+        if 'type{time}' in obj:
+            try:
+                return datetime.datetime \
+                    .strptime(obj["type{time}"], TIME_FORMAT) \
+                    .time()
+            except ValueError:
+                pass
         if 'type{set}' in obj:
             try:
                 return set(obj['type{set}'])
@@ -82,6 +89,8 @@ class CommonJSONEncoder(_json.JSONEncoder):
 
         if isinstance(obj, decimal.Decimal):
             return {'type{decimal}': str(obj)}
+        elif isinstance(obj, datetime.time):
+            return {'type{time}': obj.strftime(TIME_FORMAT)}
         elif isinstance(obj, datetime.datetime):
             return {'type{datetime}': obj.strftime(DATETIME_FORMAT)}
         elif isinstance(obj, datetime.date):
