@@ -679,6 +679,79 @@ Deleting `country_name` and `census_2000` columns from `world_population` resour
       - census_2000
 ```
 
+### ***`add_computed_field`***
+
+Add field(s) to streamed resources
+
+`add_computed_field` accepts a list of resources and fields to add to existing resource. It will output the rows for each resource with new field(s) (columns) in it. `add_computed_field` allows to perform various operations before inserting value into targeted field.
+
+_Parameters_:
+
+- `resources` - Resources to add field. Same semantics as `resources` in `stream_remote_resources`.
+- `fields` - List of operations to be performed on the targeted fields.
+  - `operation`: operation to perform on values of pre-defined columns of the same row. available operation:
+    - `constant` - add a constant value
+    - `sum` - summed value for given columns in a row.
+    - `avg` - average value from given columns in a row.
+    - `min` - minimum value among given columns in a row.
+    - `max` - maximum value among given columns in a row.
+    - `multiply` - product of given columns in a row.
+    - `join` - joins two or more column values in a row.
+    - `format` - Python format string used to form the value Eg:  `my name is {first_name}`.
+  - `target` - name of the new field.
+  - `source` - list of columns the operations should be performed on (Not required in case of `format` and `constant`).
+  - `with` - String passed to `constant`, `format` or `join` operations
+    - in `constant` - used as constant value
+    - in `format` - used as Python format string with existing column values Eg: `{first_name} {last_name}`
+    - in `join` - used as delimiter
+
+*Examples*:
+
+Following example adds 4 new field to `salaries` resource
+
+```yaml
+run: add_fields
+parameters:
+  resources: salaries
+  fields:
+    -
+      operation: sum
+      target: total
+      source:
+        - jan
+        - feb
+        - may
+    -
+      operation: avg
+      target: average
+      source:
+        - jan
+        - feb
+        - may
+    -
+      operation: format
+      target: full_name
+      with: '{first_name} {last_name}'
+    -
+      operation: constant
+      target: status
+      with: single
+```
+
+We have one resource (`salaries`) with data that looks like:
+
+| first_name | last_name | jan | feb | mar |
+| ---------- | --------- | --- | --- | --- |
+| John       | Doe       | 100 | 200 | 300 |
+| ...        |           |     |     |     |
+
+The resulting dataset could look like:
+
+| first_name | last_name | last_name | jan | feb | mar | average | total | status |
+| ---------- | --------- | --------- | --- | --- | --- | ------- | ----- | ------ |
+| John       | Doe       | John Doe  | 100 | 200 | 300 | 200     | 600   | single |
+| ...        |           |           |     |     |     |         |       |        |
+
 ### ***`dump.to_sql`***
 
 Saves the datapackage to an SQL database.

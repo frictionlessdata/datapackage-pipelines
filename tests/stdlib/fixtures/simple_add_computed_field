@@ -1,0 +1,109 @@
+add_computed_field
+--
+{
+    "resources": ["salaries"],
+    "fields": [
+      {
+        "operation": "min",
+        "target": "min",
+        "type": "integer",
+        "source": ["jan", "feb", "mar"]
+      },
+      {
+        "operation": "max",
+        "target": "max",
+        "type": "integer",
+        "source": ["jan", "feb", "mar"]
+      },
+      {
+        "operation": "avg",
+        "target": "avg",
+        "type": "number",
+        "source": ["jan", "feb", "mar"]
+      },
+      {
+        "operation": "multiply",
+        "target": "bonus",
+        "type": "integer",
+        "source": ["mar", "jan"]
+      },
+      {
+        "operation": "sum",
+        "target": "total",
+        "type": "integer",
+        "source": ["mar", "jan", "feb", "bonus"]
+      },
+      {
+        "operation": "constant",
+        "target": "constant_value",
+        "with": "TODO: Change the world"
+      },
+      {
+        "operation": "format",
+        "target": "full_name",
+        "with": "{first_name} {last_name}"
+      },
+      {
+        "operation": "join",
+        "target": "joined_values",
+        "source": ["first_name", "last_name"],
+        "with": ","
+      }
+    ]
+}
+--
+{
+    "name": "test",
+    "resources": [
+        {
+            "name": "salaries",
+            "dpp:streaming": true,
+            "path": "salaries.csv",
+            "schema": { "fields": [
+                {"name": "first_name", "type": "string"},
+                {"name": "last_name", "type": "string"},
+                {"name": "jan", "type": "integer"},
+                {"name": "feb", "type": "integer"},
+                {"name": "mar", "type": "integer"}
+            ]}
+        }
+    ]
+}
+--
+{"first_name":"John","last_name":"Doe","jan":1000,"feb": 1400,"mar":1200}
+{"first_name":"Marry","last_name":"Moe","jan":1200,"feb":1400,"mar":1300}
+{"first_name":"Ben","last_name":"Noe","jan":1200,"feb":1300,"mar":1100}
+{"first_name":"Lucy","last_name":"Moe","jan":1200,"feb":1200,"mar":1200}
+--
+{
+    "name": "test",
+    "resources": [
+        {
+            "name": "salaries",
+            "dpp:streaming": true,
+            "path": "salaries.csv",
+            "schema": { "fields": [
+              {"name": "first_name", "type": "string"},
+              {"name": "last_name", "type": "string"},
+              {"name": "jan", "type": "integer"},
+              {"name": "feb", "type": "integer"},
+              {"name": "mar", "type": "integer"},
+              {"name": "min", "type": "integer"},
+              {"name": "max", "type": "integer"},
+              {"name": "avg", "type": "number"},
+              {"name": "bonus", "type": "integer"},
+              {"name": "total", "type": "integer"},
+              {"name": "constant_value", "type": "any"},
+              {"name": "full_name", "type": "string"},
+              {"name": "joined_values", "type": "string"}
+            ]}
+        }
+    ]
+}
+--
+{"first_name": "John", "last_name": "Doe", "full_name": "John Doe", "jan": 1000, "feb": 1400, "mar": 1200, "avg": 1200.0, "max": 1400, "min": 1000, "bonus": 1200000, "total": 1203600, "constant_value": "TODO: Change the world", "joined_values": "John,Doe"}
+{"first_name": "Marry", "last_name": "Moe", "full_name": "Marry Moe", "jan": 1200, "feb": 1400, "mar": 1300, "avg": 1300.0, "max": 1400, "min": 1200, "bonus": 1560000, "total": 1563900, "constant_value": "TODO: Change the world", "joined_values": "Marry,Moe"}
+{"first_name": "Ben", "last_name": "Noe", "full_name": "Ben Noe", "jan": 1200, "feb": 1300, "mar": 1100, "avg": 1200.0, "max": 1300, "min": 1100, "bonus": 1320000, "total": 1323600, "constant_value": "TODO: Change the world", "joined_values": "Ben,Noe"}
+{"first_name": "Lucy", "last_name": "Moe", "full_name": "Lucy Moe", "jan": 1200, "feb": 1200, "mar": 1200, "avg": 1200.0, "max": 1200, "min": 1200, "bonus": 1440000, "total": 1443600, "constant_value": "TODO: Change the world", "joined_values": "Lucy,Moe"}
+
+{}
