@@ -1,0 +1,92 @@
+delete_fields
+--
+{
+    "fields": ["last_name", "age"],
+    "resources": "got-characters"
+}
+--
+{
+    "name": "test",
+    "resources": [
+        {
+            "name": "got-characters",
+            "dpp:streaming": true,
+            "path": "characters.csv",
+            "schema": {
+                "fields": [
+                    {"name": "first_name", "type": "string"},
+                    {"name": "last_name", "type": "string"},
+                    {"name": "house", "type": "string"},
+                    {"name": "age", "type": "number", "units": "Westerosian Years"}
+                ]
+            }
+        },
+        {
+            "name": "got-houses",
+            "dpp:streaming": true,
+            "path": "houses.csv",
+            "schema": { "fields": [
+                {"name": "house", "type": "string"}
+            ]}
+        }
+    ]
+}
+--
+{"first_name": "Tyrion", "house": "Lannister", "last_name": "Lannister", "age": 27}
+{"first_name": "Jaime", "house": "Lannister", "last_name": "Lannister", "age": 34}
+{"first_name": "Cersei", "house": "Lannister", "last_name": "Lannister", "age": 34}
+{"first_name": "Jon", "house": "Stark", "last_name": "Snow", "age": 17}
+{"first_name": "Sansa", "house": "Stark", "last_name": "Stark", "age": 14}
+{"first_name": "Arya", "house": "Stark", "last_name": "Stark", "age": 11}
+{"first_name": "Bran", "house": "Stark", "last_name": "Stark", "age": 10}
+{"first_name": "Rickon", "house": "Stark", "last_name": "Stark", "age": 5}
+{"first_name": "Daenerys", "house": "Targaryen", "last_name": "Targaryen", "age": 16}
+
+{"house": "House of Lannister"}
+{"house": "House of Greyjoy"}
+{"house": "House of Stark"}
+{"house": "House of Targaryen"}
+{"house": "House of Martell"}
+{"house": "House of Tyrell"}
+--
+{
+    "name": "test",
+    "resources": [
+        {
+            "name": "got-characters",
+            "dpp:streaming": true,
+            "path": "characters.csv",
+            "schema": { "fields": [
+                {"name": "first_name", "type": "string"},
+                {"name": "house", "type": "string"}
+            ]}
+        },
+        {
+            "name": "got-houses",
+            "dpp:streaming": true,
+            "path": "houses.csv",
+            "schema": { "fields": [
+                {"name": "house", "type": "string"}
+            ]}
+        }
+    ]
+}
+--
+{"first_name": "Tyrion", "house": "Lannister"}
+{"first_name": "Jaime", "house": "Lannister"}
+{"first_name": "Cersei", "house": "Lannister"}
+{"first_name": "Jon", "house": "Stark"}
+{"first_name": "Sansa", "house": "Stark"}
+{"first_name": "Arya", "house": "Stark"}
+{"first_name": "Bran", "house": "Stark"}
+{"first_name": "Rickon", "house": "Stark"}
+{"first_name": "Daenerys", "house": "Targaryen"}
+
+{"house": "House of Lannister"}
+{"house": "House of Greyjoy"}
+{"house": "House of Stark"}
+{"house": "House of Targaryen"}
+{"house": "House of Martell"}
+{"house": "House of Tyrell"}
+
+{}
