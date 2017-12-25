@@ -1,0 +1,105 @@
+unpivot
+--
+{
+  "resources": "balance",
+  "extraKeyFields": [
+    {"name": "year", "type": "integer"},
+    {"name": "direction", "type": "string"}
+  ],
+  "extraValueField": {
+    "name": "amount",
+    "type": "number"
+  },
+  "unpivot": [
+    {
+      "name": "2015_incomes",
+      "keys": {
+        "year": 2015,
+        "direction": "In"
+      }
+    },
+    {
+      "name": "2015_expenses",
+      "keys": {
+        "year": 2015,
+        "direction": "Out"
+      }
+    },
+    {
+      "name": "2016_incomes",
+      "keys": {
+        "year": 2016,
+        "direction": "In"
+      }
+    },
+    {
+      "name": "2016_expenses",
+      "keys": {
+        "year": 2016,
+        "direction": "Out"
+      }
+    },
+    {
+      "name": "([0-9]{4}) (\\w+)",
+      "keys": {
+        "year": "\\1",
+        "direction": "\\2"
+      }
+    }
+  ]
+}
+--
+{
+    "name": "test",
+    "resources": [
+        {
+            "name": "balance",
+            "dpp:streaming": true,
+            "path": "balance.csv",
+            "schema": { "fields": [
+                {"name": "company", "type": "string"},
+                {"name": "2015_incomes", "type": "number"},
+                {"name": "2015_expenses", "type": "number"},
+                {"name": "2016_incomes", "type": "number"},
+                {"name": "2016_expenses", "type": "number"},
+                {"name": "2017 In", "type": "number"},
+                {"name": "2017 Out", "type": "number"}
+            ]}
+        }
+    ]
+}
+--
+{"company": "his-company", "2015_incomes": 100000, "2015_expenses": 80000, "2016_incomes": 150000, "2016_expenses": 120000, "2017 In": 100000, "2017 Out": 120000}
+{"company": "her-company", "2015_incomes": 150000, "2015_expenses": 160000, "2016_incomes": 300000, "2016_expenses": 200000, "2017 In": 100000, "2017 Out": 120000}
+--
+{
+    "name": "test",
+    "resources": [
+        {
+            "name": "balance",
+            "dpp:streaming": true,
+            "path": "balance.csv",
+            "schema": { "fields": [
+                {"name": "company", "type": "string"},
+                {"name": "year", "type": "integer"},
+                {"name": "direction", "type": "string"},
+                {"name": "amount", "type": "number"}
+            ]}
+        }
+    ]
+}
+--
+{"company": "his-company", "year": 2015, "direction": "In", "amount": 100000}
+{"company": "his-company", "year": 2015, "direction": "Out", "amount": 80000}
+{"company": "his-company", "year": 2016, "direction": "In", "amount": 150000}
+{"company": "his-company", "year": 2016, "direction": "Out", "amount": 120000}
+{"company": "his-company", "year": 2017, "direction": "In", "amount": 100000}
+{"company": "his-company", "year": 2017, "direction": "Out", "amount": 120000}
+{"company": "her-company", "year": 2015, "direction": "In", "amount": 150000}
+{"company": "her-company", "year": 2015, "direction": "Out", "amount": 160000}
+{"company": "her-company", "year": 2016, "direction": "In", "amount": 300000}
+{"company": "her-company", "year": 2016, "direction": "Out", "amount": 200000}
+{"company": "her-company", "year": 2017, "direction": "In", "amount": 100000}
+{"company": "her-company", "year": 2017, "direction": "Out", "amount": 120000}
+
+{}
