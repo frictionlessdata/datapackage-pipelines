@@ -25,7 +25,7 @@ release:
 	git push --tags
 
 test:
-	tox
+	tox && tests/exit-codes/test_cli_exit_codes.sh
 
 version:
 	@echo $(VERSION)
