@@ -88,3 +88,4 @@ celerybeat-schedule
 # Resources created by our tests
 my-spiffy-resource.zip
 tests/env/dummy/dump.zip
+.code

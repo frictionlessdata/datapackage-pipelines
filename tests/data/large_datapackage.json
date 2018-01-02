@@ -1,0 +1,18 @@
+{
+  "name": "my-large-datapackage",
+  "my-prop": "the-props-value",
+  "resources": [
+    {
+      "name": "my-large-resource",
+      "path": "large_sample.csv",
+      "schema": {
+        "fields": [
+          {"name": "first_name", "type": "string"},
+          {"name": "last_name", "type": "string"},
+          {"name": "house", "type": "string"},
+          {"name": "age", "type": "integer"}
+        ]
+      }
+    }
+  ]
+}
