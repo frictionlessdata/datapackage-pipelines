@@ -124,7 +124,7 @@ def find_caches(pipeline_steps, pipeline_cwd):
                 canary = gzip.open(cache_filename, "rt")
                 canary.seek(1)
                 canary.close()
-            except:
+            except Exception:  #noqa
                 continue
             logging.info('Found cache for step %d: %s', i, step['run'])
             pipeline_steps = pipeline_steps[i+1:]
