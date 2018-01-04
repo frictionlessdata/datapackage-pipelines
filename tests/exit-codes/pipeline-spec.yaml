@@ -1,0 +1,17 @@
+raise-exception:
+  pipeline:
+    - run: raise_exception
+      code: raise Exception()
+
+failure-no-errors:
+  pipeline:
+    - run: success
+      code: ""
+
+success:
+  pipeline:
+  - run: success
+    code: |
+          from datapackage_pipelines.wrapper import ingest, spew
+          parameters, datapackage, resources = ingest()
+          spew(datapackage, [])

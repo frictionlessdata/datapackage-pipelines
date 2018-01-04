@@ -39,7 +39,7 @@ INSTALL_REQUIRES = [
     'tabulator>=1.0.0',
 ]
 SPEEDUP_REQUIRES = [
-    'plyvel',
+    'plyvel<1',
 ]
 LINT_REQUIRES = [
     'pylama',

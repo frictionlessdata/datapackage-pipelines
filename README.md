@@ -710,7 +710,7 @@ _Parameters_:
 Following example adds 4 new field to `salaries` resource
 
 ```yaml
-run: add_fields
+run: add_computed_field
 parameters:
   resources: salaries
   fields:

@@ -1,4 +1,5 @@
 import asyncio
+import gzip
 import logging
 import os
 from concurrent.futures import CancelledError
@@ -119,6 +120,12 @@ def find_caches(pipeline_steps, pipeline_cwd):
                                       '.cache',
                                       step['_cache_hash'])
         if os.path.exists(cache_filename):
+            try:
+                canary = gzip.open(cache_filename, "rt")
+                canary.seek(1)
+                canary.close()
+            except Exception:  #noqa
+                continue
             logging.info('Found cache for step %d: %s', i, step['run'])
             pipeline_steps = pipeline_steps[i+1:]
             step = {

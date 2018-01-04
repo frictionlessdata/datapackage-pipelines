@@ -20,8 +20,8 @@ key_calc = KeyCalc(parameters['sort-by'])
 
 def sorter(resource):
     db = KVStore()
-    for row in resource:
-        key = key_calc(row)
+    for row_num, row in enumerate(resource):
+        key = key_calc(row) + "{:08x}".format(row_num)
         db[key] = row
     for key in db.keys():
         yield db[key]

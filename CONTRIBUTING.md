@@ -1,6 +1,13 @@
 # Contributing
 
+The datapackage-pipelines project accepts contributions via GitHub pull requests. This document outlines the process to help get your contribution accepted.
+
 The project follows the [Open Knowledge International coding standards](https://github.com/okfn/coding-standards).
+
+We welcome adding new processors to the standard library, the following guidelines will improve the chances of your processor being accepted:
+
+* The processor has practical and common use-cases.
+* Minimal new dependencies - preferably, no new dependencies.
 
 ## Getting Started
 

@@ -74,7 +74,7 @@ AGGREGATORS = {
                       False),
     'array': Aggregator(lambda curr, new:
                         curr + [new] if curr is not None else [new],
-                        identity,
+                        lambda value: value if value is not None else [],
                         'array',
                         False),
 }
