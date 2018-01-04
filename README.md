@@ -759,17 +759,17 @@ Unpivots, transposes tabular data so that there's only one record per row.
 _Parameters_:
 
 - `resources` - Resources to unpivot. Same semantics as `resources` in `stream_remote_resources`.
-- `extraKeyFields` - List of target fields that unpivoted column values should go to
+- `extraKeyFields` - List of target field definitions, each definition is an object containing at least these properties (unpivoted column values will go here)
   - `name` - Name of the target field
   - `type` - Type of the target field
-- `extraValueField` - Target field that unpivoted cell values should go to
+- `extraValueField` - Target field definition - an object containing at least these properties (unpivoted cell values will go here)
   - `name` - Name of the target field
   - `type` - Type of the target field
-- `unpivot` - List of fields to unpivot from original data
-  - `name` - Name or regular expression of original field to unpivot.
+- `unpivot` - List of source field definitions, each definition is an object containing at least these properties
+  - `name` - Either simply the name, or a regular expression matching the name of original field to unpivot.
   - `keys` - A Map between target field name and values for original field
     - Keys should be target field names from `extraKeyFields`
-    - Values may be either simply the constant value to insert, or a regular expression matching the original title.
+    - Values may be either simply the constant value to insert, or a regular expression matching the `name`.
 
 _Examples_:
 
@@ -784,7 +784,10 @@ parameters:
       type: integer
     -
       name: direction
-      name: string
+      type: string
+      enumerate:
+        - In
+        - Out
   extraValueField:
       name: amount
       type: number
@@ -794,6 +797,7 @@ parameters:
       keys:
         year: 2015
         direction: In
+
     -
       name: 2015 expenses
       keys:
@@ -833,7 +837,7 @@ The resulting dataset could look like:
 | Org     | 2016 | Out       | 2000   |
 | ...     |      |           |        |
 
-Same result can be accomplished by defining regular expressions instead of constant values
+Similar result can be accomplished by defining regular expressions instead of constant values
 
 ```yaml
 parameters:
@@ -844,7 +848,10 @@ parameters:
       type: integer
     -
       name: direction
-      name: string
+      type: string
+      enumerate:
+        - In
+        - Out
   extraValueField:
       name: amount
       type: number

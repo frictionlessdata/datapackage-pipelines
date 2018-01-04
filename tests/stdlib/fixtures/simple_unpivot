@@ -4,7 +4,7 @@ unpivot
   "resources": "balance",
   "extraKeyFields": [
     {"name": "year", "type": "integer"},
-    {"name": "direction", "type": "string"}
+    {"name": "direction", "type": "string", "enumerate": ["In", "Out"]}
   ],
   "extraValueField": {
     "name": "amount",
@@ -82,7 +82,7 @@ unpivot
             "schema": { "fields": [
                 {"name": "company", "type": "string"},
                 {"name": "year", "type": "integer"},
-                {"name": "direction", "type": "string"},
+                {"name": "direction", "type": "string", "enumerate": ["In", "Out"]},
                 {"name": "amount", "type": "number"}
             ]}
         }
@@ -93,13 +93,13 @@ unpivot
 {"company": "his-company", "year": 2015, "direction": "Out", "amount": 80000}
 {"company": "his-company", "year": 2016, "direction": "In", "amount": 150000}
 {"company": "his-company", "year": 2016, "direction": "Out", "amount": 120000}
-{"company": "his-company", "year": 2017, "direction": "In", "amount": 100000}
-{"company": "his-company", "year": 2017, "direction": "Out", "amount": 120000}
+{"company": "his-company", "year": "2017", "direction": "In", "amount": 100000}
+{"company": "his-company", "year": "2017", "direction": "Out", "amount": 120000}
 {"company": "her-company", "year": 2015, "direction": "In", "amount": 150000}
 {"company": "her-company", "year": 2015, "direction": "Out", "amount": 160000}
 {"company": "her-company", "year": 2016, "direction": "In", "amount": 300000}
 {"company": "her-company", "year": 2016, "direction": "Out", "amount": 200000}
-{"company": "her-company", "year": 2017, "direction": "In", "amount": 100000}
-{"company": "her-company", "year": 2017, "direction": "Out", "amount": 120000}
+{"company": "her-company", "year": "2017", "direction": "In", "amount": 100000}
+{"company": "her-company", "year": "2017", "direction": "Out", "amount": 120000}
 
 {}
