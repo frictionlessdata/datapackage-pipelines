@@ -4,7 +4,7 @@ unpivot
   "resources": "balance",
   "extraKeyFields": [
     {"name": "year", "type": "integer"},
-    {"name": "direction", "type": "string", "enumerate": ["In", "Out"]}
+    {"name": "direction", "type": "string", "constraints": {"enum": ["In", "Out"]}}
   ],
   "extraValueField": {
     "name": "amount",
@@ -82,7 +82,7 @@ unpivot
             "schema": { "fields": [
                 {"name": "company", "type": "string"},
                 {"name": "year", "type": "integer"},
-                {"name": "direction", "type": "string", "enumerate": ["In", "Out"]},
+                {"name": "direction", "type": "string", "constraints": {"enum": ["In", "Out"]}},
                 {"name": "amount", "type": "number"}
             ]}
         }

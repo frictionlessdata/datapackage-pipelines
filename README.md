@@ -785,9 +785,10 @@ parameters:
     -
       name: direction
       type: string
-      enumerate:
-        - In
-        - Out
+      constraints:
+        enum:
+          - In
+          - Out
   extraValueField:
       name: amount
       type: number
@@ -797,7 +798,6 @@ parameters:
       keys:
         year: 2015
         direction: In
-
     -
       name: 2015 expenses
       keys:
@@ -849,9 +849,10 @@ parameters:
     -
       name: direction
       type: string
-      enumerate:
-        - In
-        - Out
+      constraints:
+        enum:
+          - In
+          - Out
   extraValueField:
       name: amount
       type: number
