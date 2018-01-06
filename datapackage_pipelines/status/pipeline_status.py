@@ -2,6 +2,8 @@ from typing import Optional
 
 import logging
 
+import time
+
 from .hook_sender import hook_sender
 from .pipeline_execution import PipelineExecution
 
@@ -78,8 +80,12 @@ class PipelineStatus(object):
     def queue_execution(self, execution_id, trigger):
         last_exec = self.get_last_execution()
         if last_exec is not None and last_exec.finish_time is None:
-            logging.info('%s %s is ALREADY RUNNING, BAILING', execution_id[:8], self.pipeline_id)
-            return False
+            if last_exec.is_stale():
+                last_exec.invalidate()
+                last_exec.finish_execution(False, {}, ['Cancelled'])
+            else:
+                logging.info('%s %s is ALREADY RUNNING, BAILING', execution_id[:8], self.pipeline_id)
+                return False
         # for ex in self.executions:  # type: PipelineExecution
         #     if not ex.invalidate():
         #         break

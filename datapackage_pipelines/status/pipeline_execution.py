@@ -103,3 +103,10 @@ class PipelineExecution(object):
 
     def delete(self):
         self.backend.del_status(self.execution_id)
+
+    def is_stale(self):
+        long_ago = time.time() - 86400 # a day ago
+        if self.start_time is not None and self.start_time < long_ago:
+            return True
+        if self.queue_time is not None and self.queue_time < long_ago:
+            return True

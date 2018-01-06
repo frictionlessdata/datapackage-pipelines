@@ -128,6 +128,8 @@ def indexer(resource):
                 new = ''
             if new is not None:
                 current[field] = AGGREGATORS[agg].func(curr, new)
+            elif field not in current:
+                current[field] = None
         db[key] = current
         yield row
 

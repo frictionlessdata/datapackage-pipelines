@@ -63,7 +63,8 @@ def execute_if_needed(argument, spec, use_cache):
 @cli.command()
 @click.argument('pipeline_id')
 @click.option('--use-cache/--no-use-cache', default=True)
-def run(pipeline_id, use_cache):
+@click.option('--force', default=False, is_flag=True)
+def run(pipeline_id, use_cache, force):
     """Run a pipeline by pipeline-id.
 Use 'all' for running all pipelines,
 or 'dirty' for running just the dirty ones."""
@@ -75,7 +76,7 @@ or 'dirty' for running just the dirty ones."""
         modified = 1
         while modified > 0:
             modified = 0
-            for spec in pipelines():
+            for spec in pipelines(ignore_missing_deps=force):
 
                 if spec.pipeline_id in executed:
                     continue
