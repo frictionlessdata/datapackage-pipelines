@@ -2,8 +2,6 @@ from typing import Optional
 
 import logging
 
-import time
-
 from .hook_sender import hook_sender
 from .pipeline_execution import PipelineExecution
 
