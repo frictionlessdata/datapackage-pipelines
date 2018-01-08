@@ -752,6 +752,118 @@ The resulting dataset could look like:
 | John       | Doe       | John Doe  | 100 | 200 | 300 | 200     | 600   | single |
 | ...        |           |           |     |     |     |         |       |        |
 
+### ***`unpivot`***
+
+Unpivots, transposes tabular data so that there's only one record per row.
+
+_Parameters_:
+
+- `resources` - Resources to unpivot. Same semantics as `resources` in `stream_remote_resources`.
+- `extraKeyFields` - List of target field definitions, each definition is an object containing at least these properties (unpivoted column values will go here)
+  - `name` - Name of the target field
+  - `type` - Type of the target field
+- `extraValueField` - Target field definition - an object containing at least these properties (unpivoted cell values will go here)
+  - `name` - Name of the target field
+  - `type` - Type of the target field
+- `unpivot` - List of source field definitions, each definition is an object containing at least these properties
+  - `name` - Either simply the name, or a regular expression matching the name of original field to unpivot.
+  - `keys` - A Map between target field name and values for original field
+    - Keys should be target field names from `extraKeyFields`
+    - Values may be either simply the constant value to insert, or a regular expression matching the `name`.
+
+_Examples_:
+
+Following example will unpivot data into 3 new fields: `year`, `direction` and `amount`
+
+```yaml
+parameters:
+  resources: balance
+  extraKeyFields:
+    -
+      name: year
+      type: integer
+    -
+      name: direction
+      type: string
+      constraints:
+        enum:
+          - In
+          - Out
+  extraValueField:
+      name: amount
+      type: number
+  unpivot:
+    -
+      name: 2015 incomes
+      keys:
+        year: 2015
+        direction: In
+    -
+      name: 2015 expenses
+      keys:
+        year: 2015
+        direction: Out
+    -
+      name: 2016 incomes
+      keys:
+        year: 2016
+        direction: In
+    -
+      name: 2016 expenses
+      keys:
+        year: 2016
+        direction: Out
+```
+
+We have one resource (`balance`) with data that looks like:
+
+| company | 2015 incomes | 2015 expenses | 2016 incomes | 2016 expenses |
+| --------| ------------ | ------------- | ------------ | ------------- |
+| Inc     | 1000         | 900           | 2000         | 1700          |
+| Org     | 2000         | 800           | 3000         | 2000          |
+| ...     |              |               |              |               |
+
+The resulting dataset could look like:
+
+| company | year | direction | amount |
+| --------| ---- | --------- | ------ |
+| Inc     | 2015 | In        | 1000   |
+| Inc     | 2015 | Out       | 900    |
+| Inc     | 2016 | In        | 2000   |
+| Inc     | 2016 | Out       | 1700   |
+| Org     | 2015 | In        | 2000   |
+| Org     | 2015 | Out       | 800    |
+| Org     | 2016 | In        | 3000   |
+| Org     | 2016 | Out       | 2000   |
+| ...     |      |           |        |
+
+Similar result can be accomplished by defining regular expressions instead of constant values
+
+```yaml
+parameters:
+  resources: balance
+  extraKeyFields:
+    -
+      name: year
+      type: integer
+    -
+      name: direction
+      type: string
+      constraints:
+        enum:
+          - In
+          - Out
+  extraValueField:
+      name: amount
+      type: number
+  unpivot:
+    -
+      name: ([0-9]{4}) (\\w+)  # regex for original column
+      keys:
+        year: \\1  # First member of group from above
+        direction: \\2  # Second member of group from above
+```
+
 ### ***`dump.to_sql`***
 
 Saves the datapackage to an SQL database.
