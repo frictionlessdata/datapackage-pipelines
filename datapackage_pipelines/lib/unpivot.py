@@ -65,7 +65,7 @@ def unpivot(rows, fields_to_unpivot_, fields_to_keep_):
             new_row = copy.deepcopy(unpivot_field['keys'])
             for field in fields_to_keep_:
                 new_row[field] = row[field]
-            new_row[extra_value['name']]=row.get(unpivot_field['name'])
+            new_row[extra_value['name']] = row.get(unpivot_field['name'])
             yield new_row
 
 
