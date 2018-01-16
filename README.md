@@ -752,6 +752,66 @@ The resulting dataset could look like:
 | John       | Doe       | John Doe  | 100 | 200 | 300 | 200     | 600   | single |
 | ...        |           |           |     |     |     |         |       |        |
 
+### ***`find_replace`***
+
+find and replace string or pattern from field(s) values
+
+_Parameters_:
+
+- `resources` - Resources to clean the field values. Same semantics as `resources` in `stream_remote_resources`
+
+_ `fields`- list of fields to replace values
+  - `name` - name of the field to replace value
+  - `patterns` - list of patterns to find and replace from field
+    - `find` - String, interpreted as a regular expression to match field value
+    - `replace` - String, interpreted as a regular expression to replace matched pattern
+
+    *Examples*:
+
+    Following example adds 4 new field to `salaries` resource
+
+    ```yaml
+    run: find_replace
+    parameters:
+      resources: dates
+      fields:
+        -
+          name: year
+          patterns:
+            -
+              find: ([0-9]{4})( \(\w+\))
+              replace: \1
+        -
+          name: quarter
+          patterns:
+            -
+              find: Q1
+              replace: '03-31'
+            -
+              find: Q2
+              replace: '06-31'
+            -
+              find: Q3
+              replace: '09-30'
+            -
+              find: Q4
+              replace: '12-31'
+```
+
+We have one resource (`dates`) with data that looks like:
+
+|   year   |  quarter  |
+| -------- | --------- |
+| 2000 (1) | 2000-Q1   |
+| ...      |           |
+
+The resulting dataset could look like:
+
+| year |  quarter   |
+| ---- | ---------- |
+| 2000 | 2000-03-31 |
+| ...  |            |
+
 ### ***`unpivot`***
 
 Unpivots, transposes tabular data so that there's only one record per row.

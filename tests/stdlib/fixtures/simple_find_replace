@@ -1,0 +1,95 @@
+find_replace
+--
+{
+  "resources": "dates",
+  "fields": [
+    {
+      "name": "year",
+      "patterns": [
+        {
+          "find": "([0-9]{4})( \\(\\w+\\))",
+          "replace": "\\1"
+        }
+      ]
+    },
+    {
+      "name": "quarter",
+      "patterns": [
+        {
+          "find": "Q1",
+          "replace": "03-31"
+        },
+        {
+          "find": "Q2",
+          "replace": "06-30"
+        },
+        {
+          "find": "Q3",
+          "replace": "09-30"
+        },
+        {
+          "find": "Q4",
+          "replace": "12-31"
+        }
+      ]
+    }
+  ]
+}
+--
+{
+    "name": "test",
+    "resources": [
+        {
+            "name": "dates",
+            "dpp:streaming": true,
+            "path": "dates.csv",
+            "schema": {
+                "fields": [
+                    {"name": "year", "type": "string"},
+                    {"name": "quarter", "type": "string"},
+                    {"name": "char", "type": "string"}
+                ]
+            }
+        }
+    ]
+}
+--
+{"year": "2001", "quarter": "2001-Q1", "char": "testing"}
+{"year": "2002", "quarter": "2002-Q2", "char": "testing"}
+{"year": "2003 (4)", "quarter": "2003-Q3", "char": "testing"}
+{"year": "2004", "quarter": "2004-Q1", "char": "testing"}
+{"year": "2005 (1)", "quarter": "2005-Q4", "char": "testing"}
+{"year": "2006 (Note)", "quarter": "2006-Q1", "char": "testing"}
+{"year": "2007 (2)", "quarter": "2007-Q2", "char": "testing"}
+{"year": "2008", "quarter": "2008-Q1", "char": "testing"}
+{"year": "2009 (10)", "quarter": "2009-Q3", "char": "testing"}
+--
+{
+    "name": "test",
+    "resources": [
+        {
+            "name": "dates",
+            "dpp:streaming": true,
+            "path": "dates.csv",
+            "schema": {
+                "fields": [
+                    {"name": "year", "type": "string"},
+                    {"name": "quarter", "type": "string"},
+                    {"name": "char", "type": "string"}
+                ]
+            }
+        }
+    ]
+}
+--
+{"year": "2001", "quarter": "2001-03-31", "char": "testing"}
+{"year": "2002", "quarter": "2002-06-30", "char": "testing"}
+{"year": "2003", "quarter": "2003-09-30", "char": "testing"}
+{"year": "2004", "quarter": "2004-03-31", "char": "testing"}
+{"year": "2005", "quarter": "2005-12-31", "char": "testing"}
+{"year": "2006", "quarter": "2006-03-31", "char": "testing"}
+{"year": "2007", "quarter": "2007-06-30", "char": "testing"}
+{"year": "2008", "quarter": "2008-03-31", "char": "testing"}
+{"year": "2009", "quarter": "2009-09-30", "char": "testing"}
+
+{}
