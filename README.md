@@ -766,36 +766,36 @@ _ `fields`- list of fields to replace values
     - `find` - String, interpreted as a regular expression to match field value
     - `replace` - String, interpreted as a regular expression to replace matched pattern
 
-    *Examples*:
+*Examples*:
 
-    Following example adds 4 new field to `salaries` resource
+Following example replaces field values using regular expression and exact string patterns
 
-    ```yaml
-    run: find_replace
-    parameters:
-      resources: dates
-      fields:
+```yaml
+run: find_replace
+parameters:
+  resources: dates
+  fields:
+    -
+      name: year
+      patterns:
         -
-          name: year
-          patterns:
-            -
-              find: ([0-9]{4})( \(\w+\))
-              replace: \1
+          find: ([0-9]{4})( \(\w+\))
+          replace: \1
+    -
+      name: quarter
+      patterns:
         -
-          name: quarter
-          patterns:
-            -
-              find: Q1
-              replace: '03-31'
-            -
-              find: Q2
-              replace: '06-31'
-            -
-              find: Q3
-              replace: '09-30'
-            -
-              find: Q4
-              replace: '12-31'
+          find: Q1
+          replace: '03-31'
+        -
+          find: Q2
+          replace: '06-31'
+        -
+          find: Q3
+          replace: '09-30'
+        -
+          find: Q4
+          replace: '12-31'
 ```
 
 We have one resource (`dates`) with data that looks like:
