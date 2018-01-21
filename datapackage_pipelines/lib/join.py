@@ -74,7 +74,7 @@ AGGREGATORS = {
                       False),
     'array': Aggregator(lambda curr, new:
                         curr + [new] if curr is not None else [new],
-                        identity,
+                        lambda value: value if value is not None else [],
                         'array',
                         False),
 }
@@ -128,6 +128,8 @@ def indexer(resource):
                 new = ''
             if new is not None:
                 current[field] = AGGREGATORS[agg].func(curr, new)
+            elif field not in current:
+                current[field] = None
         db[key] = current
         yield row
 

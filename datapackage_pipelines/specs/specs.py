@@ -52,7 +52,7 @@ def find_specs(root_dir='.') -> PipelineSpec:
                             yield PipelineSpec(path=dirpath, validation_errors=[error])
 
 
-def pipelines(prefixes=None):
+def pipelines(prefixes=None, ignore_missing_deps=False):
 
     specs: Iterator[PipelineSpec] = find_specs()
     hasher = HashCalculator()
@@ -76,7 +76,7 @@ def pipelines(prefixes=None):
                 process_schedules(spec)
 
                 try:
-                    hasher.calculate_hash(spec)
+                    hasher.calculate_hash(spec, ignore_missing_deps)
                     found = True
                 except DependencyMissingException as e_:
                     e: DependencyMissingException = e_

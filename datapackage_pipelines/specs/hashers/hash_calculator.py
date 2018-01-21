@@ -12,7 +12,7 @@ class HashCalculator(object):
     def __init__(self):
         self.all_pipeline_ids = {}
 
-    def calculate_hash(self, spec: PipelineSpec):
+    def calculate_hash(self, spec: PipelineSpec, ignore_missing_deps=False):
 
         cache_hash = None
         if spec.pipeline_id in self.all_pipeline_ids:
@@ -21,7 +21,10 @@ class HashCalculator(object):
             spec.validation_errors.append(SpecError('Duplicate Pipeline Id', message))
 
         else:
-            cache_hash = resolve_dependencies(spec, self.all_pipeline_ids)
+            if ignore_missing_deps:
+                cache_hash = ''
+            else:
+                cache_hash = resolve_dependencies(spec, self.all_pipeline_ids)
 
             self.all_pipeline_ids[spec.pipeline_id] = spec
             if len(spec.validation_errors) > 0:
