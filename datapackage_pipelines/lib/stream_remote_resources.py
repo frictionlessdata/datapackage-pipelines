@@ -123,14 +123,17 @@ def stream_reader(_resource, _url, _ignore_missing):
             else:
                 if format is None:
                     _, format = tabulator.helpers.detect_scheme_and_format(__url)
-                try:
-                    parser_cls = tabulator.helpers.import_attribute(tabulator.config.PARSERS[format])
-                except KeyError:
-                    logging.error("Unknown format %r", format)
-                    raise
-                _params.update(
-                    dict(x for x in __resource.items()
-                         if x[0] in parser_cls.options))
+                if format in tabulator.config.SUPPORTED_COMPRESSION:
+                    format = None
+                else:
+                    try:
+                        parser_cls = tabulator.helpers.import_attribute(tabulator.config.PARSERS[format])
+                    except KeyError:
+                        logging.error("Unknown format %r", format)
+                        raise
+                    _params.update(
+                        dict(x for x in __resource.items()
+                             if x[0] in parser_cls.options))
                 _params.update(
                     dict(x for x in __resource.items()
                          if x[0] in {'headers', 'scheme', 'encoding', 'sample_size', 'allow_html',
@@ -138,7 +141,8 @@ def stream_reader(_resource, _url, _ignore_missing):
                 if isinstance(_params.get('skip_rows'), int):  # Backwards compatibility
                     _params['skip_rows'] = list(range(1, _params.get('skip_rows') + 1))
 
-            _params['format'] = format
+            if format is not None:
+                _params['format'] = format
 
             constants = _resource.get('constants', {})
             constant_headers = list(constants.keys())
