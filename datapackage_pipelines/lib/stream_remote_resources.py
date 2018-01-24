@@ -1,5 +1,6 @@
 import os
 import logging
+import time
 from datetime import date
 import itertools
 from decimal import Decimal
@@ -150,20 +151,30 @@ def stream_reader(_resource, _url, _ignore_missing):
             _stream = tabulator.Stream(__url, **_params,
                                        post_parse=[suffix_remover(format),
                                                    add_constants(constant_headers, constant_values)])
-            try:
-                _stream.open()
-                _headers = dedupe(_stream.headers + constant_headers)
-                _schema = __resource.get('schema')
-                if _schema is not None:
-                    _schema = Schema(_schema)
-                return _schema, _headers, _stream, _stream.close
-            except tabulator.exceptions.TabulatorException as e:
-                logging.warning("Error while opening resource from url %s: %r",
-                                _url, e)
-                _stream.close()
-                if not _ignore_missing:
-                    raise
-                return {}, [], [], lambda: None
+            retry = 0
+            backoff = 2
+            while True:
+                try:
+                    _stream.open()
+                    _headers = dedupe(_stream.headers + constant_headers)
+                    _schema = __resource.get('schema')
+                    if _schema is not None:
+                        _schema = Schema(_schema)
+                    return _schema, _headers, _stream, _stream.close
+                except tabulator.exceptions.TabulatorException as e:
+                    logging.warning("Error while opening resource from url %s: %r",
+                                    _url, e)
+                    _stream.close()
+                    retry += 1
+                    if retry <= 3:
+                        logging.warning("Retrying after %d seconds (%d/3)", backoff, retry)
+                        time.sleep(backoff)
+                        backoff *= 2
+                        continue
+                    else:
+                        if not _ignore_missing:
+                            raise
+                        return {}, [], [], lambda: None
         return opener
 
     schema, headers, stream, close = get_opener(url, _resource)()
