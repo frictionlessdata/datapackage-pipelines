@@ -47,6 +47,7 @@ class PipelineStatus(object):
 
     def __save(self):
         # logging.debug('SAVING PipelineStatus %s -> %r' % (self.pipeline_id, self.executions))
+        self.backend.register_pipeline_id(self.pipeline_id)
         self.backend.set_status('PipelineStatus:' + self.pipeline_id, dict(self))
 
     def save(self):

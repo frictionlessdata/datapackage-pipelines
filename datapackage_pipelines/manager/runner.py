@@ -10,7 +10,7 @@ from collections import namedtuple
 
 from ..utilities.execution_id import gen_execution_id
 
-from ..specs import pipelines, register_all_pipelines, PipelineSpec #noqa
+from ..specs import pipelines, PipelineSpec #noqa
 from ..status import status
 from ..lib.internal.sink import SINK_MAGIC
 from .tasks import execute_pipeline, finalize
@@ -144,8 +144,6 @@ def run_pipelines(pipeline_id_pattern,
     """Run a pipeline by pipeline-id.
        pipeline-id supports the '%' wildcard for any-suffix matching.
        Use 'all' or '%' for running all pipelines"""
-    register_all_pipelines(root_dir)
-
     with concurrent.futures.ThreadPoolExecutor(max_workers=concurrency,
                                                thread_name_prefix='T') as executor:
         try:

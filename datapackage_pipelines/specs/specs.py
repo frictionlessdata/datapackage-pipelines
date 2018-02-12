@@ -104,3 +104,4 @@ def register_all_pipelines(root_dir='.'):
                 spec.source_details,
                 spec.validation_errors,
                 spec.cache_hash)
+        ps.save()
