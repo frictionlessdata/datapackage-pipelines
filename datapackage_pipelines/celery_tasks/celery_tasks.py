@@ -103,30 +103,25 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
     for spec in pipelines(filter):  # type: PipelineSpec
         all_pipeline_ids.add(spec.pipeline_id)
         ps = status.get(spec.pipeline_id)
+        ps.init(spec.pipeline_details,
+                spec.source_details,
+                spec.validation_errors,
+                spec.cache_hash)
+        ps.save()
 
         if action == 'init':
-            ps.init(spec.pipeline_details,
-                    spec.source_details,
-                    spec.validation_errors,
-                    spec.cache_hash)
+            pass
 
         elif action == 'update':
             if spec.pipeline_id not in status_all_pipeline_ids:
-                ps.init(spec.pipeline_details,
-                        spec.source_details,
-                        spec.validation_errors,
-                        spec.cache_hash)
                 dm.update(spec)
                 logging.info("NEW Pipeline: %s", spec)
-            logging.debug('Pipeline: %s (dirty: %s, %s != %s?)',
-                          spec.pipeline_id, ps.dirty(), executed_hashes.get(spec.pipeline_id), spec.cache_hash)
+            logging.debug('Pipeline: %s (dirty: %s, #ex=%s, ch=%s ex0-cache=%s)',
+                          spec.pipeline_id, ps.dirty(), len(ps.executions), ps.cache_hash,
+                          ps.executions[0].cache_hash if len(ps.executions) > 0 else None)
 
         elif action == 'complete':
             if completed_pipeline_id in spec.dependencies:
-                ps.init(spec.pipeline_details,
-                        spec.source_details,
-                        spec.validation_errors,
-                        spec.cache_hash)
                 logging.info("DEPENDENT Pipeline: %s (%d errors) (from ...%s), trigger=%s",
                              spec.pipeline_id, len(spec.validation_errors),
                              os.path.basename(completed_pipeline_id),
@@ -134,7 +129,6 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
             else:
                 continue
 
-        ps.save()
         psle = ps.get_last_execution()
         last_successful = psle.success is True if psle is not None else False
         if ps.runnable() and \

@@ -14,6 +14,7 @@ def sink(res_iter_):
                 sys.stderr.write('%s%d\n' % (SINK_MAGIC, count))
                 sys.stderr.flush()
     sys.stderr.write('%s%d\n' % (SINK_MAGIC, count))
+    sys.stderr.flush()
     yield from ()
 
 

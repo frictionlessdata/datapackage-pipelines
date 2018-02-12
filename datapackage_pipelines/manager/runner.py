@@ -22,7 +22,7 @@ ExecutionResult = namedtuple('ExecutionResult',
 ProgressReport = namedtuple('ProgressReport',
                             ['pipeline_id', 'row_count', 'success'])
 
-MAGIC = 'INFO    :Main                            :(sink): '+SINK_MAGIC
+MAGIC = 'INFO    :(sink): '+SINK_MAGIC
 
 
 def remote_execute_pipeline(spec, root_dir, use_cache, verbose, progress_report_queue):
