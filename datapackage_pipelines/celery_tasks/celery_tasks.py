@@ -134,6 +134,7 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
             else:
                 continue
 
+        ps.save()
         psle = ps.get_last_execution()
         last_successful = psle.success is True if psle is not None else False
         if ps.runnable() and \

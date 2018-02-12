@@ -52,9 +52,9 @@ def find_specs(root_dir='.') -> PipelineSpec:
                             yield PipelineSpec(path=dirpath, validation_errors=[error])
 
 
-def pipelines(prefixes=None, ignore_missing_deps=False):
+def pipelines(prefixes=None, ignore_missing_deps=False, root_dir='.'):
 
-    specs: Iterator[PipelineSpec] = find_specs()
+    specs: Iterator[PipelineSpec] = find_specs(root_dir)
     hasher = HashCalculator()
     if prefixes is None:
         prefixes = ('',)
@@ -83,12 +83,6 @@ def pipelines(prefixes=None, ignore_missing_deps=False):
                     deferred.append((e.spec, e.missing))
                     continue
 
-            ps = status.get(spec.pipeline_id)
-            ps.init(spec.pipeline_details,
-                    spec.source_details,
-                    spec.validation_errors,
-                    spec.cache_hash)
-
             yield spec
 
         if found and len(deferred) > 0:
@@ -103,8 +97,8 @@ def pipelines(prefixes=None, ignore_missing_deps=False):
             specs = None
 
 
-def register_all_pipelines():
-    for spec in pipelines():
+def register_all_pipelines(root_dir):
+    for spec in pipelines(root_dir=root_dir):
         ps = status.get(spec.pipeline_id)
         ps.init(spec.pipeline_details,
                 spec.source_details,

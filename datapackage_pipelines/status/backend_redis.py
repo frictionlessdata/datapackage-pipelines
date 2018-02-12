@@ -7,6 +7,8 @@ from datapackage_pipelines.utilities.extended_json import json
 
 class RedisBackend(object):
 
+    KIND = 'redis'
+
     def __init__(self, host=None, port=6379):
         self.redis = None
         if host is not None and len(host) > 0:
@@ -17,9 +19,6 @@ class RedisBackend(object):
             except redis.exceptions.ConnectionError:
                 logging.warning('Failed to connect to Redis, host:%s, port:%s',
                                 host, port)
-        else:
-            logging.info('Skipping redis connection, host:%s, port:%s',
-                         host, port)
 
     def is_init(self):
         return self.redis is not None

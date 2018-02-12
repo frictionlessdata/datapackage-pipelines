@@ -4,7 +4,7 @@ import threading
 import time
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
-from datapackage_pipelines.manager import execute_pipeline
+from datapackage_pipelines.manager import execute_pipeline, run_pipelines
 from datapackage_pipelines.specs.specs import pipelines
 from datapackage_pipelines.utilities.execution_id import gen_execution_id
 from datapackage_pipelines.status import status
@@ -37,13 +37,13 @@ def test_pipeline():
     thread = threading.Thread(target = server.serve_forever, daemon=True)
     thread.start()
 
-    for spec in pipelines():
-        if spec.pipeline_id.startswith('./tests/env/dummy/pipeline-test'):
-            eid = gen_execution_id()
-            status.get(spec.pipeline_id).queue_execution(eid, 'manual')
-            success, _, _ = execute_pipeline(spec, eid, use_cache=False)
-            assert success
-
+    results = run_pipelines('./tests/env/dummy/pipeline-test%', '.', 
+                            use_cache=False,
+                            dirty=False,
+                            force=False,
+                            concurrency=1,
+                            verbose_logs=True)
+    assert all(result.success for result in results)
     assert len(called_hooks) == 3
     assert called_hooks == [
         {"pipeline_id": "./tests/env/dummy/pipeline-test-hooks", "event": "queue"},

@@ -315,6 +315,14 @@ def execute_pipeline(spec,
 
     if debug:
         logging.info("%s Running async task", execution_id[:8])
+
+    ps = status.get(spec.pipeline_id)
+    ps.init(spec.pipeline_details,
+            spec.source_details,
+            spec.validation_errors,
+            spec.cache_hash)
+    ps.save()
+
     pipeline_task = \
         asyncio.ensure_future(async_execute_pipeline(spec.pipeline_id,
                                                      spec.pipeline_details.get('pipeline', []),

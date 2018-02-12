@@ -5,6 +5,9 @@ import logging
 from .hook_sender import hook_sender
 from .pipeline_execution import PipelineExecution
 
+# def jcmp(a, b):
+#     return json.dumps(a, sort_keys=True) != json.dumps(b, sort_keys=True)
+
 
 class PipelineStatus(object):
 
@@ -23,8 +26,6 @@ class PipelineStatus(object):
         self.source_spec = source_spec
         self.validation_errors = validation_errors
         self.cache_hash = cache_hash
-        self.backend.register_pipeline_id(self.pipeline_id)
-        self.__save()
 
     def __load(self):
         data = self.backend.get_status('PipelineStatus:' + self.pipeline_id)
@@ -47,6 +48,9 @@ class PipelineStatus(object):
     def __save(self):
         # logging.debug('SAVING PipelineStatus %s -> %r' % (self.pipeline_id, self.executions))
         self.backend.set_status('PipelineStatus:' + self.pipeline_id, dict(self))
+
+    def save(self):
+        self.__save()
 
     def dirty(self):
         return len(self.executions) == 0 or self.cache_hash != self.executions[0].cache_hash

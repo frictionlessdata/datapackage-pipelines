@@ -1,7 +1,7 @@
 import os
 
 from .backend_redis import RedisBackend
-from .backend_sqlite import SqliteBackend
+from .backend_filesystem import FilesystemBackend
 from .pipeline_status import PipelineStatus
 
 
@@ -16,11 +16,11 @@ class StatusManager(object):
     def backend(self):
         if self._backend is None:
             redis = RedisBackend(self._host, self._port)
-            self._backend = redis if redis.is_init() else SqliteBackend()
+            self._backend = redis if redis.is_init() else FilesystemBackend()
         return self._backend
 
     def get_errors(self, _id):
-        ex = self.get_last_execution(_id)
+        ex = self.get(_id).get_last_execution()
         if ex is not None:
             return ex.error_log
         return []

@@ -47,6 +47,7 @@ class Sqlite3Dict(object):
 
 class SqliteBackend(object):
 
+    KIND = 'sqlite3'
     ALL_PIPELINES_KEY = 'all-pipelines'
 
     def __init__(self):

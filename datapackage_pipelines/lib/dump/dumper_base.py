@@ -120,8 +120,6 @@ class DumperBase(object):
         counter = 0
         for row in resource:
             counter += 1
-            if counter % 10000 == 0:
-                logging.info('Dumped %d rows', DumperBase.get_attr(datapackage, self.datapackage_rowcount, 0) + counter)
             yield row
         DumperBase.inc_attr(datapackage, self.datapackage_rowcount, counter)
         DumperBase.inc_attr(resource_spec, self.resource_rowcount, counter)
