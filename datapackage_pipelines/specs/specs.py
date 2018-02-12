@@ -97,7 +97,7 @@ def pipelines(prefixes=None, ignore_missing_deps=False, root_dir='.'):
             specs = None
 
 
-def register_all_pipelines(root_dir):
+def register_all_pipelines(root_dir='.'):
     for spec in pipelines(root_dir=root_dir):
         ps = status.get(spec.pipeline_id)
         ps.init(spec.pipeline_details,
