@@ -4,10 +4,11 @@ import os
 from ..utilities.execution_id import gen_execution_id
 
 from ..status import status
+from ..status.pipeline_status import PipelineStatus
 
 from .dependency_manager import DependencyManager
 from .celery_common import get_celery_app
-from ..specs import pipelines, PipelineSpec, register_all_pipelines
+from ..specs import pipelines, PipelineSpec
 from ..manager.tasks import execute_pipeline
 
 
@@ -47,25 +48,16 @@ def collect_dependencies(pipeline_ids):
     return ret
 
 
-def queue_pipeline(spec: PipelineSpec, trigger):
-    ps = status.get(spec.pipeline_id)
-    ps.init(spec.pipeline_details,
-            spec.source_details,
-            spec.validation_errors,
-            spec.cache_hash)
-    if ps.runnable():
-        eid = gen_execution_id()
-        logging.info('%s QUEUEING %s task %s', eid[:8], trigger.upper(), spec.pipeline_id)
-        if ps.queue_execution(eid, trigger):
-            execute_pipeline_task.delay(spec.pipeline_id,
-                                        spec.pipeline_details,
-                                        spec.path,
-                                        trigger,
-                                        eid)
-            return True
-    else:
-        logging.warning('Skipping %s task %s, as it has errors %r',
-                        trigger.upper(), spec.pipeline_id, spec.validation_errors)
+def queue_pipeline(ps: PipelineStatus, spec: PipelineSpec, trigger):
+    eid = gen_execution_id()
+    logging.info('%s QUEUEING %s task %s', eid[:8], trigger.upper(), spec.pipeline_id)
+    if ps.queue_execution(eid, trigger):
+        execute_pipeline_task.delay(spec.pipeline_id,
+                                    spec.pipeline_details,
+                                    spec.path,
+                                    trigger,
+                                    eid)
+        return True
     return False
 
 
@@ -75,18 +67,11 @@ def execute_update_pipelines():
 
 @celery_app.task
 def update_pipelines(action, completed_pipeline_id, completed_trigger):
-    # action=init: register all pipelines, trigger anything that's dirty
+    # action=scheduled: start a scheduled pipeline
     # action=update: iterate over all pipelines, register new ones, trigger dirty ones
     # action=complete: iterate over all pipelines, trigger dependencies
-    # completed_pipeline_id: pipeline id that had just completed (when applicable)
+    # completed_pipeline_id: pipeline id that had just completed (or scheduled pipeline)
     # completed_trigger: the trigger for the pipeline that had just completed (when applicable)
-    global already_init
-    if action == 'init':
-        if already_init:
-            return
-        else:
-            register_all_pipelines()
-    already_init = True
 
     logging.info("Update Pipelines (%s)", action)
     status_all_pipeline_ids = set(status.all_pipeline_ids())
@@ -107,18 +92,15 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
                 spec.source_details,
                 spec.validation_errors,
                 spec.cache_hash)
-        ps.save()
 
-        if action == 'init':
-            pass
-
-        elif action == 'update':
+        if action == 'update':
             if spec.pipeline_id not in status_all_pipeline_ids:
                 dm.update(spec)
                 logging.info("NEW Pipeline: %s", spec)
-            logging.debug('Pipeline: %s (dirty: %s, #ex=%s, ch=%s ex0-cache=%s)',
-                          spec.pipeline_id, ps.dirty(), len(ps.executions), ps.cache_hash,
-                          ps.executions[0].cache_hash if len(ps.executions) > 0 else None)
+                ps.save()
+            logging.info('Pipeline: %s (dirty: %s, #ex=%s, ch=%s ex0-cache=%s)',
+                         spec.pipeline_id, ps.dirty(), len(ps.executions), ps.cache_hash,
+                         ps.executions[0].cache_hash if len(ps.executions) > 0 else None)
 
         elif action == 'complete':
             if completed_pipeline_id in spec.dependencies:
@@ -129,20 +111,27 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
             else:
                 continue
 
+        elif action == 'scheduled':
+            if completed_pipeline_id != spec.pipeline_id:
+                continue
+
         psle = ps.get_last_execution()
         last_successful = psle.success is True if psle is not None else False
         if ps.runnable() and \
                 (ps.dirty() or
                  (completed_trigger == 'scheduled') or
                  (action == 'init' and not last_successful)):
-            queued = queue_pipeline(spec, 'dirty-task-%s' % action if completed_trigger is None else completed_trigger)
+            queued = queue_pipeline(ps, spec,
+                                    'dirty-task-%s' % action
+                                    if completed_trigger is None
+                                    else completed_trigger)
             if queued:
                 executed_count += 1
                 if executed_count == 4 and action == 'update':
                     # Limit ops on update only
                     break
 
-    if executed_count == 0 and action != 'complete':
+    if executed_count == 0 and action == 'update':
         extra_pipelines = status_all_pipeline_ids.difference(all_pipeline_ids)
         for pipeline_id in extra_pipelines:
             logging.info("Removing Pipeline: %s", pipeline_id)
@@ -157,7 +146,7 @@ def execute_scheduled_pipeline(pipeline_id):
             logging.info('Running scheduled pipeline %s, with schedule %s (%r)',
                          pipeline_id, spec.schedule,
                          spec.pipeline_details.get('schedule'))
-            queue_pipeline(spec, 'scheduled')
+            update_pipelines.delay('scheduled', pipeline_id, 'scheduled')
 
 
 @celery_app.task

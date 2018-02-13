@@ -14,10 +14,7 @@ from flask_jsonpify import jsonify
 
 from datapackage_pipelines.celery_tasks.celery_tasks import execute_update_pipelines
 from datapackage_pipelines.status import status
-from datapackage_pipelines.specs import register_all_pipelines
 from datapackage_pipelines.utilities.stat_utils import user_facing_stats
-
-register_all_pipelines()
 
 
 def datestr(x):
