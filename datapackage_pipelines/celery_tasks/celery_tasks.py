@@ -93,7 +93,13 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
                 spec.validation_errors,
                 spec.cache_hash)
 
-        if action == 'update':
+        if action == 'init':
+            psle = ps.get_last_execution()
+            if psle is not None and not psle.finish_time:
+                psle.invalidate()
+                psle.finish_execution(False, {}, ['Cancelled'])
+
+        elif action == 'update':
             if spec.pipeline_id not in status_all_pipeline_ids:
                 dm.update(spec)
                 logging.info("NEW Pipeline: %s", spec)
@@ -108,6 +114,7 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
                              spec.pipeline_id, len(spec.validation_errors),
                              os.path.basename(completed_pipeline_id),
                              completed_trigger)
+                ps.save()
             else:
                 continue
 
@@ -115,11 +122,10 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
             if completed_pipeline_id != spec.pipeline_id:
                 continue
 
-        psle = ps.get_last_execution()
-        last_successful = psle.success is True if psle is not None else False
+        last_successful = ps.state() == 'SUCCEEDED'
         if ps.runnable() and \
                 (ps.dirty() or
-                 (completed_trigger == 'scheduled') or
+                 completed_trigger or
                  (action == 'init' and not last_successful)):
             queued = queue_pipeline(ps, spec,
                                     'dirty-task-%s' % action
