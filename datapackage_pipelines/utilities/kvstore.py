@@ -48,6 +48,12 @@ class SqliteDB(object):
         for key, in keys:
             yield key
 
+    def items(self):
+        cursor = self.db.cursor()
+        items = cursor.execute('''SELECT key, value FROM d ORDER BY key ASC''')
+        for key, value in items:
+            yield key, json.loads(value)
+
 
 class LevelDB(object):
 
@@ -70,6 +76,10 @@ class LevelDB(object):
     def keys(self):
         for key, value in self.db:
             yield key.decode('utf8')
+
+    def items(self):
+        for key, value in self.db:
+            yield (key.decode('utf8'), json.loads(value.decode('utf8')))
 
 
 DB = LevelDB if db_kind == 'LevelDB' else SqliteDB

@@ -1,0 +1,87 @@
+duplicate
+--
+{
+    "source": "original",
+    "target-name": "the-dup",
+    "target-path": "the-dup.csv"
+}
+--
+{
+    "name": "test",
+    "resources": [
+        {
+            "name": "original",
+            "dpp:streaming": true,
+            "path": "data.csv",
+            "schema": { "fields": [
+                {"name": "year", "type": "integer"},
+                {"name": "data", "type": "string"}
+            ]}
+        }
+    ]
+}
+--
+{"year":"2016","data":"foo","i":0}
+{"year":"2017","data":"baz","i":1}
+{"year":"2017","data":"bax","i":2}
+{"year":"2015","data":"","i":3}
+{"year":"2015","data":"","i":4}
+{"year":"2015","data":"","i":5}
+{"year":"2015","data":"","i":6}
+{"year":"2015","data":"","i":7}
+{"year":"2015","data":"","i":8}
+{"year":"2015","data":"","i":9}
+{"year":"2015","data":"","i":10}
+{"year":"2015","data":"","i":11}
+--
+{
+    "name": "test",
+    "resources": [
+        {
+            "name": "original",
+            "dpp:streaming": true,
+            "path": "data.csv",
+            "schema": { "fields": [
+                {"name": "year", "type": "integer"},
+                {"name": "data", "type": "string"}
+            ]}
+        },
+        {
+            "name": "the-dup",
+            "dpp:streaming": true,
+            "path": "the-dup.csv",
+            "schema": { "fields": [
+                {"name": "year", "type": "integer"},
+                {"name": "data", "type": "string"}
+            ]}
+        }
+    ]
+}
+--
+{"year":"2016","data":"foo","i":0}
+{"year":"2017","data":"baz","i":1}
+{"year":"2017","data":"bax","i":2}
+{"year":"2015","data":"","i":3}
+{"year":"2015","data":"","i":4}
+{"year":"2015","data":"","i":5}
+{"year":"2015","data":"","i":6}
+{"year":"2015","data":"","i":7}
+{"year":"2015","data":"","i":8}
+{"year":"2015","data":"","i":9}
+{"year":"2015","data":"","i":10}
+{"year":"2015","data":"","i":11}
+
+{"year":"2016","data":"foo","i":0}
+{"year":"2017","data":"baz","i":1}
+{"year":"2017","data":"bax","i":2}
+{"year":"2015","data":"","i":3}
+{"year":"2015","data":"","i":4}
+{"year":"2015","data":"","i":5}
+{"year":"2015","data":"","i":6}
+{"year":"2015","data":"","i":7}
+{"year":"2015","data":"","i":8}
+{"year":"2015","data":"","i":9}
+{"year":"2015","data":"","i":10}
+{"year":"2015","data":"","i":11}
+
+{}

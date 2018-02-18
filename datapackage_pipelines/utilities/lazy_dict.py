@@ -13,6 +13,7 @@ class LazyDict(collections.MutableMapping):
 
     @property
     def inner(self):
+        self.__ensure()
         return self._inner
 
     def _evaluate(self):

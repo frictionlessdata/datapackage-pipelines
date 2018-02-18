@@ -654,6 +654,32 @@ Filtering just American and European countries, leaving out countries whose main
     sort-by: "{country_name}"
 ```
 
+### ***`duplicate`***
+
+Duplicate a resource.
+
+`duplicate` accepts the name of a single resource in the datapackage. 
+It will then du[licate it in the output datapackage, with a diferent name and path.
+The duplicated resource will appear immedately after its original.
+
+_Parameters_:
+
+- `source` - Which resources to duplicate. The name of the resource.
+- `target-name` - Name of the new, duplicated resource.
+- `target-path` - Path for the new, duplicated resource.
+
+*Examples*:
+
+Filtering just American and European countries, leaving out countries whose main language is English:
+```yaml
+- run: duplicate
+  parameters:
+    source: original-resource
+    target-name: copy-of-resource
+    target-path: data/duplicate.csv
+```
+
+
 ### ***`delete_fields`***
 
 Delete fields (columns) from streamed resources
