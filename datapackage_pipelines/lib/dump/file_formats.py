@@ -103,6 +103,9 @@ class JSONFormat(FileFormat):
         'date': lambda d: d.strftime(DATE_FORMAT),
         'time': lambda d: d.strftime(TIME_FORMAT),
         'number': float,
+        'duration': lambda d: isodate.duration_isoformat(d),
+        'geopoint': lambda d: list(map(float, d)),
+        'yearmonth': lambda d: '{:04d}-{:02d}'.format(*d),
     }
     DEFAULT_SERIALIZER = identity
     NULL_VALUE = None
