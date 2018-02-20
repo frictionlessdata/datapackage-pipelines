@@ -2,6 +2,7 @@ import datetime
 import json as _json
 
 import decimal
+import isodate
 
 from .lazy_dict import LazyDict
 
@@ -46,11 +47,11 @@ class CommonJSONDecoder(_json.JSONDecoder):
                 return decimal.Decimal(obj['type{decimal}'])
             except decimal.InvalidOperation:
                 pass
-        if 'type{date}' in obj:
+        if 'type{time}' in obj:
             try:
                 return datetime.datetime \
-                    .strptime(obj["type{date}"], DATE_FORMAT) \
-                    .date()
+                    .strptime(obj["type{time}"], TIME_FORMAT) \
+                    .time()
             except ValueError:
                 pass
         if 'type{datetime}' in obj:
@@ -59,11 +60,16 @@ class CommonJSONDecoder(_json.JSONDecoder):
                     .strptime(obj["type{datetime}"], DATETIME_FORMAT)
             except ValueError:
                 pass
-        if 'type{time}' in obj:
+        if 'type{date}' in obj:
             try:
                 return datetime.datetime \
-                    .strptime(obj["type{time}"], TIME_FORMAT) \
-                    .time()
+                    .strptime(obj["type{date}"], DATE_FORMAT) \
+                    .date()
+            except ValueError:
+                pass
+        if 'type{duration}' in obj:
+            try:
+                return isodate.parse_duration(obj["type{duration}"])
             except ValueError:
                 pass
         if 'type{set}' in obj:
@@ -95,6 +101,8 @@ class CommonJSONEncoder(_json.JSONEncoder):
             return {'type{datetime}': obj.strftime(DATETIME_FORMAT)}
         elif isinstance(obj, datetime.date):
             return {'type{date}': obj.strftime(DATE_FORMAT)}
+        elif isinstance(obj, (isodate.Duration, datetime.timedelta)):
+            return {'type{duration}': isodate.duration_isoformat(obj)}
         elif isinstance(obj, set):
             return {'type{set}': list(obj)}
         elif isinstance(obj, LazyDict):

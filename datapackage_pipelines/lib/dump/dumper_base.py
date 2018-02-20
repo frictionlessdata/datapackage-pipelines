@@ -91,10 +91,10 @@ class DumperBase(object):
             try:
                 schema.cast_row(to_cast)
             except CastError as e:
-                logging.exception('Failed to cast row %r', row)
-                for err in e.errors:
-                    logging.error('Failed to cast row: %s', err)
-                raise
+                logging.error('Failed to cast row %r', row)
+                for i, err in enumerate(e.errors):
+                    logging.error('%d) %s', i+1, err)
+                raise ValueError(row) from e
 
             for k in set(row.keys()) - set(field_names):
                 if k not in warned_fields:

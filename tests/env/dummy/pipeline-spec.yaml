@@ -85,3 +85,72 @@ pipeline-test-hooks:
 
   hooks:
     - http://localhost:9000/update
+
+pipeline-test-datatypes:
+  pipeline:
+    -
+      run: add_metadata
+      parameters:
+        name: 'type-tests'
+    -
+      run: add_resource
+      parameters:
+        name: types
+        url: types.csv
+    -
+      run: stream_remote_resources
+    -
+      run: set_types
+      parameters:
+        types:
+          string:
+            type: string
+          number:
+            type: number
+          integer:
+            type: integer
+          boolean:
+            type: boolean
+          object:
+            type: object
+          array:
+            type: array
+          date:
+            type: date
+          datetime:
+            type: datetime
+          time:
+            type: time
+          year:
+            type: year
+          yearmonth:
+            type: yearmonth
+          duration:
+            type: duration
+          geopoint:
+            type: geopoint
+          geojson:
+            type: geojson
+    -
+      run: dump.to_path
+      parameters:
+          out-path: type-tests-output
+
+pipeline-test-datatypes2:
+  dependencies:
+    - pipeline: ./tests/env/dummy/pipeline-test-datatypes
+  pipeline:
+    -
+      run: add_metadata
+      parameters:
+        name: 'type-tests'
+    -
+      run: load_resource
+      parameters:        
+        url: dependency://./tests/env/dummy/pipeline-test-datatypes
+        resource: types
+    -
+      run: dump.to_path
+      parameters:
+          out-path: type-tests-output2
+  
