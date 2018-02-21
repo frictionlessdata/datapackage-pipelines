@@ -52,7 +52,17 @@ def remote_execute_pipeline(spec, root_dir, use_cache, verbose, progress_report_
                 sys.stderr.write('[%s:%s] >>> %s' %
                                  (spec.pipeline_id, threading.current_thread().name, log))
         lines.append(line)
-    results = lines.pop(0)
+    if len(lines) > 0:
+        results = lines.pop(0)
+    else:
+        if progress_report_queue is not None:
+            progress_report_queue.put(ProgressReport(spec.pipeline_id,
+                                                     progress,
+                                                     False,
+                                                     ['Empty'],
+                                                     None
+                                                     ))
+        return (spec.pipeline_id, False, {}, ['Empty'])
     try:
         results = json.loads(results)
         if progress_report_queue is not None:
@@ -65,6 +75,13 @@ def remote_execute_pipeline(spec, root_dir, use_cache, verbose, progress_report_
     except json.decoder.JSONDecodeError:
         if verbose:
             sys.stderr.write('[%s:%s] >>> %s' % (spec.pipeline_id, threading.current_thread().name, results))
+        if progress_report_queue is not None:
+            progress_report_queue.put(ProgressReport(spec.pipeline_id,
+                                                     progress,
+                                                     False,
+                                                     ['Crashed', results],
+                                                     None
+                                                     ))
         return (spec.pipeline_id, False, {}, [results])
 
     results = results[0]
