@@ -8,7 +8,7 @@ from .utilities.stat_utils import user_facing_stats
 from .manager.logging_config import logging
 
 from .specs import pipelines, PipelineSpec #noqa
-from .status import status
+from .status import status_mgr
 from .manager import run_pipelines
 
 
@@ -18,7 +18,7 @@ def cli(ctx):
     if ctx.invoked_subcommand is None:
         click.echo('Available Pipelines:')
         for spec in pipelines():  # type: PipelineSpec
-            ps = status.get(spec.pipeline_id)
+            ps = status_mgr().get(spec.pipeline_id)
             click.echo('- {} {}{}'
                        .format(spec.pipeline_id,
                                '(*)' if ps.dirty() else '',
@@ -116,7 +116,7 @@ def run(pipeline_id, verbose, use_cache, dirty, force, concurrency, slave):
 @cli.command()
 def init():
     """Reset the status of all pipelines"""
-    status.initialize()
+    status_mgr().initialize()
 
 
 if __name__ == "__main__":

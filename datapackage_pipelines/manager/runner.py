@@ -11,7 +11,7 @@ from collections import namedtuple
 from ..utilities.execution_id import gen_execution_id
 
 from ..specs import pipelines, PipelineSpec #noqa
-from ..status import status
+from ..status import status_mgr
 from ..lib.internal.sink import SINK_MAGIC
 from .tasks import execute_pipeline, finalize
 
@@ -92,18 +92,19 @@ def match_pipeline_id(arg, pipeline_id):
         return pipeline_id == arg
 
 
-def specs_to_execute(argument, root_dir, ignore_missing_deps, dirty, results):
+def specs_to_execute(argument, root_dir, status_manager, ignore_missing_deps, dirty, results):
 
     pending = set()
     executed = set()
     completed = set()
 
-    for spec in pipelines(ignore_missing_deps=ignore_missing_deps):
+    for spec in pipelines(ignore_missing_deps=ignore_missing_deps,
+                          root_dir=root_dir, status_manager=status_manager):
         if match_pipeline_id(argument, spec.pipeline_id):
 
             # If only dirty was requested
             if dirty:
-                ps = status.get(spec.pipeline_id)
+                ps = status_manager.get(spec.pipeline_id)
                 if not ps.dirty():
                     continue
 
@@ -111,7 +112,8 @@ def specs_to_execute(argument, root_dir, ignore_missing_deps, dirty, results):
 
     while len(pending) > 0:
         to_yield = None
-        for spec in pipelines(ignore_missing_deps=ignore_missing_deps):
+        for spec in pipelines(ignore_missing_deps=ignore_missing_deps,
+                              root_dir=root_dir, status_manager=status_manager):
             pipeline_id = spec.pipeline_id
             if pipeline_id not in pending:
                 continue
@@ -158,13 +160,14 @@ def run_pipelines(pipeline_id_pattern,
             finished_futures = []
             progress_thread = None
             progress_queue = None
+            status_manager = status_mgr(root_dir)
 
             if progress_cb is not None:
                 progress_queue = Queue()
                 progress_thread = threading.Thread(target=progress_report_handler, args=(progress_cb, progress_queue))
                 progress_thread.start()
 
-            all_specs = specs_to_execute(pipeline_id_pattern, root_dir, force, dirty, results)
+            all_specs = specs_to_execute(pipeline_id_pattern, root_dir, status_manager, force, dirty, results)
 
             while True:
 
@@ -202,7 +205,7 @@ def run_pipelines(pipeline_id_pattern,
                     continue
 
                 if slave:
-                    ps = status.get(spec.pipeline_id)
+                    ps = status_manager.get(spec.pipeline_id)
                     ps.init(spec.pipeline_details,
                             spec.source_details,
                             spec.validation_errors,

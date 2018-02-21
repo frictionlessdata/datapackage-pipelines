@@ -7,11 +7,12 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from datapackage_pipelines.manager import execute_pipeline, run_pipelines
 from datapackage_pipelines.specs.specs import pipelines
 from datapackage_pipelines.utilities.execution_id import gen_execution_id
-from datapackage_pipelines.status import status
+from datapackage_pipelines.status import status_mgr
 
 
 called_hooks = []
 progresses = 0
+status = status_mgr()
 
 class SaveHooks(BaseHTTPRequestHandler):
 

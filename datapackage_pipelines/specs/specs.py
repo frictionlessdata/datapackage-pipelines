@@ -2,7 +2,7 @@ import os
 from typing import Iterator  #noqa
 
 import yaml
-from datapackage_pipelines.status import status
+from datapackage_pipelines.status import status_mgr
 
 from .resolver import resolve_executor
 from .errors import SpecError
@@ -36,7 +36,7 @@ def process_schedules(spec: PipelineSpec):
 
 def find_specs(root_dir='.') -> PipelineSpec:
     for dirpath, _, filenames in os.walk(root_dir):
-        if dirpath.startswith('./.'):
+        if dirpath.startswith(os.path.join(root_dir, '.')):
             continue
         for filename in filenames:
             for parser in SPEC_PARSERS:
@@ -46,16 +46,18 @@ def find_specs(root_dir='.') -> PipelineSpec:
                         contents = spec_file.read()
                         try:
                             spec = yaml.load(contents)
-                            yield from parser.to_pipeline(spec, fullpath)
+                            yield from parser.to_pipeline(spec, fullpath, root_dir)
                         except yaml.YAMLError as e:
                             error = SpecError('Invalid Spec File %s' % fullpath, str(e))
                             yield PipelineSpec(path=dirpath, validation_errors=[error])
 
 
-def pipelines(prefixes=None, ignore_missing_deps=False, root_dir='.'):
+def pipelines(prefixes=None, ignore_missing_deps=False, root_dir='.', status_manager=None):
 
     specs: Iterator[PipelineSpec] = find_specs(root_dir)
     hasher = HashCalculator()
+    if status_manager is None:
+        status_manager = status_mgr()
     if prefixes is None:
         prefixes = ('',)
     while specs is not None:
@@ -76,7 +78,7 @@ def pipelines(prefixes=None, ignore_missing_deps=False, root_dir='.'):
                 process_schedules(spec)
 
                 try:
-                    hasher.calculate_hash(spec, ignore_missing_deps)
+                    hasher.calculate_hash(spec, status_manager, ignore_missing_deps)
                     found = True
                 except DependencyMissingException as e_:
                     e: DependencyMissingException = e_
@@ -99,7 +101,7 @@ def pipelines(prefixes=None, ignore_missing_deps=False, root_dir='.'):
 
 def register_all_pipelines(root_dir='.'):
     for spec in pipelines(root_dir=root_dir):
-        ps = status.get(spec.pipeline_id)
+        ps = status_mgr().get(spec.pipeline_id)
         ps.init(spec.pipeline_details,
                 spec.source_details,
                 spec.validation_errors,

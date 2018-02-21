@@ -3,20 +3,19 @@ import codecs
 from json.decoder import JSONDecodeError
 from datapackage_pipelines.utilities.extended_json import json
 
-DPP_DIRNAME = os.environ.get('DPP_DB_DIRNAME', '.dpp')
-
 
 class FilesystemBackend(object):
 
     KIND = 'filesystem'
 
-    def __init__(self):
-        os.makedirs(DPP_DIRNAME, exist_ok=True)
+    def __init__(self, root_dir='.'):
+        dpp_dirname = os.environ.get('DPP_DB_DIRNAME', '.dpp')
+        self.base_dir = os.path.join(root_dir, dpp_dirname)
+        os.makedirs(self.base_dir, exist_ok=True)
 
-    @staticmethod
-    def fn(pipeline_id):
+    def fn(self, pipeline_id):
         pipeline_id = codecs.encode(pipeline_id.encode('utf8'), 'base64').decode('ascii').replace('\n', '')
-        return os.path.join(DPP_DIRNAME, pipeline_id)
+        return os.path.join(self.base_dir, pipeline_id)
 
     def get_status(self, pipeline_id):
         try:
@@ -50,7 +49,7 @@ class FilesystemBackend(object):
             self.del_status(p)
 
     def all_pipeline_ids(self):
-        all_ids = sorted(os.listdir(DPP_DIRNAME))
+        all_ids = sorted(os.listdir(self.base_dir))
         all_ids = [
             codecs.decode(_id.encode('utf8'), 'base64').decode('utf8')
             for _id in all_ids

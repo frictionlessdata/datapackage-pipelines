@@ -3,7 +3,7 @@ import os
 
 from ..utilities.execution_id import gen_execution_id
 
-from ..status import status
+from ..status import status_mgr
 from ..status.pipeline_status import PipelineStatus
 
 from .dependency_manager import DependencyManager
@@ -74,7 +74,7 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
     # completed_trigger: the trigger for the pipeline that had just completed (when applicable)
 
     logging.info("Update Pipelines (%s)", action)
-    status_all_pipeline_ids = set(status.all_pipeline_ids())
+    status_all_pipeline_ids = set(status_mgr().all_pipeline_ids())
     executed_count = 0
     all_pipeline_ids = set()
     dm = get_dep_mgr()
@@ -87,7 +87,7 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
 
     for spec in pipelines(filter):  # type: PipelineSpec
         all_pipeline_ids.add(spec.pipeline_id)
-        ps = status.get(spec.pipeline_id)
+        ps = status_mgr().get(spec.pipeline_id)
         ps.init(spec.pipeline_details,
                 spec.source_details,
                 spec.validation_errors,
@@ -141,7 +141,7 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
         extra_pipelines = status_all_pipeline_ids.difference(all_pipeline_ids)
         for pipeline_id in extra_pipelines:
             logging.info("Removing Pipeline: %s", pipeline_id)
-            status.deregister(pipeline_id)
+            status_mgr().deregister(pipeline_id)
             dm.remove(pipeline_id)
 
 

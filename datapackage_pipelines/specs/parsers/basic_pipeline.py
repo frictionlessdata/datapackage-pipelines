@@ -13,11 +13,12 @@ class BasicPipelineParser(BaseParser):
         return filename == cls.SPEC_FILENAME
 
     @classmethod
-    def to_pipeline(cls, spec, fullpath) -> Iterator[PipelineSpec]:
+    def to_pipeline(cls, spec, fullpath, root_dir='.') -> Iterator[PipelineSpec]:
         dirpath = os.path.dirname(fullpath)
 
         for pipeline_id, pipeline_details in spec.items():
             pipeline_id = os.path.join(dirpath, pipeline_id)
+            pipeline_id = cls.replace_root_dir(pipeline_id, root_dir)
             yield PipelineSpec(path=dirpath,
                                pipeline_id=pipeline_id,
                                pipeline_details=pipeline_details)

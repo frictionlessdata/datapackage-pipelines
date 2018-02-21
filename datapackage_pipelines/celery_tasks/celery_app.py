@@ -5,7 +5,7 @@ from celery.schedules import crontab
 from .celery_common import get_celery_app, MANAGEMENT_TASK_NAME, SCHEDULED_TASK_NAME
 from .celery_tasks import build_dependents
 from datapackage_pipelines.specs import pipelines
-from datapackage_pipelines.status import status
+from datapackage_pipelines.status import status_mgr
 
 import logging
 
@@ -31,7 +31,7 @@ if os.environ.get('SCHEDULER'):
             CELERY_SCHEDULE[spec.pipeline_id] = entry
             logging.info('SCHEDULING task %r: %r', spec.pipeline_id, spec.schedule)
 
-        ps = status.get(spec.pipeline_id)
+        ps = status_mgr().get(spec.pipeline_id)
         ex = ps.get_last_execution()
         if ex is not None and not ex.finish_time:
             ex.invalidate()

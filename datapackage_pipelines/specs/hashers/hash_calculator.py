@@ -12,7 +12,7 @@ class HashCalculator(object):
     def __init__(self):
         self.all_pipeline_ids = {}
 
-    def calculate_hash(self, spec: PipelineSpec, ignore_missing_deps=False):
+    def calculate_hash(self, spec: PipelineSpec, status_mgr, ignore_missing_deps=False):
 
         cache_hash = None
         if spec.pipeline_id in self.all_pipeline_ids:
@@ -24,7 +24,7 @@ class HashCalculator(object):
             if ignore_missing_deps:
                 cache_hash = ''
             else:
-                cache_hash = resolve_dependencies(spec, self.all_pipeline_ids)
+                cache_hash = resolve_dependencies(spec, self.all_pipeline_ids, status_mgr)
 
             self.all_pipeline_ids[spec.pipeline_id] = spec
             if len(spec.validation_errors) > 0:

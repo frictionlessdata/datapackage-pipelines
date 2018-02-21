@@ -13,7 +13,7 @@ from flask_cors import CORS
 from flask_jsonpify import jsonify
 
 from datapackage_pipelines.celery_tasks.celery_tasks import execute_update_pipelines
-from datapackage_pipelines.status import status
+from datapackage_pipelines.status import status_mgr
 from datapackage_pipelines.utilities.stat_utils import user_facing_stats
 
 
@@ -29,6 +29,7 @@ def yamlize(x):
 
 
 markdown = mistune.Markdown(hard_wrap=True)
+status = status_mgr()
 
 
 def make_hierarchies(statuses):
