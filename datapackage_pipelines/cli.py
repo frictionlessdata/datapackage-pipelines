@@ -55,7 +55,7 @@ def run(pipeline_id, verbose, use_cache, dirty, force, concurrency, slave):
     progress = {}
 
     def progress_cb(report):
-        pid, count, success = report
+        pid, count, success, *_, stats = report
 
         print('\x1b[%sA' % (1+len(running)))
         if pid not in progress:

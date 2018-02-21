@@ -20,7 +20,7 @@ ExecutionResult = namedtuple('ExecutionResult',
                              ['pipeline_id', 'success', 'stats', 'errors'])
 
 ProgressReport = namedtuple('ProgressReport',
-                            ['pipeline_id', 'row_count', 'success'])
+                            ['pipeline_id', 'row_count', 'success', 'errors', 'stats'])
 
 MAGIC = 'INFO    :(sink): '+SINK_MAGIC
 
@@ -44,7 +44,7 @@ def remote_execute_pipeline(spec, root_dir, use_cache, verbose, progress_report_
         if line.startswith(MAGIC):
             if progress_report_queue is not None:
                 progress = int(line[len(MAGIC):].strip())
-                progress_report_queue.put(ProgressReport(spec.pipeline_id, progress, None))
+                progress_report_queue.put(ProgressReport(spec.pipeline_id, progress, None, None, None))
             continue
         while len(lines) > 0:
             log = lines.pop(0)
@@ -56,7 +56,12 @@ def remote_execute_pipeline(spec, root_dir, use_cache, verbose, progress_report_
     try:
         results = json.loads(results)
         if progress_report_queue is not None:
-            progress_report_queue.put(ProgressReport(spec.pipeline_id, progress, results[0]['success']))
+            progress_report_queue.put(ProgressReport(spec.pipeline_id,
+                                                     progress,
+                                                     results[0]['success'],
+                                                     results[0]['errors'],
+                                                     results[0]['stats']
+                                                     ))
     except json.decoder.JSONDecodeError:
         if verbose:
             sys.stderr.write('[%s:%s] >>> %s' % (spec.pipeline_id, threading.current_thread().name, results))
