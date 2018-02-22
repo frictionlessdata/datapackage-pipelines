@@ -6,6 +6,7 @@ python:
 env:
   global:
   - TOXENV="py${PYTHON_VERSION//./}"
+  - LANG=en_US.UTF-8
 install:
 - sudo apt-get install libleveldb-dev libleveldb1
 - make install-speedup
