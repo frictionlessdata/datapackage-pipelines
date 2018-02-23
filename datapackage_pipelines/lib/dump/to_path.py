@@ -28,4 +28,5 @@ class PathDumper(FileDumper):
             os.makedirs(path)
 
 
-PathDumper()()
+if __name__ == '__main__':
+    PathDumper()()
