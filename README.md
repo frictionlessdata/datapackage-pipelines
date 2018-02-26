@@ -991,7 +991,7 @@ _Parameters_:
 
 - `force-format` - Specifies whether to force all output files to be generated with the same format
     - if `true` (the default), all resources will use the same format
-    - if `false`, format will be deduced from the file extension. Resources with unknown extenstions will be discrarded.
+    - if `false`, format will be deduced from the file extension. Resources with unknown extensions will be discarded.
 - `format` - Specifies the type of output files to be generated (if `force-format` is true): `csv` (the default) or `json`
 - `handle-non-tabular` - Specifies whether non tabular resources (i.e. resources without a `schema`) should be dumped as well to the resulting datapackage.
     (See note below for more details)
@@ -1007,6 +1007,9 @@ _Parameters_:
     - `resource-hash`: Where should an md5 hash of each resource be stored (default: `hash`)
     Each of these attributes could be set to null in order to prevent the counting.
     Each property could be a dot-separated string, for storing the data inside a nested object (e.g. `stats.rowcount`)
+- `pretty-descriptor`: Specifies how datapackage descriptor (`datapackage.json`) file will look like:
+    - `False` (default) - descriptor will be written in one line.
+    - `True` - descriptor will have indents and new lines for each key, so it becomes more human-readable.
 
 ### ***`dump.to_zip`***
 
@@ -1019,6 +1022,7 @@ _Parameters_:
 - `handle-non-tabular` - Same as in `dump.to_path`
 - `add-filehash-to-path` - Same as in `dump.to_path`
 - `counters` - Same as in `dump.to_path`
+- `pretty-descriptor` - Same as in `dump.to_path`
 
 #### *Note*
 

@@ -1,0 +1,60 @@
+dump.to_zip
+--
+{
+    "out-file": "my-spiffy-resource.zip",
+    "add-filehash-to-path": true,
+    "pretty-descriptor": true
+}
+--
+{
+    "name": "test",
+    "resources": [
+        {
+            "name": "my-spiffy-resource",
+            "dpp:streaming": true,
+            "path": "data/my-data.csv",
+            "schema": {
+                "fields": [
+                    {"name": "mystring", "type": "string"},
+                    {"name": "myinteger", "type": "integer"},
+                    {"name": "mynumber", "type": "number"},
+                    {"name": "mydate", "type": "date"}
+                ]
+            }
+        }
+    ]
+}
+--
+{"mystring":"a", "mynumber": 2.0, "mydate": {"type{date}": "2016-12-31"}}
+--
+{
+    "name": "test",
+    "resources": [
+        {
+            "name": "my-spiffy-resource",
+            "dpp:streaming": true,
+            "path": "data/my-data.csv",
+            "encoding": "utf-8",
+            "format": "csv",
+            "dialect": {
+                "delimiter": ",",
+                "doubleQuote": true,
+                "lineTerminator": "\r\n",
+                "quoteChar": "\"",
+                "skipInitialSpace": false
+            },
+            "schema": {
+                "fields": [
+                    {"name": "mystring", "type": "string"},
+                    {"name": "myinteger", "type": "integer"},
+                    {"name": "mynumber", "type": "number", "groupChar": "", "decimalChar": "."},
+                    {"format": "%Y-%m-%d", "name": "mydate", "type": "date"}
+                ]
+            }
+        }
+    ]
+}
+--
+{"mystring":"a", "mynumber": 2.0, "mydate": {"type{date}": "2016-12-31"}}
+
+{"bytes": 1139, "count_of_rows": 1, "dataset_name": "test", "hash": "174d14a56ce3c798b369d1716488ca75"}

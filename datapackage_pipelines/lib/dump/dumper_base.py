@@ -141,6 +141,7 @@ class DumperBase(object):
         if self.datapackage_hash:
             datapackage_hash = hashlib.md5(
                         json.dumps(datapackage,
+                                   indent=2 if parameters.get('pretty-descriptor') else None,
                                    sort_keys=True,
                                    ensure_ascii=True).encode('ascii')
                     ).hexdigest()
@@ -202,7 +203,8 @@ class FileDumper(DumperBase):
             if PROP_STREAMING in res:
                 del res[PROP_STREAMING]
         temp_file = tempfile.NamedTemporaryFile(mode="w+", delete=False, encoding='utf-8')
-        json.dump(datapackage_copy, temp_file, sort_keys=True, ensure_ascii=False)
+        indent = 2 if parameters.get('pretty-descriptor') else None
+        json.dump(datapackage_copy, temp_file, indent=indent, sort_keys=True, ensure_ascii=False)
         temp_file_name = temp_file.name
         filesize = temp_file.tell()
         temp_file.close()
