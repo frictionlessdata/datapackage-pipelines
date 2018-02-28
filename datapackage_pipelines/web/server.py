@@ -16,6 +16,8 @@ from datapackage_pipelines.celery_tasks.celery_tasks import execute_update_pipel
 from datapackage_pipelines.status import status_mgr
 from datapackage_pipelines.utilities.stat_utils import user_facing_stats
 
+YAML_DUMPER = yaml.CDumper if 'CDumper' in yaml.__dict__ else yaml.Dumper
+
 
 def datestr(x):
     if x is None:
@@ -24,7 +26,7 @@ def datestr(x):
 
 
 def yamlize(x):
-    ret = yaml.dump(x, default_flow_style=False)
+    ret = yaml.dump(x, default_flow_style=False, Dumper=YAML_DUMPER)
     return ret
 
 

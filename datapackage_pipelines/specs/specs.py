@@ -16,6 +16,8 @@ SPEC_PARSERS = [
     SourceSpecPipelineParser()
 ]
 
+YAML_LOADER = yaml.CLoader if 'CLoader' in yaml.__dict__ else yaml.Loader
+
 
 def resolve_processors(spec: PipelineSpec):
     abspath = os.path.abspath(spec.path)
@@ -45,7 +47,7 @@ def find_specs(root_dir='.') -> PipelineSpec:
                     with open(fullpath, encoding='utf8') as spec_file:
                         contents = spec_file.read()
                         try:
-                            spec = yaml.load(contents)
+                            spec = yaml.load(contents, Loader=YAML_LOADER)
                             yield from parser.to_pipeline(spec, fullpath, root_dir)
                         except yaml.YAMLError as e:
                             error = SpecError('Invalid Spec File %s' % fullpath, str(e))
