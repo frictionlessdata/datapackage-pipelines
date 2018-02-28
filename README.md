@@ -288,6 +288,8 @@ _Parameters_:
 - `ignore-missing` - if true, then missing resources won't raise an error but will be treated as 'empty' (i.e. with zero rows).
   Resources with empty URLs will be treated the same (i.e. will generate an 'empty' resource).
 
+- `limit-rows` - if provided, will limit the number of rows fetched from the source. Takes an integer value which specifies how many rows of the source to stream.
+
 *Example*:
 
 ```yaml
@@ -370,15 +372,18 @@ Loads a tabular resource from an existing data-package.
 _Parameters_:
 
 Loads the resource specified in the `resource` parameter from the data package located at `url`.
+All properties of the loaded resource will be copied - `path` and `schema` included.
 
-`resource` can be
+- `url` - a URL pointing to the datapackage in which the required resource resides
+
+- `resource` - can be
    - List of strings, interpreted as resource names to load
    - String, interpreted as a regular expression to be used to match resource names
    - an integer, indicating the index of the resource in the data package (0-based)
 
-All properties of the loaded resource will be copied - `path` and `schema` included.
+- `limit-rows` - if provided, will limit the number of rows fetched from the source. Takes an integer value which specifies how many rows of the source to stream.
 
-If the `stream` parameter is provided and is set to false, then the resource will be added to the datapackage but not streamed.
+- `stream` - if provided and is set to false, then the resource will be added to the datapackage but not streamed.
 
 *Example*:
 

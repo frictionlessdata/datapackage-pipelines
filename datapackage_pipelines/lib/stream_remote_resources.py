@@ -32,7 +32,7 @@ def _tostr(value):
     assert False, "Internal error - don't know how to handle %r of type %r" % (value, type(value))
 
 
-def _reader(opener, _url):
+def _reader(opener, _url, max_row=-1):
     yield None
     filename = os.path.basename(_url)
     logging.info('%s: OPENING %s', filename, _url)
@@ -52,6 +52,9 @@ def _reader(opener, _url):
         if i % 10000 == 0:
             logging.info('%s: %d rows', filename, i)
             # break
+        if i == max_row:
+            break
+
     _close()
     logging.info('%s: TOTAL %d rows', filename, i)
 
@@ -110,7 +113,7 @@ def suffix_remover(format):
     return _func
 
 
-def stream_reader(_resource, _url, _ignore_missing):
+def stream_reader(_resource, _url, _ignore_missing, limit_rows):
     def get_opener(__url, __resource):
         def opener():
             _params = dict(headers=1)
@@ -194,7 +197,8 @@ def stream_reader(_resource, _url, _ignore_missing):
         .islice(
             _reader(
                 get_opener(_url, _resource),
-                _url),
+                _url,
+                max_row=limit_rows),
             1, None)
 
 
@@ -202,6 +206,7 @@ parameters, datapackage, resource_iterator = ingest()
 
 resources = ResourceMatcher(parameters.get('resources'))
 ignore_missing = parameters.get('ignore-missing', False)
+limit_rows = parameters.get('limit-rows', -1)
 
 new_resource_iterator = []
 for resource in datapackage['resources']:
@@ -220,7 +225,7 @@ for resource in datapackage['resources']:
 
         resource[PROP_STREAMING] = True
 
-        rows = stream_reader(resource, url, ignore_missing or url == "")
+        rows = stream_reader(resource, url, ignore_missing or url == "", limit_rows)
 
         new_resource_iterator.append(rows)
 
