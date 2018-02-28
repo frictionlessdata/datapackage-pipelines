@@ -1,8 +1,6 @@
 import os
 import codecs
-from json.decoder import JSONDecodeError
-from datapackage_pipelines.utilities.extended_json import json
-
+import ujson
 
 class FilesystemBackend(object):
 
@@ -20,16 +18,16 @@ class FilesystemBackend(object):
     def get_status(self, pipeline_id):
         try:
             with open(self.fn(pipeline_id)) as f:
-                return json.load(f)
+                return ujson.load(f)
         except FileNotFoundError:
             pass
-        except JSONDecodeError:
+        except ValueError:
             pass
 
     def set_status(self, pipeline_id, status):
         fn = self.fn(pipeline_id)
         with open(fn+'.tmp', 'w') as f:
-            json.dump(status, f)
+            ujson.dump(status, f)
         os.rename(fn+'.tmp', fn)
 
     def del_status(self, pipeline_id):

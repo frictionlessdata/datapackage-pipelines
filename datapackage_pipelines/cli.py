@@ -121,3 +121,6 @@ def init():
 
 if __name__ == "__main__":
     sys.exit(cli())
+    # For Profiling:
+    # import cProfile
+    # sys.exit(cProfile.run('cli()', sort='cumulative'))

@@ -15,11 +15,17 @@ def processor_path():
         _processor_path = os.environ.get('DPP_PROCESSOR_PATH', '').split(';')
     return _processor_path
 
+_found_files = set()
+
 
 def find_file_in_path(path, remove=0):
     def finder(parts):
+        global _found_files
         filename = os.path.join(*(path + parts[remove:]))
+        if filename in _found_files:
+            return filename
         if os.path.exists(filename):
+            _found_files.add(filename)
             return filename
     return finder
 
@@ -42,11 +48,19 @@ def convert_dot_notation(executor):
 
     return back_up, parts
 
+_tried_imports = {}
+
 
 def load_module(module):
+    global _tried_imports
+    if module in _tried_imports:
+        return _tried_imports[module]
     module_name = 'datapackage_pipelines_'+module
+    ret = None
     if find_spec(module_name):
-        return import_module(module_name)
+        ret = import_module(module_name)
+    _tried_imports[module] = ret
+    return ret
 
 
 def resolve_executor(step, path, errors):

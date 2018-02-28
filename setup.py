@@ -27,6 +27,7 @@ INSTALL_REQUIRES = [
     'tableschema>=1.0.12',
     'tableschema-sql>=0.10.0',
     'pyyaml',
+    'ujson',
     'mistune',
     'redis',
     'sqlalchemy',
