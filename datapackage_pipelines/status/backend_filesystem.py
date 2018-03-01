@@ -2,6 +2,7 @@ import os
 import codecs
 import ujson
 
+
 class FilesystemBackend(object):
 
     KIND = 'filesystem'

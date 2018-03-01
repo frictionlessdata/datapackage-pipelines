@@ -14,18 +14,17 @@ class PathDumper(FileDumper):
 
     def write_file_to_output(self, filename, path):
         path = os.path.join(self.out_path, path)
-        path_part = os.path.dirname(path)
         # Avoid rewriting existing files
-        if self.add_filehash_to_path and os.path.exists(path_part):
+        if self.add_filehash_to_path and os.path.exists(path):
             return
+        path_part = os.path.dirname(path)
         PathDumper.__makedirs(path_part)
         shutil.copy(filename, path)
         return path
 
     @staticmethod
     def __makedirs(path):
-        if not os.path.exists(path):
-            os.makedirs(path)
+        os.makedirs(path, exist_ok=True)
 
 
 if __name__ == '__main__':

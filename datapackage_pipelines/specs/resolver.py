@@ -15,6 +15,7 @@ def processor_path():
         _processor_path = os.environ.get('DPP_PROCESSOR_PATH', '').split(';')
     return _processor_path
 
+
 _found_files = set()
 
 
@@ -47,6 +48,7 @@ def convert_dot_notation(executor):
     parts.extend(executor)
 
     return back_up, parts
+
 
 _tried_imports = {}
 
