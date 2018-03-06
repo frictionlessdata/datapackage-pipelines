@@ -164,6 +164,7 @@ pipeline-test-code:
         url: dependency://./tests/env/dummy/pipeline-test-datatypes
         resource: types
   -
+    run: code
     code: |
       from datapackage_pipelines.wrapper import ingest, spew
       parameters, datapackage, resources, stats = ingest() + ({},)
