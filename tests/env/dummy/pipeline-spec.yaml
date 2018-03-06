@@ -201,9 +201,9 @@ pipeline-test-invalid-remote-datapackage-zip:
         datapackage = dict(datapackage, resources=[datapackage["resources"][0]])
         datapackage["resources"][0].update(name='maya', path='maya.csv')
         for field in datapackage["resources"][0]["schema"]["fields"]:
-            if field["name"] == "":
-                field["name"] = "_"
-            datapackage["resources"][0]["schema"]["fields"].append({"name": "year", "type": "string"})
+          if field["name"] == "":
+            field["name"] = "_"
+        datapackage["resources"][0]["schema"]["fields"].append({"name": "year", "type": "string"})
         spew(datapackage, (get_resource(),), stats)
     -
       run: dump.to_path
