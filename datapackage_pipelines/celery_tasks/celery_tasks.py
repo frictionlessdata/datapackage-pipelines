@@ -104,9 +104,9 @@ def update_pipelines(action, completed_pipeline_id, completed_trigger):
                 dm.update(spec)
                 logging.info("NEW Pipeline: %s", spec)
                 ps.save()
-            logging.info('Pipeline: %s (dirty: %s, #ex=%s, ch=%s ex0-cache=%s)',
-                         spec.pipeline_id, ps.dirty(), len(ps.executions), ps.cache_hash,
-                         ps.executions[0].cache_hash if len(ps.executions) > 0 else None)
+            logging.debug('Pipeline: %s (dirty: %s, #ex=%s, ch=%s ex0-cache=%s)',
+                          spec.pipeline_id, ps.dirty(), len(ps.executions), ps.cache_hash,
+                          ps.executions[0].cache_hash if len(ps.executions) > 0 else None)
 
         elif action == 'complete':
             if completed_pipeline_id in spec.dependencies:
