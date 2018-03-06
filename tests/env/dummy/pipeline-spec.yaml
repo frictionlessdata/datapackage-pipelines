@@ -177,3 +177,35 @@ pipeline-test-code:
     run: dump.to_path
     parameters:
       out-path: code-test-output
+
+
+pipeline-test-invalid-remote-datapackage-zip:
+  pipeline:
+    -
+      run: load_resource
+      parameters:
+        url: https://storage.googleapis.com/knesset-data-pipelines/external-data/maya_full_feb25_18.zip
+        resource: .*
+    -
+      run: code
+      code: |
+        from datapackage_pipelines.wrapper import ingest, spew
+        parameters, datapackage, resources, stats = ingest() + ({},)
+        resource_names = [descriptor["name"] for descriptor in datapackage["resources"]]
+        def get_row(resource_name, row):
+          row.update(**{"_": row[""], "year": resource_name})
+          del row[""]; return row
+        def get_resource():
+          for resource_name, resource in zip(resource_names, resources):
+              yield from (get_row(resource_name, row) for row in resource)
+        datapackage = dict(datapackage, resources=[datapackage["resources"][0]])
+        datapackage["resources"][0].update(name='maya', path='maya.csv')
+        for field in datapackage["resources"][0]["schema"]["fields"]:
+            if field["name"] == "":
+                field["name"] = "_"
+            datapackage["resources"][0]["schema"]["fields"].append({"name": "year", "type": "string"})
+        spew(datapackage, (get_resource(),), stats)
+    -
+      run: dump.to_path
+      parameters:
+        out-path: invalid-remote-datapackage-zip-output

@@ -45,7 +45,7 @@ def test_pipeline():
                             concurrency=1,
                             verbose_logs=True)
     failed_results = list(filter(lambda r: not r.success, results))
-    assert len(failed_results) == 0, "Failed results: {}".format(["{} {}".format(result.pipeline_id, ", ".join(result.errors))
+    assert len(failed_results) == 0, "Failed results: {}".format(["{} {}".format(result.pipeline_id, ", ".join(result.errors) if result.errors else "")
                                                                  for result in failed_results])
     assert len(called_hooks) == 3
     assert called_hooks == [
