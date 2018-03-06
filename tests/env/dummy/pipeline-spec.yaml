@@ -153,4 +153,26 @@ pipeline-test-datatypes2:
       run: dump.to_path
       parameters:
           out-path: type-tests-output2
-  
+
+pipeline-test-code:
+  dependencies:
+    - pipeline: ./tests/env/dummy/pipeline-test-datatypes
+  pipeline:
+  -
+      run: load_resource
+      parameters:
+        url: dependency://./tests/env/dummy/pipeline-test-datatypes
+        resource: types
+  -
+    code: |
+      from datapackage_pipelines.wrapper import ingest, spew
+      parameters, datapackage, resources, stats = ingest() + ({},)
+      def get_resource():
+        for descriptor, resource in zip(datapackage["resources"], resources):
+          for row in resource:
+            yield row
+      spew(datapackage, [get_resource()], stats)
+  -
+    run: dump.to_path
+    parameters:
+      out-path: code-test-output
