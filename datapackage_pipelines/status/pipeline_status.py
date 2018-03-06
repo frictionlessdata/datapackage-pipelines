@@ -5,6 +5,9 @@ import logging
 from .hook_sender import hook_sender
 from .pipeline_execution import PipelineExecution
 
+# def jcmp(a, b):
+#     return json.dumps(a, sort_keys=True) != json.dumps(b, sort_keys=True)
+
 
 class PipelineStatus(object):
 
@@ -23,8 +26,6 @@ class PipelineStatus(object):
         self.source_spec = source_spec
         self.validation_errors = validation_errors
         self.cache_hash = cache_hash
-        self.backend.register_pipeline_id(self.pipeline_id)
-        self.__save()
 
     def __load(self):
         data = self.backend.get_status('PipelineStatus:' + self.pipeline_id)
@@ -34,8 +35,9 @@ class PipelineStatus(object):
         self.source_spec = data.get('source_spec', {})
         self.validation_errors = data.get('validation_errors', [])
         self.cache_hash = data.get('cache_hash', '')
-        self.executions = [PipelineExecution.from_execution_id(self.backend, ex)
-                           for ex in data.get('executions', [])]
+        self._execution_ids = data.get('executions', [])
+        self._executions = None
+        self._last_execution = None
 
     def __iter__(self):
         yield 'pipeline_details', self.pipeline_details,
@@ -46,17 +48,47 @@ class PipelineStatus(object):
 
     def __save(self):
         # logging.debug('SAVING PipelineStatus %s -> %r' % (self.pipeline_id, self.executions))
+        self.backend.register_pipeline_id(self.pipeline_id)
         self.backend.set_status('PipelineStatus:' + self.pipeline_id, dict(self))
 
+    def save(self):
+        self.__save()
+
     def dirty(self):
-        return len(self.executions) == 0 or self.cache_hash != self.executions[0].cache_hash
+        return self.num_executions == 0 or self.cache_hash != self.last_execution.cache_hash
+
+    @property
+    def executions(self):
+        if self._executions is None:
+            self._executions = [PipelineExecution.from_execution_id(self.backend, ex)
+                                for ex in self._execution_ids]
+        return self._executions
+
+    @property
+    def num_executions(self):
+        if self._executions is not None:
+            return len(self._executions)
+        return len(self._execution_ids)
+
+    @property
+    def last_execution(self):
+        if self._executions is not None:
+            if len(self._executions) > 0:
+                return self._executions[0]
+        else:
+            if len(self._execution_ids) > 0:
+                if self._last_execution is None:
+                    self._last_execution = \
+                        PipelineExecution.from_execution_id(self.backend,
+                                                            self._execution_ids[0])
+                return self._last_execution
 
     def errors(self):
         if not self.runnable():
             return ['%s :%s' % tuple(err)
                     for err in self.validation_errors]
         else:
-            ex = self.get_last_execution()
+            ex = self.last_execution
             if ex is not None:
                 return ex.error_log
         return []
@@ -65,14 +97,16 @@ class PipelineStatus(object):
         return len(self.validation_errors) == 0
 
     def get_last_execution(self) -> Optional[PipelineExecution]:
-        if len(self.executions) == 0:
-            return None
-        return self.executions[0]
+        return self.last_execution
 
     def get_last_successful_execution(self) -> Optional[PipelineExecution]:
-        for ex in self.executions:
-            if ex.success:
-                return ex
+        le = self.last_execution
+        if le is not None:
+            if le.success:
+                return le
+            for ex in self.executions[1:]:
+                if ex.success:
+                    return ex
         return None
 
     def queue_execution(self, execution_id, trigger):

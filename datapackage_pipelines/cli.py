@@ -1,14 +1,15 @@
-import click
 import sys
+import json
+
+import click
 
 from .utilities.stat_utils import user_facing_stats
-from .utilities.execution_id import gen_execution_id
 
 from .manager.logging_config import logging
 
-from .specs import pipelines, register_all_pipelines, PipelineSpec #noqa
-from .status import status
-from .manager import execute_pipeline, finalize
+from .specs import pipelines, PipelineSpec #noqa
+from .status import status_mgr
+from .manager import run_pipelines
 
 
 @click.group(invoke_without_command=True)
@@ -17,7 +18,7 @@ def cli(ctx):
     if ctx.invoked_subcommand is None:
         click.echo('Available Pipelines:')
         for spec in pipelines():  # type: PipelineSpec
-            ps = status.get(spec.pipeline_id)
+            ps = status_mgr().get(spec.pipeline_id)
             click.echo('- {} {}{}'
                        .format(spec.pipeline_id,
                                '(*)' if ps.dirty() else '',
@@ -34,86 +35,80 @@ def serve():
     app.run(host='0.0.0.0', debug=True, port=5000)
 
 
-def match_pipeline_id(arg, pipeline_id):
-    if arg.endswith('*'):
-        return pipeline_id.startswith(arg[:-1])
-    else:
-        return pipeline_id == arg
-
-
-def execute_if_needed(argument, spec, use_cache):
-    ps = status.get(spec.pipeline_id)
-    if (match_pipeline_id(argument, spec.pipeline_id) or
-            (argument == 'all') or
-            (argument == 'dirty' and ps.dirty())):
-        if len(spec.validation_errors) != 0:
-            return (spec.pipeline_id, False, {}, ['init'] + list(map(str, spec.validation_errors))), \
-                   spec.pipeline_id == argument
-        eid = gen_execution_id()
-        if ps.queue_execution(eid, 'manual'):
-            success, stats, errors = \
-                execute_pipeline(spec, eid,
-                                 use_cache=use_cache)
-            return (spec.pipeline_id, success, stats, errors), spec.pipeline_id == argument
-        else:
-            return (spec.pipeline_id, False, None, ['Already Running']), spec.pipeline_id == argument
-    return None, False
-
-
 @cli.command()
 @click.argument('pipeline_id')
-@click.option('--use-cache/--no-use-cache', default=True)
+@click.option('--verbose', default=False, is_flag=True)
+@click.option('--use-cache/--no-use-cache', default=True,
+              help='Cache (or don\'t) intermediate results (if requested in the pipeline)')
+@click.option('--dirty', default=False, is_flag=True,
+              help='Only run dirty pipelines')
 @click.option('--force', default=False, is_flag=True)
-def run(pipeline_id, use_cache, force):
+@click.option('--concurrency', default=1)
+@click.option('--slave', default=False, is_flag=True)
+def run(pipeline_id, verbose, use_cache, dirty, force, concurrency, slave):
     """Run a pipeline by pipeline-id.
-Use 'all' for running all pipelines,
-or 'dirty' for running just the dirty ones."""
+       pipeline-id supports the '%' wildcard for any-suffix matching.
+       Use 'all' or '%' for running all pipelines"""
     exitcode = 0
-    register_all_pipelines()
-    try:
-        results = []
-        executed = set()
-        modified = 1
-        while modified > 0:
-            modified = 0
-            for spec in pipelines(ignore_missing_deps=force):
 
-                if spec.pipeline_id in executed:
-                    continue
+    running = []
+    progress = {}
 
-                ret, stop = \
-                    execute_if_needed(pipeline_id, spec, use_cache)
+    def progress_cb(report):
+        pid, count, success, *_, stats = report
 
-                if ret is not None:
-                    executed.add(spec.pipeline_id)
-                    modified += 1
-                    results.append(ret)
+        print('\x1b[%sA' % (1+len(running)))
+        if pid not in progress:
+            running.append(pid)
+        progress[pid] = count, success
 
-                if stop:
-                    modified = 0
-                    break
+        for pid in running:
+            count, success = progress[pid]
+            if success is None:
+                if count == 0:
+                    print('\x1b[2K%s: \x1b[31m%s\x1b[0m' % (pid, 'WAITING FOR OUTPUT'))
+                else:
+                    print('\x1b[2K%s: \x1b[33mRUNNING, processed %s rows\x1b[0m' % (pid, count))
+            else:
+                if success:
+                    print('\x1b[2K%s: \x1b[32mSUCCESS, processed %s rows\x1b[0m' % (pid, count))
+                else:
+                    print('\x1b[2K%s: \x1b[31mFAILURE, processed %s rows\x1b[0m' % (pid, count))
 
+    results = run_pipelines(pipeline_id, '.', use_cache,
+                            dirty, force, concurrency,
+                            verbose, progress_cb, slave)
+    if not slave:
         logging.info('RESULTS:')
         errd = False
-        for pipeline_id, success, stats, errors in results:
-            stats = user_facing_stats(stats)
-            errd = errd or errors or not success
+        for result in results:
+            stats = user_facing_stats(result.stats)
+            errd = errd or result.errors or not result.success
             logging.info('%s: %s %s%s',
-                         'SUCCESS' if success else 'FAILURE',
-                         pipeline_id,
+                         'SUCCESS' if result.success else 'FAILURE',
+                         result.pipeline_id,
                          repr(stats) if stats is not None else '',
-                         ('\nERROR log from processor %s:\n+--------\n| ' % errors[0] +
-                          '\n| '.join(errors[1:]) +
-                          '\n+--------')
-                         if errors else ''
-                         )
-        if errd:
-            exitcode = 1
+                         (
+                            '\nERROR log from processor %s:\n+--------\n| ' % result.errors[0] +
+                            '\n| '.join(result.errors[1:]) +
+                            '\n+--------'
+                         ) if result.errors else '')
+    else:
+        result_obj = []
+        errd = False
+        for result in results:
+            errd = errd or result.errors or not result.success
+            stats = user_facing_stats(result.stats)
+            result_obj.append(dict(
+                success=result.success,
+                pipeline_id=result.pipeline_id,
+                stats=result.stats,
+                errors=result.errors
+            ))
+            json.dump(result_obj, sys.stderr)
 
-    except KeyboardInterrupt:
-        pass
-    finally:
-        finalize()
+    if errd:
+        exitcode = 1
 
     exit(exitcode)
 
@@ -121,8 +116,11 @@ or 'dirty' for running just the dirty ones."""
 @cli.command()
 def init():
     """Reset the status of all pipelines"""
-    status.initialize()
+    status_mgr().initialize()
 
 
 if __name__ == "__main__":
     sys.exit(cli())
+    # For Profiling:
+    # import cProfile
+    # sys.exit(cProfile.run('cli()', sort='cumulative'))

@@ -19,6 +19,7 @@ class ResourceLoader(object):
 
     def __call__(self):
         url = self.parameters['url']
+        limit_rows = self.parameters.get('limit-rows')
         dep_prefix = 'dependency://'
         if url.startswith(dep_prefix):
             dependency = url[len(dep_prefix):].strip()
@@ -41,7 +42,10 @@ class ResourceLoader(object):
                 self.dp['resources'].append(orig_res.descriptor)
                 if tabular(orig_res.descriptor) and stream:
                     orig_res.descriptor[PROP_STREAMING] = True
-                    selected_resources.append(orig_res.iter(keyed=True))
+                    orig_res_iter = orig_res.iter(keyed=True)
+                    if limit_rows:
+                        orig_res_iter = itertools.islice(orig_res_iter, limit_rows)
+                    selected_resources.append(orig_res_iter)
                 else:
                     orig_res.descriptor[PROP_STREAMING] = False
 

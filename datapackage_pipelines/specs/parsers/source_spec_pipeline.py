@@ -14,7 +14,7 @@ class SourceSpecPipelineParser(BaseParser):
         return filename.endswith(cls.SOURCE_FILENAME_SUFFIX)
 
     @classmethod
-    def to_pipeline(cls, source_spec, fullpath):
+    def to_pipeline(cls, source_spec, fullpath, root_dir='.'):
         filename = os.path.basename(fullpath)
         dirpath = os.path.dirname(fullpath)
 
@@ -43,10 +43,13 @@ class SourceSpecPipelineParser(BaseParser):
                                                    os.path.join(dirpath, filename))
                     else:
                         pipeline_id = os.path.join(dirpath, pipeline_id)
+                        pipeline_id = cls.replace_root_dir(pipeline_id, root_dir)
                         for dependency in pipeline_details.get('dependencies', []):
                             if 'pipeline' in dependency:
                                 if not dependency['pipeline'].startswith('./'):
-                                    dependency['pipeline'] = os.path.join(dirpath, dependency['pipeline'])
+                                    dependency['pipeline'] = \
+                                        os.path.join(cls.replace_root_dir(dirpath, root_dir),
+                                                     dependency['pipeline'])
                         yield PipelineSpec(path=pipeline_details.get('__path', dirpath),
                                            pipeline_id=pipeline_id,
                                            pipeline_details=pipeline_details,

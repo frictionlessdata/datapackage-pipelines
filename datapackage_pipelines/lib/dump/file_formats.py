@@ -1,6 +1,7 @@
 import csv
 import json
 import os
+import isodate
 
 from datapackage_pipelines.utilities.extended_json import DATETIME_FORMAT, DATE_FORMAT, TIME_FORMAT
 from datapackage_pipelines.utilities.resources import get_path
@@ -44,6 +45,11 @@ class CSVFormat(FileFormat):
         'datetime': lambda d: d.strftime(DATETIME_FORMAT),
         'date': lambda d: d.strftime(DATE_FORMAT),
         'time': lambda d: d.strftime(TIME_FORMAT),
+        'duration': lambda d: isodate.duration_isoformat(d),
+        'geopoint': lambda d: '{}, {}'.format(*d),
+        'geojson': json.dumps,
+        'year': lambda d: '{:04d}'.format(d),
+        'yearmonth': lambda d: '{:04d}-{:02d}'.format(*d),
     }
     DEFAULT_SERIALIZER = str
     NULL_VALUE = ''
@@ -97,6 +103,9 @@ class JSONFormat(FileFormat):
         'date': lambda d: d.strftime(DATE_FORMAT),
         'time': lambda d: d.strftime(TIME_FORMAT),
         'number': float,
+        'duration': lambda d: isodate.duration_isoformat(d),
+        'geopoint': lambda d: list(map(float, d)),
+        'yearmonth': lambda d: '{:04d}-{:02d}'.format(*d),
     }
     DEFAULT_SERIALIZER = identity
     NULL_VALUE = None

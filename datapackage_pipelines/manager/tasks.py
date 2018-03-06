@@ -6,7 +6,7 @@ from concurrent.futures import CancelledError
 from json.decoder import JSONDecodeError
 
 from ..specs.specs import resolve_executor
-from ..status import status
+from ..status import status_mgr
 from ..utilities.stat_utils import STATS_DPP_KEY, STATS_OUT_DP_URL_KEY
 from ..utilities.extended_json import json
 
@@ -212,7 +212,7 @@ async def async_execute_pipeline(pipeline_id,
 
     if debug:
         logging.info("%s Async task starting", execution_id[:8])
-    ps = status.get(pipeline_id)
+    ps = status_mgr().get(pipeline_id)
     if not ps.start_execution(execution_id):
         logging.info("%s START EXECUTION FAILED %s, BAILING OUT", execution_id[:8], pipeline_id)
         return False, {}, []
@@ -286,7 +286,7 @@ async def async_execute_pipeline(pipeline_id,
     ps.update_execution(execution_id, execution_log, hooks=True)
     ps.finish_execution(execution_id, success, stats, error_log)
 
-    logging.info("DONE %s %s %r", 'V' if success else 'X', pipeline_id, stats)
+    logging.info("%s DONE %s %s %r", execution_id[:8], 'V' if success else 'X', pipeline_id, stats)
 
     return success, stats, error_log
 
@@ -307,7 +307,7 @@ def execute_pipeline(spec,
     for dep in spec.pipeline_details.get('dependencies', []):
         if 'pipeline' in dep:
             dep_pipeline_id = dep['pipeline']
-            pipeline_execution = status.get(dep_pipeline_id).get_last_successful_execution()
+            pipeline_execution = status_mgr().get(dep_pipeline_id).get_last_successful_execution()
             if pipeline_execution is not None:
                 result_dp = pipeline_execution.stats.get(STATS_DPP_KEY, {}).get(STATS_OUT_DP_URL_KEY)
                 if result_dp is not None:
@@ -315,6 +315,7 @@ def execute_pipeline(spec,
 
     if debug:
         logging.info("%s Running async task", execution_id[:8])
+
     pipeline_task = \
         asyncio.ensure_future(async_execute_pipeline(spec.pipeline_id,
                                                      spec.pipeline_details.get('pipeline', []),

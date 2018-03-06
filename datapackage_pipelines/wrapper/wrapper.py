@@ -67,9 +67,13 @@ def spew(dp, resources_iterator, stats=None, finalizer=None):
                 f.write('\n')
             try:
                 for rec in res:
-                    line = json.dumpl(rec,
-                                      sort_keys=True,
-                                      ensure_ascii=True)
+                    try:
+                        line = json.dumpl(rec,
+                                        sort_keys=True,
+                                        ensure_ascii=True)
+                    except TypeError as e:
+                        logging.error('Failed to encode row to JSON: %s\nOffending row: %r', e, rec)
+                        raise
                     # logging.error('SPEWING: {}'.format(line))
                     for f in files:
                         f.write(line+'\n')

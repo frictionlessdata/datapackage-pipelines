@@ -288,6 +288,8 @@ _Parameters_:
 - `ignore-missing` - if true, then missing resources won't raise an error but will be treated as 'empty' (i.e. with zero rows).
   Resources with empty URLs will be treated the same (i.e. will generate an 'empty' resource).
 
+- `limit-rows` - if provided, will limit the number of rows fetched from the source. Takes an integer value which specifies how many rows of the source to stream.
+
 *Example*:
 
 ```yaml
@@ -370,15 +372,18 @@ Loads a tabular resource from an existing data-package.
 _Parameters_:
 
 Loads the resource specified in the `resource` parameter from the data package located at `url`.
+All properties of the loaded resource will be copied - `path` and `schema` included.
 
-`resource` can be
+- `url` - a URL pointing to the datapackage in which the required resource resides
+
+- `resource` - can be
    - List of strings, interpreted as resource names to load
    - String, interpreted as a regular expression to be used to match resource names
    - an integer, indicating the index of the resource in the data package (0-based)
 
-All properties of the loaded resource will be copied - `path` and `schema` included.
+- `limit-rows` - if provided, will limit the number of rows fetched from the source. Takes an integer value which specifies how many rows of the source to stream.
 
-If the `stream` parameter is provided and is set to false, then the resource will be added to the datapackage but not streamed.
+- `stream` - if provided and is set to false, then the resource will be added to the datapackage but not streamed.
 
 *Example*:
 
@@ -653,6 +658,32 @@ Filtering just American and European countries, leaving out countries whose main
     resources: world_population
     sort-by: "{country_name}"
 ```
+
+### ***`duplicate`***
+
+Duplicate a resource.
+
+`duplicate` accepts the name of a single resource in the datapackage. 
+It will then du[licate it in the output datapackage, with a diferent name and path.
+The duplicated resource will appear immedately after its original.
+
+_Parameters_:
+
+- `source` - Which resources to duplicate. The name of the resource.
+- `target-name` - Name of the new, duplicated resource.
+- `target-path` - Path for the new, duplicated resource.
+
+*Examples*:
+
+Filtering just American and European countries, leaving out countries whose main language is English:
+```yaml
+- run: duplicate
+  parameters:
+    source: original-resource
+    target-name: copy-of-resource
+    target-path: data/duplicate.csv
+```
+
 
 ### ***`delete_fields`***
 
@@ -965,7 +996,7 @@ _Parameters_:
 
 - `force-format` - Specifies whether to force all output files to be generated with the same format
     - if `true` (the default), all resources will use the same format
-    - if `false`, format will be deduced from the file extension. Resources with unknown extenstions will be discrarded.
+    - if `false`, format will be deduced from the file extension. Resources with unknown extensions will be discarded.
 - `format` - Specifies the type of output files to be generated (if `force-format` is true): `csv` (the default) or `json`
 - `handle-non-tabular` - Specifies whether non tabular resources (i.e. resources without a `schema`) should be dumped as well to the resulting datapackage.
     (See note below for more details)
@@ -981,6 +1012,9 @@ _Parameters_:
     - `resource-hash`: Where should an md5 hash of each resource be stored (default: `hash`)
     Each of these attributes could be set to null in order to prevent the counting.
     Each property could be a dot-separated string, for storing the data inside a nested object (e.g. `stats.rowcount`)
+- `pretty-descriptor`: Specifies how datapackage descriptor (`datapackage.json`) file will look like:
+    - `False` (default) - descriptor will be written in one line.
+    - `True` - descriptor will have indents and new lines for each key, so it becomes more human-readable.
 
 ### ***`dump.to_zip`***
 
@@ -993,6 +1027,7 @@ _Parameters_:
 - `handle-non-tabular` - Same as in `dump.to_path`
 - `add-filehash-to-path` - Same as in `dump.to_path`
 - `counters` - Same as in `dump.to_path`
+- `pretty-descriptor` - Same as in `dump.to_path`
 
 #### *Note*
 

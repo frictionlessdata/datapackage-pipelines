@@ -13,7 +13,6 @@ develop-eggs/
 dist/
 downloads/
 eggs/
-env/
 .eggs/
 lib64/
 parts/
@@ -88,4 +87,5 @@ celerybeat-schedule
 # Resources created by our tests
 my-spiffy-resource.zip
 tests/env/dummy/dump.zip
-.code
+.dpp
+.coverage.*

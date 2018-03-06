@@ -3,7 +3,6 @@ from datapackage.exceptions import DataPackageException
 from ..parsers.base_parser import PipelineSpec
 
 from ..errors import SpecError
-from ...status import status
 
 
 class DependencyMissingException(Exception):
@@ -13,7 +12,7 @@ class DependencyMissingException(Exception):
         self.missing = missing
 
 
-def resolve_dependencies(spec: PipelineSpec, all_pipeline_ids):
+def resolve_dependencies(spec: PipelineSpec, all_pipeline_ids, status_mgr):
 
     cache_hash = ''
     dependencies = spec.pipeline_details.get('dependencies', ())
@@ -26,7 +25,7 @@ def resolve_dependencies(spec: PipelineSpec, all_pipeline_ids):
     for dependency in dependencies:
         if 'pipeline' in dependency:
             pipeline_id = dependency['pipeline']
-            ps = status.get(pipeline_id)
+            ps = status_mgr.get(pipeline_id)
             if not ps.runnable():
                 spec.validation_errors.append(
                     SpecError('Invalid dependency',

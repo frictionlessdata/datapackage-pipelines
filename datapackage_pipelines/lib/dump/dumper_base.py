@@ -4,13 +4,14 @@ import shutil
 import tempfile
 import logging
 import hashlib
+import copy
 
 import requests
 from tableschema.exceptions import CastError
 from tableschema.schema import Schema
 
 from ...utilities.stat_utils import STATS_DPP_KEY, STATS_OUT_DP_URL_KEY
-from ...utilities.resources import get_path, PROP_STREAMED_FROM, is_a_url, streaming
+from ...utilities.resources import get_path, PROP_STREAMED_FROM, PROP_STREAMING, is_a_url, streaming
 from ...utilities.extended_json import json
 from ...wrapper import ingest, spew
 
@@ -91,10 +92,10 @@ class DumperBase(object):
             try:
                 schema.cast_row(to_cast)
             except CastError as e:
-                logging.exception('Failed to cast row %r', row)
-                for err in e.errors:
-                    logging.error('Failed to cast row: %s', err)
-                raise
+                logging.error('Failed to cast row %r', row)
+                for i, err in enumerate(e.errors):
+                    logging.error('%d) %s', i+1, err)
+                raise ValueError(row) from e
 
             for k in set(row.keys()) - set(field_names):
                 if k not in warned_fields:
@@ -120,8 +121,6 @@ class DumperBase(object):
         counter = 0
         for row in resource:
             counter += 1
-            if counter % 10000 == 0:
-                logging.info('Dumped %d rows', DumperBase.get_attr(datapackage, self.datapackage_rowcount, 0) + counter)
             yield row
         DumperBase.inc_attr(datapackage, self.datapackage_rowcount, counter)
         DumperBase.inc_attr(resource_spec, self.resource_rowcount, counter)
@@ -142,6 +141,7 @@ class DumperBase(object):
         if self.datapackage_hash:
             datapackage_hash = hashlib.md5(
                         json.dumps(datapackage,
+                                   indent=2 if parameters.get('pretty-descriptor') else None,
                                    sort_keys=True,
                                    ensure_ascii=True).encode('ascii')
                     ).hexdigest()
@@ -198,8 +198,13 @@ class FileDumper(DumperBase):
     def handle_datapackage(self, datapackage, parameters, stats):
         if parameters.get('handle-non-tabular', False):
             self.copy_non_tabular_resources(datapackage)
+        datapackage_copy = copy.deepcopy(datapackage)
+        for res in datapackage_copy['resources']:
+            if PROP_STREAMING in res:
+                del res[PROP_STREAMING]
         temp_file = tempfile.NamedTemporaryFile(mode="w+", delete=False, encoding='utf-8')
-        json.dump(datapackage, temp_file, sort_keys=True, ensure_ascii=False)
+        indent = 2 if parameters.get('pretty-descriptor') else None
+        json.dump(datapackage_copy, temp_file, indent=indent, sort_keys=True, ensure_ascii=False)
         temp_file_name = temp_file.name
         filesize = temp_file.tell()
         temp_file.close()

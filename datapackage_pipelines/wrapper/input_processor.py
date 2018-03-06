@@ -42,8 +42,9 @@ class ResourceIterator(object):
             try:
                 self.table_schema.cast_row(to_validate)
             except CastError as e:
-                for err in e.errors:
-                    logging.error('Failed to cast row: %s', err.message)
+                logging.error('Failed to validate row: %s', e)
+                for i, err in enumerate(e.errors):
+                    logging.error('%d) %s', i+1, err.message)
                 raise ValueError('Casting failed for row %r' % line) from e
             except TypeError as e:
                 raise ValueError('Validation failed for row %r' % line) from e

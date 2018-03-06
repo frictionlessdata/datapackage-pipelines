@@ -13,11 +13,10 @@ from flask_cors import CORS
 from flask_jsonpify import jsonify
 
 from datapackage_pipelines.celery_tasks.celery_tasks import execute_update_pipelines
-from datapackage_pipelines.status import status
-from datapackage_pipelines.specs import register_all_pipelines
+from datapackage_pipelines.status import status_mgr
 from datapackage_pipelines.utilities.stat_utils import user_facing_stats
 
-register_all_pipelines()
+YAML_DUMPER = yaml.CDumper if 'CDumper' in yaml.__dict__ else yaml.Dumper
 
 
 def datestr(x):
@@ -27,11 +26,12 @@ def datestr(x):
 
 
 def yamlize(x):
-    ret = yaml.dump(x, default_flow_style=False)
+    ret = yaml.dump(x, default_flow_style=False, Dumper=YAML_DUMPER)
     return ret
 
 
 markdown = mistune.Markdown(hard_wrap=True)
+status = status_mgr()
 
 
 def make_hierarchies(statuses):

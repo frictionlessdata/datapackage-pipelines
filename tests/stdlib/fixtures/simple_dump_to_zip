@@ -55,4 +55,4 @@ dump.to_zip
 --
 {"mystring":"a", "mynumber": 2.0, "mydate": {"type{date}": "2016-12-31"}}
 
-{"bytes": 726, "count_of_rows": 1, "dataset_name": "test", "hash": "a730863e99517930eab15f55036d309f"}
+{"bytes": 703, "count_of_rows": 1, "dataset_name": "test", "hash": "a730863e99517930eab15f55036d309f"}

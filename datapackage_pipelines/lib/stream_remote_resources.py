@@ -1,5 +1,6 @@
 import os
 import logging
+import time
 from datetime import date
 import itertools
 from decimal import Decimal
@@ -31,7 +32,7 @@ def _tostr(value):
     assert False, "Internal error - don't know how to handle %r of type %r" % (value, type(value))
 
 
-def _reader(opener, _url):
+def _reader(opener, _url, max_row=-1):
     yield None
     filename = os.path.basename(_url)
     logging.info('%s: OPENING %s', filename, _url)
@@ -51,6 +52,9 @@ def _reader(opener, _url):
         if i % 10000 == 0:
             logging.info('%s: %d rows', filename, i)
             # break
+        if i == max_row:
+            break
+
     _close()
     logging.info('%s: TOTAL %d rows', filename, i)
 
@@ -109,7 +113,7 @@ def suffix_remover(format):
     return _func
 
 
-def stream_reader(_resource, _url, _ignore_missing):
+def stream_reader(_resource, _url, _ignore_missing, limit_rows):
     def get_opener(__url, __resource):
         def opener():
             _params = dict(headers=1)
@@ -123,14 +127,17 @@ def stream_reader(_resource, _url, _ignore_missing):
             else:
                 if format is None:
                     _, format = tabulator.helpers.detect_scheme_and_format(__url)
-                try:
-                    parser_cls = tabulator.helpers.import_attribute(tabulator.config.PARSERS[format])
-                except KeyError:
-                    logging.error("Unknown format %r", format)
-                    raise
-                _params.update(
-                    dict(x for x in __resource.items()
-                         if x[0] in parser_cls.options))
+                if format in tabulator.config.SUPPORTED_COMPRESSION:
+                    format = None
+                else:
+                    try:
+                        parser_cls = tabulator.helpers.import_attribute(tabulator.config.PARSERS[format])
+                    except KeyError:
+                        logging.error("Unknown format %r", format)
+                        raise
+                    _params.update(
+                        dict(x for x in __resource.items()
+                             if x[0] in parser_cls.options))
                 _params.update(
                     dict(x for x in __resource.items()
                          if x[0] in {'headers', 'scheme', 'encoding', 'sample_size', 'allow_html',
@@ -138,7 +145,8 @@ def stream_reader(_resource, _url, _ignore_missing):
                 if isinstance(_params.get('skip_rows'), int):  # Backwards compatibility
                     _params['skip_rows'] = list(range(1, _params.get('skip_rows') + 1))
 
-            _params['format'] = format
+            if format is not None:
+                _params['format'] = format
 
             constants = _resource.get('constants', {})
             constant_headers = list(constants.keys())
@@ -146,20 +154,30 @@ def stream_reader(_resource, _url, _ignore_missing):
             _stream = tabulator.Stream(__url, **_params,
                                        post_parse=[suffix_remover(format),
                                                    add_constants(constant_headers, constant_values)])
-            try:
-                _stream.open()
-                _headers = dedupe(_stream.headers + constant_headers)
-                _schema = __resource.get('schema')
-                if _schema is not None:
-                    _schema = Schema(_schema)
-                return _schema, _headers, _stream, _stream.close
-            except tabulator.exceptions.TabulatorException as e:
-                logging.warning("Error while opening resource from url %s: %r",
-                                _url, e)
-                _stream.close()
-                if not _ignore_missing:
-                    raise
-                return {}, [], [], lambda: None
+            retry = 0
+            backoff = 2
+            while True:
+                try:
+                    _stream.open()
+                    _headers = dedupe(_stream.headers + constant_headers)
+                    _schema = __resource.get('schema')
+                    if _schema is not None:
+                        _schema = Schema(_schema)
+                    return _schema, _headers, _stream, _stream.close
+                except tabulator.exceptions.TabulatorException as e:
+                    logging.warning("Error while opening resource from url %s: %r",
+                                    _url, e)
+                    _stream.close()
+                    retry += 1
+                    if retry <= 3:
+                        logging.warning("Retrying after %d seconds (%d/3)", backoff, retry)
+                        time.sleep(backoff)
+                        backoff *= 2
+                        continue
+                    else:
+                        if not _ignore_missing:
+                            raise
+                        return {}, [], [], lambda: None
         return opener
 
     schema, headers, stream, close = get_opener(url, _resource)()
@@ -179,7 +197,8 @@ def stream_reader(_resource, _url, _ignore_missing):
         .islice(
             _reader(
                 get_opener(_url, _resource),
-                _url),
+                _url,
+                max_row=limit_rows),
             1, None)
 
 
@@ -187,6 +206,7 @@ parameters, datapackage, resource_iterator = ingest()
 
 resources = ResourceMatcher(parameters.get('resources'))
 ignore_missing = parameters.get('ignore-missing', False)
+limit_rows = parameters.get('limit-rows', -1)
 
 new_resource_iterator = []
 for resource in datapackage['resources']:
@@ -205,7 +225,7 @@ for resource in datapackage['resources']:
 
         resource[PROP_STREAMING] = True
 
-        rows = stream_reader(resource, url, ignore_missing or url == "")
+        rows = stream_reader(resource, url, ignore_missing or url == "", limit_rows)
 
         new_resource_iterator.append(rows)
 

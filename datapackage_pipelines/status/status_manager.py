@@ -1,26 +1,27 @@
 import os
 
 from .backend_redis import RedisBackend
-from .backend_sqlite import SqliteBackend
+from .backend_filesystem import FilesystemBackend
 from .pipeline_status import PipelineStatus
 
 
 class StatusManager(object):
 
-    def __init__(self, host=None, port=6379):
+    def __init__(self, *, host=None, port=6379, root_dir='.'):
         self._host = host
         self._port = port
         self._backend = None
+        self._root_dir = root_dir
 
     @property
     def backend(self):
         if self._backend is None:
             redis = RedisBackend(self._host, self._port)
-            self._backend = redis if redis.is_init() else SqliteBackend()
+            self._backend = redis if redis.is_init() else FilesystemBackend(self._root_dir)
         return self._backend
 
     def get_errors(self, _id):
-        ex = self.get_last_execution(_id)
+        ex = self.get(_id).get_last_execution()
         if ex is not None:
             return ex.error_log
         return []
@@ -41,4 +42,16 @@ class StatusManager(object):
         return self.get(pipeline_id).deregister()
 
 
-status: StatusManager = StatusManager(os.environ.get('DPP_REDIS_HOST'))
+_status = None
+_root_dir = None
+
+
+def status_mgr(root_dir='.') -> StatusManager:
+    global _status
+    global _root_dir
+
+    if _status is not None and _root_dir == root_dir:
+        return _status
+    _root_dir = root_dir
+    _status = StatusManager(host=os.environ.get('DPP_REDIS_HOST'), root_dir=root_dir)
+    return _status

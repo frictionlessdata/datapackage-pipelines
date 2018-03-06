@@ -41,3 +41,11 @@ class BaseParser(object):
     @classmethod
     def to_pipeline(cls, spec, fullpath):
         raise NotImplementedError()
+
+    @staticmethod
+    def replace_root_dir(path, root_dir):
+        if root_dir.endswith('/'):
+            root_dir = root_dir[:-1]
+        if path.startswith(root_dir):
+            path = '.' + path[len(root_dir):]
+        return path
