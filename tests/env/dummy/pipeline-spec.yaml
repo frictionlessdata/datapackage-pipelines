@@ -1,3 +1,40 @@
+pipeline-test-stream-remote-resources-nones:
+  pipeline:
+    -
+      run: add_metadata
+      parameters:
+        name: test_nulls
+    - 
+      run: add_resource
+      parameters:
+        name: nulls-test
+        url: https://ams3.digitaloceanspaces.com/budgetkey-files/spending-reports/2017-4-%D7%9E%D7%A9%D7%A8%D7%93%20%D7%94%D7%97%D7%A7%D7%9C%D7%90%D7%95%D7%AA%20%D7%95%D7%A4%D7%99%D7%AA%D7%95%D7%97%20%D7%94%D7%9B%D7%A4%D7%A8-%D7%9E%D7%A9%D7%A8%D7%93%20%D7%94%D7%97%D7%9C%D7%A7%D7%90%D7%95%D7%AA%20%D7%95%D7%AA%D7%A0%D7%95%D7%A4%D7%94-2018-02-19-7b8a.xlsx
+        sheet: 1
+        constants:
+          a-number: 5
+          a-string: number
+          a-bool: no
+    - 
+      run: stream_remote_resources
+    -
+      run: set_types
+      parameters:
+       types:
+        a-number:
+          constraints:
+            required: true
+            min-value: 5
+        a-string:
+          constraints:
+            required: true
+        a-bool:
+          constraints:
+            required: true
+    -
+      run: dump.to_path
+      parameters:
+        out-path: nulls-test
+
 pipeline-test-basic:
   pipeline:
     -

@@ -36,7 +36,7 @@ def _reader(opener, _url, max_row=-1):
     yield None
     filename = os.path.basename(_url)
     logging.info('%s: OPENING %s', filename, _url)
-    _schema, _headers, _reader, _close = opener()
+    _schema, _headers, _, _reader, _close = opener()
     num_headers = len(_headers)
     i = 0
     for i, row in enumerate(_reader):
@@ -63,7 +63,7 @@ def dedupe(headers):
     _dedupped_headers = []
     for hdr in headers:
         if hdr is None:
-            continue
+            break
         hdr = str(hdr).strip()
         if len(hdr) == 0:
             continue
@@ -78,10 +78,13 @@ def dedupe(headers):
     return _dedupped_headers
 
 
-def add_constants(extra_headers, extra_values):
+def add_constants(extra_headers, extra_values, columns):
     def _func(extended_rows):
         for number, headers, row in extended_rows:
-            row = row[:len(headers)] + extra_values
+            if columns is None:
+                row = row[:len(headers)] + extra_values
+            else:
+                row = row[:columns] + extra_values
             yield number, headers + extra_headers, row
     return _func
 
@@ -113,7 +116,9 @@ def suffix_remover(format):
 
 
 def stream_reader(_resource, _url, _ignore_missing, limit_rows):
-    def get_opener(__url, __resource):
+    def get_opener(__url, __resource, columns=None):
+        _columns = columns
+
         def opener():
             _params = dict(headers=1)
             format = __resource.get("format")
@@ -152,17 +157,19 @@ def stream_reader(_resource, _url, _ignore_missing, limit_rows):
             constant_values = [constants.get(k) for k in constant_headers]
             _stream = tabulator.Stream(__url, **_params,
                                        post_parse=[suffix_remover(format),
-                                                   add_constants(constant_headers, constant_values)])
+                                                   add_constants(constant_headers, constant_values, _columns)])
             retry = 0
             backoff = 2
             while True:
                 try:
                     _stream.open()
-                    _headers = dedupe(_stream.headers + constant_headers)
+                    _headers = dedupe(_stream.headers)
+                    __columns = len(_headers)
+                    _headers = dedupe(_headers + constant_headers)
                     _schema = __resource.get('schema')
                     if _schema is not None:
                         _schema = Schema(_schema)
-                    return _schema, _headers, _stream, _stream.close
+                    return _schema, _headers, __columns, _stream, _stream.close
                 except tabulator.exceptions.TabulatorException as e:
                     logging.warning("Error while opening resource from url %s: %r",
                                     _url, e)
@@ -176,10 +183,10 @@ def stream_reader(_resource, _url, _ignore_missing, limit_rows):
                     else:
                         if not _ignore_missing:
                             raise
-                        return {}, [], [], lambda: None
+                        return {}, [], 0, [], lambda: None
         return opener
 
-    schema, headers, stream, close = get_opener(url, _resource)()
+    schema, headers, columns, stream, close = get_opener(url, _resource)()
     if schema is None:
         schema = {
             'fields': [
@@ -195,7 +202,7 @@ def stream_reader(_resource, _url, _ignore_missing, limit_rows):
     return itertools\
         .islice(
             _reader(
-                get_opener(_url, _resource),
+                get_opener(_url, _resource, columns),
                 _url,
                 max_row=limit_rows),
             1, None)
