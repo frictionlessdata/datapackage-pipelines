@@ -77,7 +77,8 @@ def run(pipeline_id, verbose, use_cache, dirty, force, concurrency, slave):
 
     results = run_pipelines(pipeline_id, '.', use_cache,
                             dirty, force, concurrency,
-                            verbose, progress_cb, slave)
+                            verbose, progress_cb if not verbose else None,
+                            slave)
     if not slave:
         logging.info('RESULTS:')
         errd = False
