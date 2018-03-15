@@ -124,7 +124,22 @@ def fix_fields(fields_):
     return fields_
 
 
-fields = fix_fields(parameters['fields'])
+def fix_fields_list(fields_list):
+    fields_ = {}
+    for spec in fields_list:
+        name = spec.pop('name')
+        fields_[name] = spec
+        spec['name'] = spec.get('source-name', name)
+        if 'aggregate' not in spec:
+            spec['aggregate'] = 'any'
+    return fields_
+
+if isinstance(parameters['fields'], dict):
+    maintain_fields_order = False
+    fields = fix_fields(parameters['fields'])
+else:
+    maintain_fields_order = True
+    fields = fix_fields_list(parameters['fields'])
 full = parameters.get('full', True)
 
 
@@ -207,7 +222,7 @@ def new_resource_iterator(resource_iterator_):
 def process_target_resource(source_spec, resource):
     target_fields = \
         resource.setdefault('schema', {}).setdefault('fields', [])
-    added_fields = sorted(fields.keys())
+    added_fields = sorted(fields.keys()) if not maintain_fields_order else fields.keys()
     for field in added_fields:
         spec = fields[field]
         agg = spec['aggregate']

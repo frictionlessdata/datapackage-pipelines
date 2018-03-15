@@ -608,6 +608,24 @@ The resulting dataset could look like:
 | Vertigo 2 (2016) | Lindsay Lohan | Lee Ka Shing | 2          | 11000000       | 22000000       |
 | ...              |               |              |            |                |                |
 
+To maintain the order of fields, you can provide them as a list. In the following example the additional fields are guaranteed to appear in the given order, after the other source fields
+
+```yaml
+- run: join
+  parameters:
+    source:
+      name: screen_actor_salaries
+      key: "{production} ({year})"
+    target:
+      name: mgm_movies
+      key: "{title}"
+    fields:
+      - name: total_salaries
+        source-name: salary
+        aggregate: 'sum'
+      - name: num_actors
+        aggregate: 'count'
+```
 
 ### ***`filter`***
 
