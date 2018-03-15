@@ -24,6 +24,17 @@ def identity(x):
     return x
 
 
+def update_counter(curr, new):
+    if new is None:
+        return curr
+    if curr is None:
+        curr = collections.Counter()
+    if isinstance(new, str):
+        new = [new]
+    curr.update(new)
+    return curr
+
+
 Aggregator = collections.namedtuple('Aggregator',
                                     ['func', 'finaliser', 'dataType', 'copyProperties'])
 AGGREGATORS = {
@@ -77,6 +88,12 @@ AGGREGATORS = {
                         lambda value: value if value is not None else [],
                         'array',
                         False),
+    'counters': Aggregator(lambda curr, new:
+                           update_counter(curr, new),
+                           lambda value:
+                           list(collections.Counter(value).most_common()) if value is not None else [],
+                           'array',
+                           False),
 }
 
 parameters, datapackage, resource_iterator = ingest()

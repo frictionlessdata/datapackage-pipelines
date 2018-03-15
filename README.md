@@ -492,6 +492,9 @@ _Parameters_:
 
     - `count` - count the number of occurrences of a specific key
       For this method, specifying `name` is not required. In case it is specified, `count` will count the number of non-null values for that source field.
+    
+    - `counters` - count the number of occurrences of distinct values
+      Will return an array of 2-tuples of the form `[value, count-of-value]`.
 
     - `set` - collect all distinct values of the aggregated field, unordered
 
