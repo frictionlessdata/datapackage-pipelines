@@ -134,6 +134,7 @@ def fix_fields_list(fields_list):
             spec['aggregate'] = 'any'
     return fields_
 
+
 if isinstance(parameters['fields'], dict):
     maintain_fields_order = False
     fields = fix_fields(parameters['fields'])
