@@ -17,7 +17,7 @@ add_resource
         {
             "name": "my-spiffy-resource",
             "dpp:streamedFrom": "http://not.existent.com",
-            "path": "."
+            "path": "_"
         }
     ]
 }

@@ -17,7 +17,7 @@ add_resource
         {
             "name": "my-env-resource",
             "dpp:streamedFrom": "file://tests/data/sample.csv",
-            "path": "."
+            "path": "_"
         }
     ]
 }
