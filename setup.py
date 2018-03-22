@@ -37,7 +37,7 @@ INSTALL_REQUIRES = [
     'flask-cors',
     'flask-jsonpify',
     'cachetools',
-    'tabulator>=1.0.0',
+    'tabulator>=1.14.0',
 ]
 SPEEDUP_REQUIRES = [
     'plyvel<1',
