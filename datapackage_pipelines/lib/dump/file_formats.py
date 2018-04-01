@@ -26,7 +26,7 @@ class FileFormat():
         try:
             return dict((k, self.__transform_value(v, fields[k]['type']))
                         for k, v in row.items())
-        except:
+        except Exception:
             logging.exception('Failed to transform row %r', row)
             raise
 
