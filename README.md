@@ -1477,4 +1477,4 @@ Whenever that pipeline is queued, starts running or finishes running, all the ur
 
 ## Known Issues
 
-* loading a resource which has a lot of data in a single cell raises an exception (#112)
+* loading a resource which has a lot of data in a single cell raises an exception ([#112](https://github.com/frictionlessdata/datapackage-pipelines/pull/112#issue-160766294))
