@@ -7,11 +7,15 @@ from datapackage_pipelines.utilities.resource_matcher import ResourceMatcher
 from datapackage_pipelines.utilities.resources import tabular, PROP_STREAMING, \
     PROP_STREAMED_FROM
 
+import csv, sys
+
 
 class ResourceLoader(object):
 
     def __init__(self):
         self.parameters, self.dp, self.res_iter = ingest()
+        if self.parameters.get("large-resource"):
+            csv.field_size_limit(sys.maxsize)
 
     def __call__(self):
         url = self.parameters['url']
