@@ -20,7 +20,6 @@ load_resource
             "dpp:streaming": true,
             "profile": "data-resource",
             "path": "sample.csv",
-            "encoding": "utf-8",
             "schema": {
                 "fields": [
                     {"name": "first_name", "type": "string"},
