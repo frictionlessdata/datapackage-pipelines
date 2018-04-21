@@ -100,14 +100,12 @@ def progress_report_handler(callback, queue):
             return
 
 
-def match_pipeline_id(arg, pipeline_id, ignore_patterns=None):
-    if not ignore_patterns:
-        ignore_patterns = []
-    if arg == 'all' and 'all' not in ignore_patterns:
+def match_pipeline_id(arg, pipeline_id):
+    if arg == 'all':
         return True
-    elif ',' in arg and ',' not in ignore_patterns:
-        return any((match_pipeline_id(a, pipeline_id, ignore_patterns=[',']) for a in arg.split(',')))
-    elif arg.endswith('%') and '%' not in ignore_patterns:
+    elif ',' in arg:
+        return any((match_pipeline_id(a, pipeline_id) for a in arg.split(',')))
+    elif arg.endswith('%'):
         return pipeline_id.startswith(arg[:-1])
     else:
         return pipeline_id == arg
