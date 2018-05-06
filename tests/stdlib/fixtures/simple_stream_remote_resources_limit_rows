@@ -1,0 +1,45 @@
+stream_remote_resources
+--
+{
+    "limit-rows": 5
+}
+--
+{
+    "name": "test",
+    "resources": [
+        {
+            "name": "my-remote-resource",
+            "dpp:streamedFrom": "file://tests/data/sample.csv",
+            "path": "_"
+        }
+    ]
+}
+--
+--
+{
+    "name": "test",
+    "resources": [
+        {
+            "name": "my-remote-resource",
+            "path": "data/my-remote-resource.csv",
+            "dpp:streamedFrom": "file://tests/data/sample.csv",
+            "dpp:streaming": true,
+            "schema": {
+                "fields": [
+                    {"name": "first_name", "type": "string"},
+                    {"name": "last_name", "type": "string"},
+                    {"name": "house", "type": "string"},
+                    {"name": "age", "type": "string"}
+                ]
+            }
+        }
+    ]
+}
+--
+{"first_name": "Tyrion", "house": "Lannister", "last_name": "Lannister", "age": "27"}
+{"first_name": "Jaime", "house": "Lannister", "last_name": "Lannister", "age": "34"}
+{"first_name": "Cersei", "house": "Lannister", "last_name": "Lannister", "age": "34"}
+{"first_name": "Jon", "house": "Stark", "last_name": "Snow", "age": "17"}
+{"first_name": "Sansa", "house": "Stark", "last_name": "Stark", "age": "14"}
+
+{}

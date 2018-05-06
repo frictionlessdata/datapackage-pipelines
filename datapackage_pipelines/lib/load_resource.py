@@ -1,4 +1,5 @@
 import itertools
+import copy
 
 import datapackage
 
@@ -34,16 +35,21 @@ class ResourceLoader(object):
             if resource_index == i or \
                     (name_matcher is not None and name_matcher.match(orig_res.descriptor.get('name'))):
                 found = True
-                orig_res.descriptor[PROP_STREAMED_FROM] = orig_res.source
-                self.dp['resources'].append(orig_res.descriptor)
-                if tabular(orig_res.descriptor) and stream:
-                    orig_res.descriptor[PROP_STREAMING] = True
+                desc = copy.deepcopy(orig_res.descriptor)
+                if 'primaryKey' in desc.get('schema', {}):
+                    # Avoid duplication checks
+                    del orig_res.descriptor['schema']['primaryKey']
+                    orig_res.commit()
+                desc[PROP_STREAMED_FROM] = orig_res.source
+                self.dp['resources'].append(desc)
+                if tabular(desc) and stream:
+                    desc[PROP_STREAMING] = True
                     orig_res_iter = orig_res.iter(keyed=True)
                     if limit_rows:
                         orig_res_iter = itertools.islice(orig_res_iter, limit_rows)
                     selected_resources.append(orig_res_iter)
                 else:
-                    orig_res.descriptor[PROP_STREAMING] = False
+                    desc[PROP_STREAMING] = False
 
         assert found, "Failed to find resource with index or name matching %r" % resource
         spew(self.dp, itertools.chain(self.res_iter, selected_resources))

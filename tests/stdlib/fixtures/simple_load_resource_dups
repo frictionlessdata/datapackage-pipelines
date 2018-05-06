@@ -1,8 +1,8 @@
 load_resource
 --
 {
-    "resource": 0,
-    "url": "tests/data/datapackage.json"
+    "resource": "my-spiffy-resource",
+    "url": "tests/data/datapackage3.json"
 }
 --
 {
@@ -15,11 +15,11 @@ load_resource
     "name": "test",
     "resources": [
         {
-            "dpp:streamedFrom": "%(base)s/tests/data/sample.csv",
+            "dpp:streamedFrom": "%(base)s/tests/data/sample.dups.csv",
             "name": "my-spiffy-resource",
             "dpp:streaming": true,
             "profile": "data-resource",
-            "path": "sample.csv",
+            "path": "sample.dups.csv",
             "schema": {
                 "fields": [
                     {"name": "first_name", "type": "string"},
@@ -39,6 +39,7 @@ load_resource
 {"first_name": "Jaime", "house": "Lannister", "last_name": "Lannister", "age": 34}
 {"first_name": "Cersei", "house": "Lannister", "last_name": "Lannister", "age": 34}
 {"first_name": "Jon", "house": "Stark", "last_name": "Snow", "age": 17}
+{"first_name": "Sansa", "house": "Stark", "last_name": "Stark", "age": 14}
 {"first_name": "Sansa", "house": "Stark", "last_name": "Stark", "age": 14}
 {"first_name": "Arya", "house": "Stark", "last_name": "Stark", "age": 11}
 {"first_name": "Bran", "house": "Stark", "last_name": "Stark", "age": 10}
