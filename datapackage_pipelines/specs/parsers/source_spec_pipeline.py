@@ -46,10 +46,11 @@ class SourceSpecPipelineParser(BaseParser):
                         pipeline_id = cls.replace_root_dir(pipeline_id, root_dir)
                         for dependency in pipeline_details.get('dependencies', []):
                             if 'pipeline' in dependency:
-                                if not dependency['pipeline'].startswith('./'):
-                                    dependency['pipeline'] = \
-                                        os.path.join(cls.replace_root_dir(dirpath, root_dir),
-                                                     dependency['pipeline'])
+                                if dependency['pipeline'].startswith('./'):
+                                    dependency['pipeline'] = dependency['pipeline'][2:]
+                                dependency['pipeline'] = \
+                                    os.path.join(cls.replace_root_dir(dirpath, root_dir),
+                                                 dependency['pipeline'])
                         yield PipelineSpec(path=pipeline_details.get('__path', dirpath),
                                            pipeline_id=pipeline_id,
                                            pipeline_details=pipeline_details,
