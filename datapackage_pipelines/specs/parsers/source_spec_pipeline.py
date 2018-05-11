@@ -38,9 +38,10 @@ class SourceSpecPipelineParser(BaseParser):
                                pipeline_details={'pipeline': []})
             return
 
+        base = cls.replace_root_dir(dirpath, root_dir)
         if generator.internal_validate(source_spec):
             try:
-                spec = generator.internal_generate(source_spec)
+                spec = generator.internal_generate(source_spec, base)
                 for pipeline_id, pipeline_details in spec:
                     if pipeline_id[0] == ':' and pipeline_id[-1] == ':':
                         module = pipeline_id[1:-1]
@@ -48,22 +49,6 @@ class SourceSpecPipelineParser(BaseParser):
                         yield from cls.to_pipeline(pipeline_details,
                                                    os.path.join(dirpath, filename))
                     else:
-                        pipeline_id = os.path.join(dirpath, pipeline_id)
-                        pipeline_id = cls.replace_root_dir(pipeline_id, root_dir)
-                        for dependency in pipeline_details.get('dependencies', []):
-                            if 'pipeline' in dependency:
-                                dependency['pipeline'] = \
-                                    cls.fix_dependency(dependency['pipeline'], dirpath, root_dir)
-                        for step in pipeline_details.get('pipeline'):
-                            params = {}
-                            for k, v in step.get('parameters', {}).items():
-                                dep_prefix = 'dependency://'
-                                if isinstance(v, str) and v.startswith(dep_prefix):
-                                    v = dep_prefix + cls.fix_dependency(v[len(dep_prefix):],
-                                                                        dirpath, root_dir)
-
-                                params[k] = v
-                            step['parameters'] = params
                         yield PipelineSpec(path=pipeline_details.get('__path', dirpath),
                                            pipeline_id=pipeline_id,
                                            pipeline_details=pipeline_details,
