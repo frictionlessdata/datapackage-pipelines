@@ -63,6 +63,8 @@ class ProcessorFixtureTestsBase(object):
             pass
         dp_out = rejsonize(dp_out)
         dp_in = rejsonize(dp_in)
+        data_in = reline(data_in)
+        data_out = reline(data_out)
         data_in = (dp_in + '\n\n' + data_in).encode('utf8')
         return data_in, data_out, dp_out, params, processor_file
 
@@ -123,6 +125,22 @@ class ProcessorFixtureTestsBase(object):
 
 def rejsonize(s):
     return json.dumps(json.loads(s), sort_keys=True, ensure_ascii=True)
+
+def reline(data):
+    data = data.strip().split('\n')
+    out = ''
+    buf = ''
+    for line in data:
+        if not line.strip():
+            out += '\n'
+        buf += line
+        try:
+            buf = json.loads(buf)
+        except:
+            continue
+        out += json.dumps(buf, sort_keys=True, ensure_ascii=True) + '\n'
+        buf = ''
+    return out
 
 
 @mock.patch('datapackage_pipelines.wrapper.ingest')
