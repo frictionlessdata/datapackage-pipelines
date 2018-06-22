@@ -36,6 +36,7 @@ INSTALL_REQUIRES = [
     'awesome-slugify',
     'flask-cors',
     'flask-jsonpify',
+    'flask-basicauth',
     'cachetools',
     'tabulator>=1.14.0',
 ]

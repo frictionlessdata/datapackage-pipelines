@@ -126,6 +126,7 @@ class ProcessorFixtureTestsBase(object):
 def rejsonize(s):
     return json.dumps(json.loads(s), sort_keys=True, ensure_ascii=True)
 
+
 def reline(data):
     data = data.strip().split('\n')
     out = ''
@@ -136,7 +137,7 @@ def reline(data):
         buf += line
         try:
             buf = json.loads(buf)
-        except:
+        except Exception:
             continue
         out += json.dumps(buf, sort_keys=True, ensure_ascii=True) + '\n'
         buf = ''

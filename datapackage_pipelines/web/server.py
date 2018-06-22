@@ -11,8 +11,10 @@ from flask import Blueprint
 from flask import Flask, render_template, abort, redirect
 from flask_cors import CORS
 from flask_jsonpify import jsonify
+from flask_basicauth import BasicAuth
 
-from datapackage_pipelines.celery_tasks.celery_tasks import execute_update_pipelines
+from datapackage_pipelines.celery_tasks.celery_tasks import \
+    execute_update_pipelines
 from datapackage_pipelines.status import status_mgr
 from datapackage_pipelines.utilities.stat_utils import user_facing_stats
 
@@ -243,6 +245,16 @@ def badge(pipeline_id):
 
 app = Flask(__name__)
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
+
+if os.environ.get('DPP_BASIC_AUTH_USERNAME', False) \
+   and os.environ.get('DPP_BASIC_AUTH_PASSWORD', False):
+    app.config['BASIC_AUTH_USERNAME'] = os.environ['DPP_BASIC_AUTH_USERNAME']
+    app.config['BASIC_AUTH_PASSWORD'] = os.environ['DPP_BASIC_AUTH_PASSWORD']
+
+    basic_auth = BasicAuth(app)
+
+    app.config['BASIC_AUTH_FORCE'] = True
+
 CORS(app)
 
 url_prefix = os.environ.get('DPP_BASE_PATH', '/')
