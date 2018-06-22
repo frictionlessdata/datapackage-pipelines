@@ -18,7 +18,7 @@ class GeneratorBase(object):
         schema = self._get_schema()
         try:
             schema.validate(source)
-        except jsonschema.ValidationError as e:
+        except jsonschema.ValidationError:
             return False
         return True
 
