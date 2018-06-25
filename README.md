@@ -1460,6 +1460,8 @@ To start the web server run `dpp serve` from the command line and browse to http
 
 The environment variable `DPP_BASE_PATH` will determine whether dashboard will be served from root or from another base path (example value: `/pipelines/`).
 
+The dashboard endpoints can be made to require authentication by adding a username and password with the environment variables `DPP_BASIC_AUTH_USERNAME` and `DPP_BASIC_AUTH_PASSWORD`.
+
 ## Integrating with other services
 
 Datapackage-pipelines can call a predefined webhook on any pipeline event. This might allow for potential integrations with other applications.
