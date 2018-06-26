@@ -20,6 +20,7 @@ class PathDumper(FileDumper):
         path_part = os.path.dirname(path)
         PathDumper.__makedirs(path_part)
         shutil.copy(filename, path)
+        os.chmod(path, 0o666)
         return path
 
     @staticmethod
