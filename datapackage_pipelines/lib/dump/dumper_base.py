@@ -5,6 +5,7 @@ import tempfile
 import logging
 import hashlib
 import copy
+import importlib
 
 import requests
 from tableschema.exceptions import CastError
@@ -31,6 +32,11 @@ class DumperBase(object):
         self.resource_bytes = counters.get('resource-bytes', 'bytes')
         self.resource_hash = counters.get('resource-hash', 'hash')
         self.add_filehash_to_path = self.__params.get('add-filehash-to-path', False)
+        self.file_format_handlers = {
+            'csv': CSVFormat,
+            'json': JSONFormat
+        }
+        self.file_format_handlers.update(**self.__params.get('file-formatters', {}))
 
     def __call__(self):
         self.initialize(self.__params)
@@ -185,10 +191,9 @@ class FileDumper(DumperBase):
             else:
                 _, file_format = os.path.splitext(get_path(resource))
                 file_format = file_format[1:]
-            file_formatter = {
-                'csv': CSVFormat,
-                'json': JSONFormat
-            }.get(file_format)
+            file_formatter = self.file_format_handlers.get(file_format)
+            if isinstance(file_formatter, list):
+                file_formatter = getattr(importlib.import_module(file_formatter[0]), file_formatter[1])
             if file_format is not None:
                 self.file_formatters[resource['name']] = file_formatter()
                 self.file_formatters[resource['name']].prepare_resource(resource)
