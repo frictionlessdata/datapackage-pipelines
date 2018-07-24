@@ -1,5 +1,6 @@
 import itertools
 import copy
+import logging
 
 import datapackage
 
@@ -7,6 +8,13 @@ from datapackage_pipelines.wrapper import ingest, spew, get_dependency_datapacka
 from datapackage_pipelines.utilities.resource_matcher import ResourceMatcher
 from datapackage_pipelines.utilities.resources import tabular, PROP_STREAMING, \
     PROP_STREAMED_FROM
+
+
+def progress_logger(iter, log_progress_rows):
+    for i, row in enumerate(iter, 1):
+        yield row
+        if i % log_progress_rows == 0:
+            logging.info('loaded {} rows'.format(i))
 
 
 class ResourceLoader(object):
@@ -17,6 +25,7 @@ class ResourceLoader(object):
     def __call__(self):
         url = self.parameters['url']
         limit_rows = self.parameters.get('limit-rows')
+        log_progress_rows = self.parameters.get('log-progress-rows')
         dep_prefix = 'dependency://'
         if url.startswith(dep_prefix):
             dependency = url[len(dep_prefix):].strip()
@@ -47,6 +56,8 @@ class ResourceLoader(object):
                     orig_res_iter = orig_res.iter(keyed=True)
                     if limit_rows:
                         orig_res_iter = itertools.islice(orig_res_iter, limit_rows)
+                    if log_progress_rows:
+                        orig_res_iter = progress_logger(orig_res_iter, log_progress_rows)
                     selected_resources.append(orig_res_iter)
                 else:
                     desc[PROP_STREAMING] = False

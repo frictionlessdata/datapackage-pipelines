@@ -44,3 +44,11 @@ verbose-logs-with-sleep:
       log_line()
       time.sleep(.1)
       log_line()
+
+load-resource-progress-log:
+  pipeline:
+  - run: load_resource
+    parameters:
+      url: ../data/datapackage.json
+      resource: my-spiffy-resource
+      log-progress-rows: 2
