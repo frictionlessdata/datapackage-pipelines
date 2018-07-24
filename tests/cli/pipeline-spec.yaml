@@ -63,4 +63,12 @@ custom-formatters:
       counters:
         resource-hash: ''
       file-formatters:
-        xlsx: [custom_formatters, XLSXFormat]
+        xlsx: custom_formatters.xlsx_format.XLSXFormat
+  - run: dump.to_zip
+    parameters:
+      out-file: custom_formatters/datapackage.zip
+      force-format: false
+      counters:
+        resource-hash: ''
+      file-formatters:
+        xlsx: custom_formatters.xlsx_format.XLSXFormat

@@ -192,7 +192,8 @@ class FileDumper(DumperBase):
                 _, file_format = os.path.splitext(get_path(resource))
                 file_format = file_format[1:]
             file_formatter = self.file_format_handlers.get(file_format)
-            if isinstance(file_formatter, list):
+            if isinstance(file_formatter, str):
+                file_formatter = file_formatter.rsplit('.', 1)
                 file_formatter = getattr(importlib.import_module(file_formatter[0]), file_formatter[1])
             if file_format is not None:
                 self.file_formatters[resource['name']] = file_formatter()
