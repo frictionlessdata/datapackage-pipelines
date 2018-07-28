@@ -3,6 +3,8 @@ sudo: required
 language: python
 python:
 - 3.6
+services:
+- docker
 env:
   global:
   - TOXENV="py${PYTHON_VERSION//./}"
@@ -14,6 +16,8 @@ install:
 script:
 - make lint
 - make test
+- make build
+- tests/docker/test.sh
 after_success:
 - coveralls
 deploy:
