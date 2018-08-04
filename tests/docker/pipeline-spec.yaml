@@ -5,6 +5,13 @@ test:
     parameters:
       out-path: data
 
+test-sleep:
+  pipeline:
+  - run: sleep
+    code: |
+      import os
+      os.system('sleep 86400')
+
 test-package:
   pipeline:
   - run: test
