@@ -24,7 +24,7 @@ class ResourceLoader(object):
             assert url is not None, "Failed to fetch output datapackage for dependency '%s'" % dependency
         resource = self.parameters['resource']
         stream = self.parameters.get('stream', True)
-        name_matcher = ResourceMatcher(resource) if isinstance(resource, str) else None
+        name_matcher = ResourceMatcher(resource) if isinstance(resource, (str, list)) else None
         resource_index = resource if isinstance(resource, int) else None
 
         selected_resources = []
