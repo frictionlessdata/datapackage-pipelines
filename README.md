@@ -385,6 +385,12 @@ All properties of the loaded resource will be copied - `path` and `schema` inclu
 
 - `stream` - if provided and is set to false, then the resource will be added to the datapackage but not streamed.
 
+- `resources` - can be used instead of `resource` property to support loading resources and modify the output resource metadata
+    - Value is a dict containing mapping between source resource name to load and dict containing descriptor updates to apply to the loaded resource
+
+- `required` - if provided and set to false, will not fail if datapackage is not available or resource is missing
+
+
 *Example*:
 
 ```yaml
@@ -396,6 +402,13 @@ All properties of the loaded resource will be copied - `path` and `schema` inclu
   parameters:
     url: http://example.com/my-other-datapackage/datapackage.json
     resource: 1
+- run: load_resource
+  parameters:
+    url: http://example.com/my-datapackage/datapackage.json
+    resources:
+      my-resource:
+        name: my-renamed-resource
+        path: my-renamed-resource.csv
 ```
 
 
