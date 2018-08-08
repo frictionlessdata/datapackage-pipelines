@@ -44,7 +44,9 @@ def test_pipeline():
                             force=False,
                             concurrency=1,
                             verbose_logs=True)
-    assert all(result.success for result in results)
+    failed_results = list(filter(lambda r: not r.success, results))
+    assert len(failed_results) == 0, "Failed results: {}".format(["{} {}".format(result.pipeline_id, ", ".join(result.errors))
+                                                                 for result in failed_results])
     assert len(called_hooks) == 3
     assert called_hooks == [
         {"pipeline_id": "./tests/env/dummy/pipeline-test-hooks", "event": "queue"},
