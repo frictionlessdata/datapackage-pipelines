@@ -44,3 +44,31 @@ verbose-logs-with-sleep:
       log_line()
       time.sleep(.1)
       log_line()
+
+custom-formatters:
+  pipeline:
+  - run: load_resource
+    parameters:
+      url: ../data/datapackage.json
+      resource: my-spiffy-resource
+  - run: duplicate
+    parameters:
+      source: my-spiffy-resource
+      target-name: my-spiffy-xlsx-resource
+      target-path: my-spiffy-resource.xlsx
+  - run: dump.to_path
+    parameters:
+      out-path: custom_formatters
+      force-format: false
+      counters:
+        resource-hash: ''
+      file-formatters:
+        xlsx: custom_formatters.xlsx_format.XLSXFormat
+  - run: dump.to_zip
+    parameters:
+      out-file: custom_formatters/datapackage.zip
+      force-format: false
+      counters:
+        resource-hash: ''
+      file-formatters:
+        xlsx: custom_formatters.xlsx_format.XLSXFormat
