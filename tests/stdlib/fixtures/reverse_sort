@@ -1,0 +1,109 @@
+sort
+--
+{
+    "resources": ["concat-a1", "concat-a2"],
+    "sort-by": "{a3} {a2} {a1}",
+    "reverse": true
+}
+--
+{
+    "name": "test",
+    "resources": [
+        {
+            "name": "concat-a1",
+            "dpp:streaming": true,
+            "path": "concat-a1.csv",
+            "schema": { "fields": [
+                {"name": "a1", "type": "string"},
+                {"name": "a2", "type": "string"},
+                {"name": "a3", "type": "string"}
+            ]}
+        },
+        {
+            "name": "concat-a2",
+            "dpp:streaming": true,
+            "path": "concat-a2.csv",
+            "schema": { "fields": [
+                {"name": "a1", "type": "string"},
+                {"name": "a2", "type": "string"},
+                {"name": "a3", "type": "string"}
+            ]}
+        },
+        {
+            "name": "concat-c",
+            "dpp:streaming": true,
+            "path": "concat-c.csv",
+            "schema": { "fields": [
+                {"name": "c1", "type": "string"},
+                {"name": "c2", "type": "string"},
+                {"name": "c3", "type": "string"}
+            ]}
+        }
+    ]
+}
+--
+{"a1":"a1","a2":"a1","a3":"a2"}
+{"a1":"a2","a2":"a1","a3":"a1"}
+{"a1":"a3","a2":"a2","a3":"a2"}
+{"a1":"a4","a2":"a2","a3":"a1"}
+
+{"a1":"a1","a2":"a3","a3":"a2"}
+{"a1":"a2","a2":"a3","a3":"a1"}
+{"a1":"a3","a2":"a4","a3":"a2"}
+{"a1":"a4","a2":"a4","a3":"a1"}
+
+{"c1":"c13","c2":"c23","c3":"c33"}
+{"c1":"c12","c2":"c22","c3":"c32"}
+{"c1":"c11","c2":"c21","c3":"c31"}
+--
+{
+    "name": "test",
+    "resources": [
+        {
+            "name": "concat-a1",
+            "dpp:streaming": true,
+            "path": "concat-a1.csv",
+            "schema": { "fields": [
+                {"name": "a1", "type": "string"},
+                {"name": "a2", "type": "string"},
+                {"name": "a3", "type": "string"}
+            ]}
+        },
+        {
+            "name": "concat-a2",
+            "dpp:streaming": true,
+            "path": "concat-a2.csv",
+            "schema": { "fields": [
+                {"name": "a1", "type": "string"},
+                {"name": "a2", "type": "string"},
+                {"name": "a3", "type": "string"}
+            ]}
+        },
+        {
+            "name": "concat-c",
+            "dpp:streaming": true,
+            "path": "concat-c.csv",
+            "schema": { "fields": [
+                {"name": "c1", "type": "string"},
+                {"name": "c2", "type": "string"},
+                {"name": "c3", "type": "string"}
+            ]}
+        }
+    ]
+}
+--
+{"a1":"a3","a2":"a2","a3":"a2"}
+{"a1":"a1","a2":"a1","a3":"a2"}
+{"a1":"a4","a2":"a2","a3":"a1"}
+{"a1":"a2","a2":"a1","a3":"a1"}
+
+{"a1":"a3","a2":"a4","a3":"a2"}
+{"a1":"a1","a2":"a3","a3":"a2"}
+{"a1":"a4","a2":"a4","a3":"a1"}
+{"a1":"a2","a2":"a3","a3":"a1"}
+
+{"c1":"c13","c2":"c23","c3":"c33"}
+{"c1":"c12","c2":"c22","c3":"c32"}
+{"c1":"c11","c2":"c21","c3":"c31"}
+
+{}

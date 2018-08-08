@@ -52,3 +52,32 @@ load-resource-progress-log:
       url: ../data/datapackage.json
       resource: my-spiffy-resource
       log-progress-rows: 2
+
+custom-formatters:
+  pipeline:
+  - run: load_resource
+    parameters:
+      url: ../data/datapackage.json
+      resource: my-spiffy-resource
+      log-progress-rows: 2
+  - run: duplicate
+    parameters:
+      source: my-spiffy-resource
+      target-name: my-spiffy-xlsx-resource
+      target-path: my-spiffy-resource.xlsx
+  - run: dump.to_path
+    parameters:
+      out-path: custom_formatters
+      force-format: false
+      counters:
+        resource-hash: ''
+      file-formatters:
+        xlsx: custom_formatters.xlsx_format.XLSXFormat
+  - run: dump.to_zip
+    parameters:
+      out-file: custom_formatters/datapackage.zip
+      force-format: false
+      counters:
+        resource-hash: ''
+      file-formatters:
+        xlsx: custom_formatters.xlsx_format.XLSXFormat

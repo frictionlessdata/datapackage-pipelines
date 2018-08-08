@@ -660,12 +660,13 @@ Filtering just American and European countries, leaving out countries whose main
 Sort streamed resources by key.
 
 `sort` accepts a list of resources and a key (as a Python format string on row fields).
-It will output the rows for each resource, sorted according to the key (in ascending order).
+It will output the rows for each resource, sorted according to the key (in ascending order by default).
 
 _Parameters_:
 
 - `resources` - Which resources to sort. Same semantics as `resources` in `stream_remote_resources`.
 - `sort-by` - String, which would be interpreted as a Python format string used to form the key (e.g. `{<field_name_1>}:{field_name_2}`)
+- `reverse` - Optional boolean, if set to true - sorts in reverse order
 
 *Examples*:
 
@@ -1033,6 +1034,10 @@ _Parameters_:
 - `pretty-descriptor`: Specifies how datapackage descriptor (`datapackage.json`) file will look like:
     - `False` (default) - descriptor will be written in one line.
     - `True` - descriptor will have indents and new lines for each key, so it becomes more human-readable.
+- `file-formatters`: Specifies custom file format handlers. An object with mapping of format name to Python module and class name.
+    - Allows to override the existing `csv` and `json` format handlers or add support for new formats.
+    - Note that such changes may make the resulting datapackage incompatible with the frictionlessdata specs and may cause interoperability problems.
+    - Example usage: [pipeline-spec.yaml](tests/cli/pipeline-spec.yaml) (under the `custom-formatters` pipeline), [XLSXFormat class](tests/cli/custom_formatters/xlsx_format.py)
 
 ### ***`dump.to_zip`***
 
@@ -1046,6 +1051,7 @@ _Parameters_:
 - `add-filehash-to-path` - Same as in `dump.to_path`
 - `counters` - Same as in `dump.to_path`
 - `pretty-descriptor` - Same as in `dump.to_path`
+- `file-formatters` - Same as in `dump.to_path`
 
 #### *Note*
 
