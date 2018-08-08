@@ -18,19 +18,19 @@ class GeneratorBase(object):
         schema = self._get_schema()
         try:
             schema.validate(source)
-        except jsonschema.ValidationError as e:
+        except jsonschema.ValidationError:
             return False
         return True
 
-    def internal_generate(self, source):
+    def internal_generate(self, source, base):
         if not self.internal_validate(source):
             return None
-        return self.generate_pipeline(source)
+        return self.generate_pipeline(source, base)
 
     @classmethod
     def get_schema(cls):
         raise NotImplementedError()
 
     @classmethod
-    def generate_pipeline(cls, source):
+    def generate_pipeline(cls, source, base):
         raise NotImplementedError()

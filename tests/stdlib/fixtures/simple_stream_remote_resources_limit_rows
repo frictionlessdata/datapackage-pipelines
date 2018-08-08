@@ -1,6 +1,7 @@
 stream_remote_resources
 --
 {
+    "limit-rows": 5
 }
 --
 {
@@ -8,10 +9,8 @@ stream_remote_resources
     "resources": [
         {
             "name": "my-remote-resource",
-            "dpp:streamedFrom": "file://tests/data/sample.zip",
-            "path": "_",
-            "compression": "zip",
-            "format": "csv"
+            "dpp:streamedFrom": "file://tests/data/sample.csv",
+            "path": "_"
         }
     ]
 }
@@ -23,10 +22,8 @@ stream_remote_resources
         {
             "name": "my-remote-resource",
             "path": "data/my-remote-resource.csv",
-            "dpp:streamedFrom": "file://tests/data/sample.zip",
+            "dpp:streamedFrom": "file://tests/data/sample.csv",
             "dpp:streaming": true,
-            "compression": "zip",
-            "format": "csv",
             "schema": {
                 "fields": [
                     {"name": "first_name", "type": "string"},
@@ -44,9 +41,5 @@ stream_remote_resources
 {"first_name": "Cersei", "house": "Lannister", "last_name": "Lannister", "age": "34"}
 {"first_name": "Jon", "house": "Stark", "last_name": "Snow", "age": "17"}
 {"first_name": "Sansa", "house": "Stark", "last_name": "Stark", "age": "14"}
-{"first_name": "Arya", "house": "Stark", "last_name": "Stark", "age": "11"}
-{"first_name": "Bran", "house": "Stark", "last_name": "Stark", "age": "10"}
-{"first_name": "Rickon", "house": "Stark", "last_name": "Stark", "age": "5"}
-{"first_name": "Daenerys", "house": "Targaryen", "last_name": "Targaryen", "age": "16"}
 
 {}

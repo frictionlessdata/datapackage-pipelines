@@ -8,7 +8,7 @@ stream_remote_resources
         {
             "name": "my-remote-txt-format-resource",
             "dpp:streamedFrom": "file://tests/data/sample.txt",
-            "path": ".",
+            "path": "_",
             "format": "txt"
         }
     ]

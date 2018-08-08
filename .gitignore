@@ -42,6 +42,7 @@ nosetests.xml
 coverage.xml
 *,cover
 .hypothesis/
+.pytest_cache
 
 # Translations
 *.mo
@@ -87,5 +88,10 @@ celerybeat-schedule
 # Resources created by our tests
 my-spiffy-resource.zip
 tests/env/dummy/dump.zip
+tests/env/dummy/hooks-outputs
+tests/env/dummy/nulls-test
+tests/env/dummy/type-tests-output
+tests/env/dummy/type-tests-output2
+tests/cli/.code
 .dpp
 .coverage.*

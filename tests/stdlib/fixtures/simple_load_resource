@@ -20,13 +20,15 @@ load_resource
             "dpp:streaming": true,
             "profile": "data-resource",
             "path": "sample.csv",
-            "encoding": "utf-8",
             "schema": {
                 "fields": [
                     {"name": "first_name", "type": "string"},
                     {"name": "last_name", "type": "string"},
                     {"name": "house", "type": "string"},
                     {"name": "age", "type": "integer"}
+                ],
+                "primaryKey": [
+                    "first_name", "last_name"
                 ]
             }
         }

@@ -2,6 +2,7 @@ import csv
 import json
 import os
 import isodate
+import logging
 
 from datapackage_pipelines.utilities.extended_json import DATETIME_FORMAT, DATE_FORMAT, TIME_FORMAT
 from datapackage_pipelines.utilities.resources import get_path
@@ -22,8 +23,12 @@ class FileFormat():
             field.update(self.PYTHON_DIALECT.get(field['type'], {}))
 
     def __transform_row(self, row, fields):
-        return dict((k, self.__transform_value(v, fields[k]['type']))
-                    for k, v in row.items())
+        try:
+            return dict((k, self.__transform_value(v, fields[k]['type']))
+                        for k, v in row.items())
+        except Exception:
+            logging.exception('Failed to transform row %r', row)
+            raise
 
     @classmethod
     def __transform_value(cls, value, field_type):

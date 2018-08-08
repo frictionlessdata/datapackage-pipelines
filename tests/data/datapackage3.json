@@ -4,7 +4,7 @@
   "resources": [
     {
       "name": "my-spiffy-resource",
-      "path": "sample.csv",
+      "path": "sample.dups.csv",
       "schema": {
         "fields": [
           {"name": "first_name", "type": "string"},

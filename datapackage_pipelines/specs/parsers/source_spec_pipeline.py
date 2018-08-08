@@ -14,6 +14,12 @@ class SourceSpecPipelineParser(BaseParser):
         return filename.endswith(cls.SOURCE_FILENAME_SUFFIX)
 
     @classmethod
+    def fix_dependency(cls, dep, dirpath, root_dir):
+        if dep.startswith('./'):
+            dep = dep[2:]
+        return os.path.join(cls.replace_root_dir(dirpath, root_dir), dep)
+
+    @classmethod
     def to_pipeline(cls, source_spec, fullpath, root_dir='.'):
         filename = os.path.basename(fullpath)
         dirpath = os.path.dirname(fullpath)
@@ -32,9 +38,10 @@ class SourceSpecPipelineParser(BaseParser):
                                pipeline_details={'pipeline': []})
             return
 
+        base = cls.replace_root_dir(dirpath, root_dir)
         if generator.internal_validate(source_spec):
             try:
-                spec = generator.internal_generate(source_spec)
+                spec = generator.internal_generate(source_spec, base)
                 for pipeline_id, pipeline_details in spec:
                     if pipeline_id[0] == ':' and pipeline_id[-1] == ':':
                         module = pipeline_id[1:-1]
@@ -42,14 +49,6 @@ class SourceSpecPipelineParser(BaseParser):
                         yield from cls.to_pipeline(pipeline_details,
                                                    os.path.join(dirpath, filename))
                     else:
-                        pipeline_id = os.path.join(dirpath, pipeline_id)
-                        pipeline_id = cls.replace_root_dir(pipeline_id, root_dir)
-                        for dependency in pipeline_details.get('dependencies', []):
-                            if 'pipeline' in dependency:
-                                if not dependency['pipeline'].startswith('./'):
-                                    dependency['pipeline'] = \
-                                        os.path.join(cls.replace_root_dir(dirpath, root_dir),
-                                                     dependency['pipeline'])
                         yield PipelineSpec(path=pipeline_details.get('__path', dirpath),
                                            pipeline_id=pipeline_id,
                                            pipeline_details=pipeline_details,

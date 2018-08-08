@@ -1,7 +1,13 @@
 load_resource
 --
 {
-    "resource": "t.+",
+    "resources": {
+        "my-spiffy-resource": {},
+        "the-spiffy-resource": {
+            "name": "renamed-spiffy-resource",
+            "path": "renamed-spiffy-resource.csv"
+        }
+    },
     "url": "tests/data/datapackage2.json"
 }
 --
@@ -16,7 +22,7 @@ load_resource
     "resources": [
         {
             "dpp:streamedFrom": "%(base)s/tests/data/sample.csv",
-            "name": "the-spiffy-resource",
+            "name": "my-spiffy-resource",
             "dpp:streaming": true,
             "profile": "data-resource",
             "path": "sample.csv",
@@ -30,11 +36,11 @@ load_resource
             }
         },
         {
-            "dpp:streamedFrom": "%(base)s/tests/data/sample2.csv",
-            "name": "the-other-spiffy-resource",
+            "dpp:streamedFrom": "%(base)s/tests/data/sample.csv",
+            "name": "renamed-spiffy-resource",
             "dpp:streaming": true,
             "profile": "data-resource",
-            "path": "sample2.csv",
+            "path": "renamed-spiffy-resource.csv",
             "schema": {
                 "fields": [
                     {"name": "first_name", "type": "string"},
@@ -60,5 +66,11 @@ load_resource
 {"first_name": "Tyrion", "house": "Lannister", "last_name": "Lannister", "age": 27}
 {"first_name": "Jaime", "house": "Lannister", "last_name": "Lannister", "age": 34}
 {"first_name": "Cersei", "house": "Lannister", "last_name": "Lannister", "age": 34}
+{"first_name": "Jon", "house": "Stark", "last_name": "Snow", "age": 17}
+{"first_name": "Sansa", "house": "Stark", "last_name": "Stark", "age": 14}
+{"first_name": "Arya", "house": "Stark", "last_name": "Stark", "age": 11}
+{"first_name": "Bran", "house": "Stark", "last_name": "Stark", "age": 10}
+{"first_name": "Rickon", "house": "Stark", "last_name": "Stark", "age": 5}
+{"first_name": "Daenerys", "house": "Targaryen", "last_name": "Targaryen", "age": 16}
 
 {}

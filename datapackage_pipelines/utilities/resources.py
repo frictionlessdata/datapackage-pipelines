@@ -31,6 +31,6 @@ def get_path(descriptor):
     return None
 
 
-PATH_PLACEHOLDER = '.'
+PATH_PLACEHOLDER = '_'
 PROP_STREAMED_FROM = 'dpp:streamedFrom'
 PROP_STREAMING = 'dpp:streaming'

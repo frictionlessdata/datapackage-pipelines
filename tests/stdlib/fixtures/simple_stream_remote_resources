@@ -9,7 +9,7 @@ stream_remote_resources
         {
             "name": "my-remote-resource",
             "dpp:streamedFrom": "file://tests/data/sample.csv",
-            "path": "."
+            "path": "_"
         }
     ]
 }

@@ -1,8 +1,15 @@
 load_resource
 --
 {
-    "resource": 0,
-    "url": "tests/data/datapackage.json"
+    "resources": {
+        "my-spiffy-resource": {},
+        "nonexistent-spiffy-resource": {
+            "name": "renamed-spiffy-resource",
+            "path": "renamed-spiffy-resource.csv"
+        }
+    },
+    "url": "tests/data/datapackage2.json",
+    "required": false
 }
 --
 {
@@ -26,9 +33,6 @@ load_resource
                     {"name": "last_name", "type": "string"},
                     {"name": "house", "type": "string"},
                     {"name": "age", "type": "integer"}
-                ],
-                "primaryKey": [
-                    "first_name", "last_name"
                 ]
             }
         }

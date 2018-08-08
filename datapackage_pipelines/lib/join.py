@@ -1,6 +1,7 @@
 import copy
 import os
 import collections
+import logging
 
 from datapackage_pipelines.wrapper import ingest, spew
 from datapackage_pipelines.utilities.kvstore import KVStore
@@ -24,6 +25,29 @@ def identity(x):
     return x
 
 
+def median(values):
+    if values is None:
+        return None
+    ll = len(values)
+    mid = int(ll/2)
+    values = sorted(values)
+    if ll % 2 == 0:
+        return (values[mid - 1] + values[mid])/2
+    else:
+        return values[mid]
+
+
+def update_counter(curr, new):
+    if new is None:
+        return curr
+    if curr is None:
+        curr = collections.Counter()
+    if isinstance(new, str):
+        new = [new]
+    curr.update(new)
+    return curr
+
+
 Aggregator = collections.namedtuple('Aggregator',
                                     ['func', 'finaliser', 'dataType', 'copyProperties'])
 AGGREGATORS = {
@@ -39,6 +63,11 @@ AGGREGATORS = {
                       lambda value: value[1] / value[0],
                       None,
                       False),
+    'median': Aggregator(lambda curr, new:
+                         curr + [new] if curr is not None else [new],
+                         median,
+                         None,
+                         True),
     'max': Aggregator(lambda curr, new:
                       max(new, curr) if curr is not None else new,
                       identity,
@@ -77,6 +106,12 @@ AGGREGATORS = {
                         lambda value: value if value is not None else [],
                         'array',
                         False),
+    'counters': Aggregator(lambda curr, new:
+                           update_counter(curr, new),
+                           lambda value:
+                           list(collections.Counter(value).most_common()) if value is not None else [],
+                           'array',
+                           False),
 }
 
 parameters, datapackage, resource_iterator = ingest()
@@ -198,10 +233,14 @@ def process_target_resource(source_spec, resource):
         copy_properties = AGGREGATORS[agg].copyProperties
         to_copy = {}
         if data_type is None:
-            source_field = \
-                next(filter(lambda f, spec_=spec:
-                            f['name'] == spec_['name'],
-                            source_spec['schema']['fields']))
+            try:
+                source_field = \
+                    next(filter(lambda f, spec_=spec:
+                                f['name'] == spec_['name'],
+                                source_spec['schema']['fields']))
+            except StopIteration:
+                logging.error('Failed to find field with name %s in resource %s', spec['name'], source_spec['name'])
+                raise
             if copy_properties:
                 to_copy = copy.deepcopy(source_field)
             data_type = source_field['type']

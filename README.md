@@ -385,6 +385,12 @@ All properties of the loaded resource will be copied - `path` and `schema` inclu
 
 - `stream` - if provided and is set to false, then the resource will be added to the datapackage but not streamed.
 
+- `resources` - can be used instead of `resource` property to support loading resources and modify the output resource metadata
+    - Value is a dict containing mapping between source resource name to load and dict containing descriptor updates to apply to the loaded resource
+
+- `required` - if provided and set to false, will not fail if datapackage is not available or resource is missing
+
+
 *Example*:
 
 ```yaml
@@ -396,6 +402,13 @@ All properties of the loaded resource will be copied - `path` and `schema` inclu
   parameters:
     url: http://example.com/my-other-datapackage/datapackage.json
     resource: 1
+- run: load_resource
+  parameters:
+    url: http://example.com/my-datapackage/datapackage.json
+    resources:
+      my-resource:
+        name: my-renamed-resource
+        path: my-renamed-resource.csv
 ```
 
 
@@ -492,6 +505,9 @@ _Parameters_:
 
     - `count` - count the number of occurrences of a specific key
       For this method, specifying `name` is not required. In case it is specified, `count` will count the number of non-null values for that source field.
+    
+    - `counters` - count the number of occurrences of distinct values
+      Will return an array of 2-tuples of the form `[value, count-of-value]`.
 
     - `set` - collect all distinct values of the aggregated field, unordered
 
@@ -642,12 +658,13 @@ Filtering just American and European countries, leaving out countries whose main
 Sort streamed resources by key.
 
 `sort` accepts a list of resources and a key (as a Python format string on row fields).
-It will output the rows for each resource, sorted according to the key (in ascending order).
+It will output the rows for each resource, sorted according to the key (in ascending order by default).
 
 _Parameters_:
 
 - `resources` - Which resources to sort. Same semantics as `resources` in `stream_remote_resources`.
 - `sort-by` - String, which would be interpreted as a Python format string used to form the key (e.g. `{<field_name_1>}:{field_name_2}`)
+- `reverse` - Optional boolean, if set to true - sorts in reverse order
 
 *Examples*:
 
@@ -1015,6 +1032,10 @@ _Parameters_:
 - `pretty-descriptor`: Specifies how datapackage descriptor (`datapackage.json`) file will look like:
     - `False` (default) - descriptor will be written in one line.
     - `True` - descriptor will have indents and new lines for each key, so it becomes more human-readable.
+- `file-formatters`: Specifies custom file format handlers. An object with mapping of format name to Python module and class name.
+    - Allows to override the existing `csv` and `json` format handlers or add support for new formats.
+    - Note that such changes may make the resulting datapackage incompatible with the frictionlessdata specs and may cause interoperability problems.
+    - Example usage: [pipeline-spec.yaml](tests/cli/pipeline-spec.yaml) (under the `custom-formatters` pipeline), [XLSXFormat class](tests/cli/custom_formatters/xlsx_format.py)
 
 ### ***`dump.to_zip`***
 
@@ -1028,6 +1049,7 @@ _Parameters_:
 - `add-filehash-to-path` - Same as in `dump.to_path`
 - `counters` - Same as in `dump.to_path`
 - `pretty-descriptor` - Same as in `dump.to_path`
+- `file-formatters` - Same as in `dump.to_path`
 
 #### *Note*
 
@@ -1457,6 +1479,8 @@ To start the web server run `dpp serve` from the command line and browse to http
 
 The environment variable `DPP_BASE_PATH` will determine whether dashboard will be served from root or from another base path (example value: `/pipelines/`).
 
+The dashboard endpoints can be made to require authentication by adding a username and password with the environment variables `DPP_BASIC_AUTH_USERNAME` and `DPP_BASIC_AUTH_PASSWORD`.
+
 ## Integrating with other services
 
 Datapackage-pipelines can call a predefined webhook on any pipeline event. This might allow for potential integrations with other applications.
@@ -1471,3 +1495,7 @@ Whenever that pipeline is queued, starts running or finishes running, all the ur
   "errors": [list-of-errors, when applicable]
 }
 ```
+
+## Known Issues
+
+* loading a resource which has a lot of data in a single cell raises an exception ([#112](https://github.com/frictionlessdata/datapackage-pipelines/pull/112#issue-160766294))

@@ -31,13 +31,14 @@ INSTALL_REQUIRES = [
     'mistune',
     'redis',
     'sqlalchemy',
-    'flask',
     'click',
     'awesome-slugify',
+    'flask<1.0.0',
     'flask-cors',
     'flask-jsonpify',
+    'flask-basicauth',
     'cachetools',
-    'tabulator>=1.0.0',
+    'tabulator>=1.14.0',
 ]
 SPEEDUP_REQUIRES = [
     'plyvel<1',
