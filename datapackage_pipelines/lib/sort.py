@@ -16,6 +16,7 @@ parameters, datapackage, resource_iterator = ingest()
 
 resources = ResourceMatcher(parameters['resources'])
 key_calc = KeyCalc(parameters['sort-by'])
+reverse = parameters.get('reverse', False)
 
 
 def sorter(resource):
@@ -23,7 +24,7 @@ def sorter(resource):
     for row_num, row in enumerate(resource):
         key = key_calc(row) + "{:08x}".format(row_num)
         db[key] = row
-    for key in db.keys():
+    for key in db.keys(reverse=reverse):
         yield db[key]
 
 

@@ -42,9 +42,10 @@ class SqliteDB(object):
                                 (key, value))
         self.db.commit()
 
-    def keys(self):
+    def keys(self, reverse=False):
         cursor = self.db.cursor()
-        keys = cursor.execute('''SELECT key FROM d ORDER BY key ASC''')
+        direction = 'DESC' if reverse else 'ASC'
+        keys = cursor.execute('''SELECT key FROM d ORDER BY key ''' + direction)
         for key, in keys:
             yield key
 
@@ -73,8 +74,8 @@ class LevelDB(object):
         key = key.encode('utf8')
         self.db.put(key, value)
 
-    def keys(self):
-        for key, value in self.db:
+    def keys(self, reverse=False):
+        for key, value in self.db.iterator(reverse=reverse):
             yield key.decode('utf8')
 
     def items(self):
@@ -109,9 +110,9 @@ class CachedDB(cachetools.LRUCache):
             value = cachetools.Cache.__getitem__(self, key)
             self._dbset(key, value)
 
-    def keys(self):
+    def keys(self, reverse=False):
         self.sync()
-        return self.db.keys()
+        return self.db.keys(reverse=reverse)
 
 
 KVStore = CachedDB

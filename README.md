@@ -658,12 +658,13 @@ Filtering just American and European countries, leaving out countries whose main
 Sort streamed resources by key.
 
 `sort` accepts a list of resources and a key (as a Python format string on row fields).
-It will output the rows for each resource, sorted according to the key (in ascending order).
+It will output the rows for each resource, sorted according to the key (in ascending order by default).
 
 _Parameters_:
 
 - `resources` - Which resources to sort. Same semantics as `resources` in `stream_remote_resources`.
 - `sort-by` - String, which would be interpreted as a Python format string used to form the key (e.g. `{<field_name_1>}:{field_name_2}`)
+- `reverse` - Optional boolean, if set to true - sorts in reverse order
 
 *Examples*:
 
