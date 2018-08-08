@@ -383,6 +383,8 @@ All properties of the loaded resource will be copied - `path` and `schema` inclu
 
 - `limit-rows` - if provided, will limit the number of rows fetched from the source. Takes an integer value which specifies how many rows of the source to stream.
 
+- `log-progress-rows` - if provided, will log the loading progress. Takes an integer value which specifies the number of rows interval at which to log the progress.
+
 - `stream` - if provided and is set to false, then the resource will be added to the datapackage but not streamed.
 
 - `resources` - can be used instead of `resource` property to support loading resources and modify the output resource metadata
