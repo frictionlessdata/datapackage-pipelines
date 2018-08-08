@@ -59,7 +59,6 @@ custom-formatters:
     parameters:
       url: ../data/datapackage.json
       resource: my-spiffy-resource
-      log-progress-rows: 2
   - run: duplicate
     parameters:
       source: my-spiffy-resource
