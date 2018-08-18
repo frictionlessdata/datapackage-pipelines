@@ -2,6 +2,7 @@
 
 [![Travis](https://img.shields.io/travis/frictionlessdata/datapackage-pipelines/master.svg)](https://travis-ci.org/frictionlessdata/datapackage-pipelines)
 [![Coveralls](http://img.shields.io/coveralls/frictionlessdata/datapackage-pipelines.svg?branch=master)](https://coveralls.io/r/frictionlessdata/datapackage-pipelines?branch=master)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/datapackage-pipelines.svg)
 
 ## The Basics
 
@@ -80,11 +81,15 @@ This limitation is by design - to keep the memory and disk requirements of each 
 
 First off, create a `pipeline-spec.yaml` file in your current directory. You can take the above file if you just want to try it out.
 
-Then, you can either install `datapackage-pipelines` locally:
+Then, you can either install `datapackage-pipelines` locally - note that _Python 3.6_ or higher is required due to use of [Type Hinting](https://www.python.org/dev/peps/pep-0484/):
 
 ```shell
 $ pip install datapackage-pipelines
+```
 
+You should now be able to use the `dpp` command:
+
+```shell
 $ dpp
 Available Pipelines:
 - ./worldbank-co2-emissions (*)
@@ -108,9 +113,7 @@ INFO :Main:SUCCESS: ./worldbank-co2-emissions
                     {'dataset-name': 'co2-emissions', 'total_row_count': 264}
 ```
 
-(Requirements: _Python 3.6_ or higher)
-
-Alternatively, you could use our docker image:
+Alternatively, you could use our [Docker](https://www.docker.com/) image:
 
 ```shell
 $ docker run -it -v `pwd`:/pipelines:rw \
