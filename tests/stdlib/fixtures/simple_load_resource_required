@@ -1,0 +1,20 @@
+load_resource
+--
+{
+    "resource": "foobar",
+    "url": "foo/bar/datapackage.json",
+    "required": false
+}
+--
+{
+    "name": "test",
+    "resources": []
+}
+--
+--
+{
+    "name": "test",
+    "resources": []
+}
+--
+{}

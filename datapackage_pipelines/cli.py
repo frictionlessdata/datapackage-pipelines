@@ -47,8 +47,9 @@ def serve():
 @click.option('--slave', default=False, is_flag=True)
 def run(pipeline_id, verbose, use_cache, dirty, force, concurrency, slave):
     """Run a pipeline by pipeline-id.
-       pipeline-id supports the '%' wildcard for any-suffix matching.
-       Use 'all' or '%' for running all pipelines"""
+       pipeline-id supports '%' wildcard for any-suffix matching,
+       'all' for running all pipelines and
+       comma-delimited list of pipeline ids"""
     exitcode = 0
 
     running = []

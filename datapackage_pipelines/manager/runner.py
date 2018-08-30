@@ -103,6 +103,8 @@ def progress_report_handler(callback, queue):
 def match_pipeline_id(arg, pipeline_id):
     if arg == 'all':
         return True
+    elif ',' in arg:
+        return any((match_pipeline_id(a, pipeline_id) for a in arg.split(',')))
     elif arg.endswith('%'):
         return pipeline_id.startswith(arg[:-1])
     else:

@@ -6,12 +6,14 @@ python:
 services:
 - docker
 env:
+  matrix:
+  - TOXENV="py36-sqlite" SPEEDUP=no DEPLOY=yes
+  - TOXENV="py36-plyvel" SPEEDUP=yes DEPLOY=no
   global:
-  - TOXENV="py${PYTHON_VERSION//./}"
   - LANG=en_US.UTF-8
 install:
 - sudo apt-get install libleveldb-dev libleveldb1
-- make install-speedup
+- if [ "${SPEEDUP}" == yes ]; then make install-speedup; else make install; fi
 - pip install coveralls
 script:
 - make lint
@@ -26,5 +28,6 @@ deploy:
   distributions: sdist bdist_wheel
   on:
     tags: true
+    condition: $DEPLOY = yes
   password:
     secure: fUK/7GUs1PCMFASOxi/iWY57LfWKUivyT4r+5Gp2GaH8ytG1ux83xnSHO3e1Jrjgdak8VcV4vhwXkhU/Eno6xjHA+1G/jeIBytR9k4FKvH89gFX416/MhCxn1WMAX3AQzKqm3/gp4niI66TK/YUX526ZvCMh3EXQkC2jyctqz2A6pvleGegLNCDmRFKwgQgLNrEtDFbLwdVTqsQ+CSviEn5qFOaG8/Nh5KMYKMgCbIaJ83H1PklG7dKbFGn2aKqdvsC4uYtXbJxVkoW0D2afaM+xh1IEDz02TNzFBdAutC9qEVsbqX4TkyD6+m2x13Q8WnsCQPkEsPbZFpNDwhtUQyWr7rS+j7UxurYPTJQqZrt9AR1SSYbfgSvcmpILC+jnrxzxAa9HpleIMNLb/zgzC4ZFD75LBhWmiChPckU32/mZ7zrFveiNcMom6I+I+JPukbnhlvlOvxHQmRaQoIlkZeTmUAv7Z/Z6xz0h7WB8v/kZ+AhQq2UuXeE6tQaN//mEy5YwVKRHTexRRUnCtN2m50vaTwpvJzcQvdej8kybWtAITOA99e4vgUmoDDk/6rmzIfJP5o4ir+anTaE/kku8ay10ki3d3gr4+hk48aGoUKQFDXuWaAzf4mgu+lDPN9j3/RTIrysjwTtxMbQMAa3Kf15xoevyg2Kh0FdENgQ2u4s=
