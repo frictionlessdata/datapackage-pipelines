@@ -5,6 +5,11 @@ import datetime
 parameters, datapackage, resources, stats = ingest() + ({},)
 
 
+if parameters.get('test-package'):
+    from dpp_docker_test import DPP_DOCKER_TEST
+    assert DPP_DOCKER_TEST
+
+
 datapackage['resources'] = [{'name': 'test', 'path': 'test.csv',
                              PROP_STREAMING: True,
                              'schema': {'fields': [{'name': 'a', 'type': 'string'}]}}]

@@ -4,3 +4,19 @@ test:
   - run: dump.to_path
     parameters:
       out-path: data
+
+test-sleep:
+  pipeline:
+  - run: sleep
+    code: |
+      import os
+      os.system('sleep 86400')
+
+test-package:
+  pipeline:
+  - run: test
+    parameters:
+      test-package: true
+  - run: dump.to_path
+    parameters:
+      out-path: data/test_package
