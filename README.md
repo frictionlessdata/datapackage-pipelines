@@ -81,7 +81,7 @@ This limitation is by design - to keep the memory and disk requirements of each 
 
 First off, create a `pipeline-spec.yaml` file in your current directory. You can take the above file if you just want to try it out.
 
-Then, you can either install `datapackage-pipelines` locally - note that _Python 3.6_ or higher is required due to use of [Type Hinting](https://www.python.org/dev/peps/pep-0484/):
+Then, you can either install `datapackage-pipelines` locally - note that _Python 3.6_ or higher is required due to use of [Type Hinting](https://www.python.org/dev/peps/pep-0484/) and advanced `asyncio` use:
 
 ```shell
 $ pip install datapackage-pipelines
