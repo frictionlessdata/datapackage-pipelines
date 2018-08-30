@@ -1,0 +1,6 @@
+test:
+  pipeline:
+  - run: test
+  - run: dump.to_path
+    parameters:
+      out-path: data

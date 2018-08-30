@@ -1,4 +1,4 @@
-.PHONY: all install list lint release test version
+.PHONY: all install list lint release test version build
 
 
 PACKAGE := $(shell grep '^PACKAGE =' setup.py | cut -d "'" -f2)
@@ -29,3 +29,7 @@ test:
 
 version:
 	@echo $(VERSION)
+
+build:
+	docker pull frictionlessdata/datapackage-pipelines &&\
+	docker build -t datapackage-pipelines --cache-from frictionlessdata/datapackage-pipelines .
