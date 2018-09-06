@@ -13,7 +13,7 @@ if [ "$1" = "server" ]; then
     echo "Starting Server"
     redis-server /etc/redis.conf --daemonize yes --dir /var/redis
     until [ `redis-cli ping | grep -c PONG` = 1 ]; do echo "Waiting 1s for Redis to load"; sleep 1; done
-    rm -f /var/run/dpp-celerybeat.pid /var/run/dpp-celeryd-management.pid /var/run/dpp-celeryd-worker.pid
+    rm -f /var/run/dpp/dpp-celerybeat.pid /var/run/dpp/dpp-celeryd-management.pid /var/run/dpp/dpp-celeryd-worker.pid
     python /dpp/docker/github_config.py
     dpp init
 
@@ -21,15 +21,15 @@ if [ "$1" = "server" ]; then
     redis-cli -n 6 FLUSHDB
     echo "Remaining `redis-cli -n 6 KEYS '*' | wc -l` keys"
 
-    SCHEDULER=1 python3 -m celery -b $DPP_CELERY_BROKER -A datapackage_pipelines.app -l INFO --pidfile=/var/run/dpp-celerybeat.pid beat &
-    python3 -m celery -b $DPP_CELERY_BROKER --concurrency=1 -A datapackage_pipelines.app -Q datapackage-pipelines-management -l INFO --pidfile=/var/run/dpp-celeryd-management.pid worker &
-    python3 -m celery -b $DPP_CELERY_BROKER --concurrency=4 -A datapackage_pipelines.app -Q datapackage-pipelines -l INFO --pidfile=/var/run/dpp-celeryd-worker.pid worker &
+    SCHEDULER=1 python3 -m celery -b $DPP_CELERY_BROKER -A datapackage_pipelines.app -l INFO --pidfile=/var/run/dpp/dpp-celerybeat.pid beat &
+    python3 -m celery -b $DPP_CELERY_BROKER --concurrency=1 -A datapackage_pipelines.app -Q datapackage-pipelines-management -l INFO --pidfile=/var/run/dpp/dpp-celeryd-management.pid worker &
+    python3 -m celery -b $DPP_CELERY_BROKER --concurrency=4 -A datapackage_pipelines.app -Q datapackage-pipelines -l INFO --pidfile=/var/run/dpp/dpp-celeryd-worker.pid worker &
     dpp serve &
     DPP_SERVE_PID=$!
     sleep 5
-    echo $DPP_SERVE_PID > /var/run/dpp-serve.pid
+    echo $DPP_SERVE_PID > /var/run/dpp/dpp-serve.pid
     wait $DPP_SERVE_PID
-    rm -f /var/run/dpp-serve.pid
+    rm -f /var/run/dpp/dpp-serve.pid
     exit 0
 elif [ "$1" = "server-reload" ]; then
     trap 'echo reloading...; while ! /dpp/docker/run.sh stop-server; do echo .; sleep 1; done' HUP
@@ -38,14 +38,14 @@ elif [ "$1" = "server-reload" ]; then
         wait $!
     done
 elif [ "$1" == "stop-server" ]; then
-    DPP_SERVE_PID=`cat /var/run/dpp-serve.pid 2>/dev/null` && rm /var/run/dpp-serve.pid
+    DPP_SERVE_PID=`cat /var/run/dpp/dpp-serve.pid 2>/dev/null` && rm /var/run/dpp/dpp-serve.pid
     [ "$?" != "0" ] && echo missing dpp-serve.pid && exit 1
     DPP_SERVE_PIDS="$(list_descendants $DPP_SERVE_PID) $DPP_SERVE_PID"
     pstree -p
     echo collecting pids to terminate
     PIDS=""
     for PIDFILE in dpp-celeryd-worker dpp-celeryd-management dpp-celerybeat redis; do
-        PID=`cat /var/run/$PIDFILE.pid 2>/dev/null` \
+        PID=`cat /var/run/dpp/$PIDFILE.pid 2>/dev/null` \
         && PIDS="$PIDS $(list_descendants $PID) $PID"
     done
     if [ "$PIDS" != "" ]; then
@@ -62,7 +62,7 @@ elif [ "$1" == "stop-server" ]; then
                           && kill -0 $PID 2>/dev/null && echo $PID not killed && exit 1; done
     fi
     for PIDFILE in dpp-celeryd-worker dpp-celeryd-management dpp-celerybeat redis; do
-        rm -f /var/run/$PIDFILE.pid
+        rm -f /var/run/dpp/$PIDFILE.pid
     done
     echo sending TERM signal to dpp-serve and descendats
     kill $DPP_SERVE_PIDS 2>/dev/null
