@@ -686,8 +686,8 @@ Filtering just American and European countries, leaving out countries whose main
 Duplicate a resource.
 
 `duplicate` accepts the name of a single resource in the datapackage. 
-It will then du[licate it in the output datapackage, with a diferent name and path.
-The duplicated resource will appear immedately after its original.
+It will then duplicate it in the output datapackage, with a different name and path.
+The duplicated resource will appear immediately after its original.
 
 _Parameters_:
 
@@ -813,7 +813,7 @@ _Parameters_:
 
 - `resources` - Resources to clean the field values. Same semantics as `resources` in `stream_remote_resources`
 
-_ `fields`- list of fields to replace values
+- `fields`- list of fields to replace values
   - `name` - name of the field to replace value
   - `patterns` - list of patterns to find and replace from field
     - `find` - String, interpreted as a regular expression to match field value
@@ -1017,8 +1017,8 @@ _Parameters_:
   If omitted, then `.` (the current directory) will be assumed.
 
 - `force-format` - Specifies whether to force all output files to be generated with the same format
-    - if `true` (the default), all resources will use the same format
-    - if `false`, format will be deduced from the file extension. Resources with unknown extensions will be discarded.
+    - if `True` (the default), all resources will use the same format
+    - if `False`, format will be deduced from the file extension. Resources with unknown extensions will be discarded.
 - `format` - Specifies the type of output files to be generated (if `force-format` is true): `csv` (the default) or `json`
 - `handle-non-tabular` - Specifies whether non tabular resources (i.e. resources without a `schema`) should be dumped as well to the resulting datapackage.
     (See note below for more details)
