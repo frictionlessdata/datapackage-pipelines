@@ -214,11 +214,15 @@ Each processor's input is automatically validated for correctness:
 ### Excluding directories form scanning for pipeline specs
 
 By default `.*` directories are excluded from scanning, you can add additional directory patterns for
-exclusion by setting `DPP_EXCLUDE_DIRNAMES` environment variable. For example, the following
-will ignore all directory names starting with test and with doc both in root and sub-directories:
+exclusion by creating a `.dpp_spec_ignore` file at the project root. This file has similar syntax
+to .gitignore and will exclude directories from scanning based on glob pattern matching.
+
+For example, the following file will ignore `test*` directories including inside subdirectories
+and `/docs` directory will only be ignored at the project root directory
 
 ```
-DPP_EXCLUDE_DIRNAMES='test*,doc*' dpp
+test*
+/docs
 ```
 
 ## The Standard Processor Library

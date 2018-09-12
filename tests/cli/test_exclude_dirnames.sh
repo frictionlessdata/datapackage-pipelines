@@ -1,21 +1,20 @@
 #!/usr/bin/env bash
 
-TEMPDIR=`mktemp -d`
+! dpp | grep ./tests/cli && echo missing tests/cli pipelines && exit 1
+! dpp | grep ./samples/worldbank && echo missing samples pipelines && exit 1
+! dpp | grep ./tests/env/ && echo missing tests/env pipelines && exit 1
+! dpp | grep ./tests/docker/ && echo missing tests/docker pipelines && exit 1
 
-pushd $TEMPDIR
-    mkdir ignored
-    echo 'ignored_pipeline: {pipeline: []}' > ignored/pipeline-spec.yaml
+echo "env
+/samples
+/tests/cli" > .dpp_spec_ignore
 
-    ! dpp | grep ignored/ignored_pipeline &&\
-        echo 'no DPP_EXCLUDE_DIRNAMES but ignored pipeline missing' &&\
-        exit 1
+dpp | grep ./tests/cli && echo tests/cli pipelines not excluded && exit 1
+dpp | grep ./samples/worldbank && echo samples pipelines not excluded && exit 1
+dpp | grep ./tests/env/ && echo tests/env pipelines not excluded && exit 1
+! dpp | grep ./tests/docker/ && echo missing tests/docker pipelines && exit 1
 
-    DPP_EXCLUDE_DIRNAMES=igno'*' dpp | grep ignored/ignored_pipeline &&\
-        echo 'ignored pipeline exists' &&\
-        exit 1
-popd
-
-rm -rf $TEMPDIR
+rm .dpp_spec_ignore
 
 echo Great Success
 exit 0

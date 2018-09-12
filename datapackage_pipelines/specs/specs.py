@@ -1,9 +1,9 @@
 import os
 from typing import Iterator  #noqa
-from fnmatch import fnmatch
 
 import yaml
 from datapackage_pipelines.status import status_mgr
+from datapackage_pipelines.utilities import dirtools
 
 from .resolver import resolve_executor
 from .errors import SpecError
@@ -38,14 +38,12 @@ def process_schedules(spec: PipelineSpec):
 
 
 def find_specs(root_dir='.') -> PipelineSpec:
-    exclude_dirnames = ['.*']
-    exclude_dirnames += os.environ.get('DPP_EXCLUDE_DIRNAMES', '').split(',')
-    exclude_dirnames = list(filter(bool, map(str.strip, exclude_dirnames)))
-    for dirpath, dirnames, filenames in os.walk(root_dir):
+    for dirpath, dirnames, filenames in dirtools.Dir(root_dir,
+                                                     exclude_file='.dpp_spec_ignore',
+                                                     excludes=['.*']).walk():
+        dirpath = os.path.join(root_dir, os.path.relpath(dirpath, root_dir))
         if dirpath.startswith(os.path.join(root_dir, '.')):
             continue
-        dirnames[:] = [d for d in dirnames
-                       if all(not fnmatch(d, p) for p in exclude_dirnames)]
         for filename in filenames:
             for parser in SPEC_PARSERS:
                 if parser.check_filename(filename):
