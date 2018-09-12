@@ -1,5 +1,6 @@
 import os
 from typing import Iterator  #noqa
+from fnmatch import fnmatch
 
 import yaml
 from datapackage_pipelines.status import status_mgr
@@ -37,9 +38,14 @@ def process_schedules(spec: PipelineSpec):
 
 
 def find_specs(root_dir='.') -> PipelineSpec:
-    for dirpath, _, filenames in os.walk(root_dir):
+    exclude_dirnames = ['.*']
+    exclude_dirnames += os.environ.get('DPP_EXCLUDE_DIRNAMES', '').split(',')
+    exclude_dirnames = list(filter(bool, map(str.strip, exclude_dirnames)))
+    for dirpath, dirnames, filenames in os.walk(root_dir):
         if dirpath.startswith(os.path.join(root_dir, '.')):
             continue
+        dirnames[:] = [d for d in dirnames
+                       if all(not fnmatch(d, p) for p in exclude_dirnames)]
         for filename in filenames:
             for parser in SPEC_PARSERS:
                 if parser.check_filename(filename):

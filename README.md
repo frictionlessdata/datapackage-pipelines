@@ -211,6 +211,16 @@ Each processor's input is automatically validated for correctness:
 
   In any case, when using the `set_types` standard processor, it will validate and transform the input data with the new types..
 
+### Excluding directories form scanning for pipeline specs
+
+By default `.*` directories are excluded from scanning, you can add additional directory patterns for
+exclusion by setting `DPP_EXCLUDE_DIRNAMES` environment variable. For example, the following
+will ignore all directory names starting with test and with doc both in root and sub-directories:
+
+```
+DPP_EXCLUDE_DIRNAMES='test*,doc*' dpp
+```
+
 ## The Standard Processor Library
 
 A few built in processors are provided with the library.
