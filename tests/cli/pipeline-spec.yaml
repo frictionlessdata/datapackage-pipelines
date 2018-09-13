@@ -80,3 +80,9 @@ custom-formatters:
         resource-hash: ''
       file-formatters:
         xlsx: custom_formatters.xlsx_format.XLSXFormat
+
+dataflows:
+  pipeline:
+  - flow: test_flow
+    parameters:
+      attr: foo

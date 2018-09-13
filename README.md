@@ -211,6 +211,29 @@ Each processor's input is automatically validated for correctness:
 
   In any case, when using the `set_types` standard processor, it will validate and transform the input data with the new types..
 
+### Dataflows integration
+
+[Dataflows](https://github.com/datahq/dataflows) is the successor of datapackage-pipelines and provides a more
+Pythonic interface to running pipelines. You can integrate dataflows within pipeline specs using the `flow` attribute
+instead of `run`. For example, given the following flow file, saved under `my-flow.py`:
+
+```
+from dataflows import Flow, dump_to_path
+
+def flow(parameters):
+    return Flow([{'foo': 'bar'}, {'foo': 'baz'}], dump_to_path('test_flow_data'))
+```
+
+And a `pipeline-spec.yaml` in the same directory:
+
+```
+my-flow:
+  pipeline:
+  - flow: my-flow
+```
+
+You can run the pipeline using `dpp run my-flow`.
+
 ## The Standard Processor Library
 
 A few built in processors are provided with the library.
