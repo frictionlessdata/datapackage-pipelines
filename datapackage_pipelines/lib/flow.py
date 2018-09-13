@@ -27,11 +27,11 @@ class StderrWriter:
         pass
 
 
-parameters, datapackage, resources = ingest()
+parameters, datapackage, resources, stats = ingest() + ({},)
 
 with redirect_stderr(StderrWriter()):
     with redirect_stdout(StdoutWriter()):
-        sys.path.append(parameters['__path'])
-        import_module(parameters['__flow']).flow(parameters).process()
+        sys.path.append(parameters.pop('__path'))
+        import_module(parameters.pop('__flow')).flow(parameters, stats).process()
 
-spew(datapackage, resources)
+spew(datapackage, resources, stats)

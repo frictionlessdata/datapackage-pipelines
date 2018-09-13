@@ -10,6 +10,7 @@ set -o pipefail
 ! dpp run --verbose ./dataflows >/dev/stdout 2>&1 | tee $TEMPFILE && echo failed to run dataflows pipeline && exit 1
 set +o pipefail
 ! cat "${TEMPFILE}" | grep "hello dataflows" && echo dataflows output is missing && exit 1
+! cat "${TEMPFILE}" | grep "{'hello': 'world'}" && echo dataflows output is missing stats && exit 1
 rm $TEMPFILE
 
 ACTUAL=$(cat -A test_flow_data/res_1.csv)

@@ -220,7 +220,7 @@ instead of `run`. For example, given the following flow file, saved under `my-fl
 ```
 from dataflows import Flow, dump_to_path
 
-def flow(parameters):
+def flow(parameters, stats):
     return Flow([{'foo': 'bar'}, {'foo': 'baz'}], dump_to_path('test_flow_data'))
 ```
 

@@ -7,7 +7,8 @@ def hello_dataflows(package: PackageWrapper):
     yield from package
 
 
-def flow(parameters):
+def flow(parameters, stats):
+    stats['hello'] = 'world'
     return Flow(hello_dataflows,
                 [{parameters['attr']: 'bar'},
                  {parameters['attr']: 'baz'}],
