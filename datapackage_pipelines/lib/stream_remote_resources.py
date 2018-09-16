@@ -4,6 +4,7 @@ import time
 from datetime import date
 import itertools
 from decimal import Decimal
+import requests
 
 import tabulator
 
@@ -115,7 +116,7 @@ def suffix_remover(format):
     return _func
 
 
-def stream_reader(_resource, _url, _ignore_missing, limit_rows):
+def stream_reader(_resource, _url, _ignore_missing, limit_rows, http_headers):
     def get_opener(__url, __resource, columns=None):
         _columns = columns
 
@@ -151,6 +152,11 @@ def stream_reader(_resource, _url, _ignore_missing, limit_rows):
 
             if format is not None:
                 _params['format'] = format
+
+            if http_headers:
+                http_session = requests.Session()
+                http_session.headers = http_headers
+                _params['http_session'] = http_session
 
             constants = _resource.get('constants', {})
             constant_headers = list(constants.keys())
@@ -231,7 +237,8 @@ for resource in datapackage['resources']:
 
         resource[PROP_STREAMING] = True
 
-        rows = stream_reader(resource, url, ignore_missing or url == "", limit_rows)
+        rows = stream_reader(resource, url, ignore_missing or url == "", limit_rows,
+                             resource.pop('http_headers', None))
 
         new_resource_iterator.append(rows)
 
