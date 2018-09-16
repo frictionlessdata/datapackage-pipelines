@@ -83,6 +83,13 @@ custom-formatters:
 
 dataflows:
   pipeline:
+  - run: load_resource
+    parameters:
+      url: ../data/datapackage.json
+      resource: my-spiffy-resource
   - flow: test_flow
     parameters:
       attr: foo
+  - run: dump.to_path
+    parameters:
+      out-path: test_flow_data
