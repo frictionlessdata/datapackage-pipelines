@@ -32,6 +32,7 @@ parameters, datapackage, resources, stats = ingest() + ({},)
 with redirect_stderr(StderrWriter()):
     with redirect_stdout(StdoutWriter()):
         sys.path.append(parameters.pop('__path'))
-        datastream = import_module(parameters.pop('__flow')).flow(parameters, datapackage, resources, stats).datastream()
+        flow_module = import_module(parameters.pop('__flow'))
+        datastream = flow_module.flow(parameters, datapackage, resources, stats).datastream()
 
 spew(datastream.dp.descriptor, datastream.res_iter, stats)
