@@ -41,7 +41,8 @@ def find_specs(root_dir='.') -> PipelineSpec:
     for dirpath, dirnames, filenames in dirtools.Dir(root_dir,
                                                      exclude_file='.dpp_spec_ignore',
                                                      excludes=['.*']).walk():
-        dirpath = os.path.join(root_dir, os.path.relpath(dirpath, root_dir))
+        relpath = os.path.relpath(dirpath, root_dir)
+        dirpath = os.path.join(root_dir, relpath) if relpath != '.' else '.'
         if dirpath.startswith(os.path.join(root_dir, '.')):
             continue
         for filename in filenames:
