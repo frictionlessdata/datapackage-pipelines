@@ -250,7 +250,7 @@ class Dir(object):
         except it exclude all files/directories on the fly. """
         for root, dirs, files in os.walk(self.path, topdown=True):
             # TODO relative walk, recursive call if root excluder found???
-            #root_excluder = get_root_excluder(root)
+            # root_excluder = get_root_excluder(root)
             ndirs = []
             # First we exclude directories
             for d in list(dirs):
