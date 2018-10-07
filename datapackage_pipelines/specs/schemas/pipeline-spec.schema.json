@@ -24,8 +24,17 @@
       "minLength": 1,
       "items": {
         "type": "object",
-        "required": [
-          "run"
+        "oneOf": [
+          {
+            "required": [
+              "run"
+            ]
+          },
+          {
+            "required": [
+              "flow"
+            ]
+          }
         ],
         "properties": {
           "run": {

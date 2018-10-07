@@ -77,6 +77,11 @@ def resolve_executor(step, path, errors):
             code_file.write(step['code'])
         return code_path
 
+    if 'flow' in step:
+        step['run'] = 'flow'
+        step.setdefault('parameters', {}).update(__flow=step.pop('flow'),
+                                                 __path=path)
+
     executor = step['run']
     back_up, parts = convert_dot_notation(executor)
     resolvers = [find_file_in_path([path])]
