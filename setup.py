@@ -31,7 +31,7 @@ INSTALL_REQUIRES = [
     'mistune',
     'redis',
     'sqlalchemy',
-    'click',
+    'click<7.0',
     'awesome-slugify',
     'flask<1.0.0',
     'flask-cors',
