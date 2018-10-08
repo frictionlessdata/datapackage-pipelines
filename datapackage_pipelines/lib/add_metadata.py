@@ -1,9 +1,14 @@
-from datapackage_pipelines.wrapper import ingest, spew
+from dataflows import Flow, add_metadata
+from datapackage_pipelines.wrapper import ingest
+from datapackage_pipelines.utilities.flow_utils import spew_flow
 
-parameters, datapackage, res_iter = ingest()
-if datapackage is None:
-    datapackage = parameters
-else:
-    datapackage.update(parameters)
 
-spew(datapackage, res_iter)
+def flow(parameters):
+    return Flow(
+        add_metadata(**parameters)
+    )
+
+
+if __name__ == '__main__':
+    with ingest() as ctx:
+        spew_flow(flow(ctx.parameters), ctx)
