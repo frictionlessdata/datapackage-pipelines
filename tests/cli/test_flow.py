@@ -22,6 +22,5 @@ def flow(parameters, datapackage, resources, stats):
 
     return Flow(add_metadata(name='_'),
                 hello_dataflows,
-                load((datapackage, resources)),
                 add_foo_field,
                 add_foo_value)

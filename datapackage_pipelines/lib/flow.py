@@ -10,6 +10,6 @@ with ingest() as ctx:
 
     sys.path.append(parameters.pop('__path'))
     flow_module = import_module(parameters.pop('__flow'))
-    flow = flow_module.flow(parameters, datapackage, resources, stats)
+    flow = flow_module.flow(parameters, datapackage, resources, ctx.stats)
 
     spew_flow(flow, ctx)
