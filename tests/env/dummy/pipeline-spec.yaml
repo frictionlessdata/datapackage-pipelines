@@ -204,7 +204,7 @@ pipeline-test-code:
     run: code
     code: |
       from datapackage_pipelines.wrapper import ingest, spew
-      parameters, datapackage, resources, stats = ingest() + ({},)
+      parameters, datapackage, resources, stats = tuple(ingest()) + ({},)
       def get_resource():
         for descriptor, resource in zip(datapackage["resources"], resources):
           for row in resource:

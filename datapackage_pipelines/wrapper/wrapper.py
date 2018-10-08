@@ -2,6 +2,7 @@ import gzip
 import sys
 import os
 import logging
+from contextlib import ExitStack, redirect_stderr, redirect_stdout
 
 from tableschema.exceptions import CastError
 
@@ -18,6 +19,7 @@ logging.basicConfig(level=logging.DEBUG,
 
 cache = ''
 first = True
+stdout = sys.stdout
 
 dependency_datapackage_urls = {}
 
@@ -26,7 +28,9 @@ def get_dependency_datapackage_url(pipeline_id):
     return dependency_datapackage_urls.get(pipeline_id)
 
 
-def ingest(debug=False):
+### LOW LEVEL INTERFACE
+
+def _ingest(debug=False):
     global cache
     global first
     params = None
@@ -44,7 +48,7 @@ def ingest(debug=False):
 
 
 def spew(dp, resources_iterator, stats=None, finalizer=None):
-    files = [sys.stdout]
+    files = [stdout]
 
     cache_filename = ''
     if len(cache) > 0:
@@ -111,7 +115,7 @@ def spew(dp, resources_iterator, stats=None, finalizer=None):
         sys.stderr.flush()
         sys.exit(1)
 
-    sys.stdout.flush()
+    stdout.flush()
     if row_count > 0:
         logging.info('Processed %d rows', row_count)
 
@@ -120,7 +124,7 @@ def spew(dp, resources_iterator, stats=None, finalizer=None):
 
     for f in files:
         f.write('\n')  # Signal to other processors that we're done
-        if f == sys.stdout:
+        if f == stdout:
             # Can't close sys.stdout, otherwise any subsequent
             # call to print() will throw an exception
             f.flush()
@@ -130,6 +134,58 @@ def spew(dp, resources_iterator, stats=None, finalizer=None):
     if len(cache) > 0:
         os.rename(cache_filename+'.ongoing', cache_filename)
 
+
+class StdoutWriter:
+
+    def write(self, message):
+        message = message.strip()
+        if message:
+            logging.info(message)
+
+    def flush(self):
+        pass
+
+
+class StderrWriter:
+
+    def write(self, message):
+        message = message.strip()
+        if (message):
+            logging.error(message)
+
+    def flush(self):
+        pass
+
+
+class ProcessorContext(ExitStack):
+
+    def __init__(self, parameters, datapackage, resource_iterator):
+        super().__init__()
+        self.parameters = parameters
+        self.datapackage = datapackage
+        self.resource_iterator = resource_iterator
+        self.stats = {}
+
+    def __iter__(self):
+        return iter((self.parameters, self.datapackage, self.resource_iterator))
+
+    def __enter__(self):
+        super().__enter__()
+        self.enter_context(redirect_stdout(StdoutWriter()))
+        self.enter_context(redirect_stderr(StderrWriter()))
+        return self
+
+    def __exit__(self, *args, **kw):
+        spew(self.datapackage, self.resource_iterator, stats=self.stats)
+        super().__exit__(*args, **kw)
+
+
+def ingest(debug=False):
+    params, datapackage, resource_iterator = _ingest(debug=debug)
+    return ProcessorContext(params, datapackage, resource_iterator)
+
+
+### HIGH LEVEL INTERFACE
 
 def generic_process_resource(rows,
                              spec,
@@ -175,3 +231,5 @@ def process(modify_datapackage=None,
         spew(datapackage, new_iter, stats)
     else:
         spew(datapackage, resource_iterator, stats)
+
+

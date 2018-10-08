@@ -16,7 +16,7 @@ class TestWrapper(object):
         datapackage = {}
         resources_iterator = iter([])
 
-        with mock.patch('sys.stdout') as stdout_mock:
+        with mock.patch('datapackage_pipelines.wrapper.wrapper.stdout') as stdout_mock:
             def finalizer():
                 last_call_args = stdout_mock.write.call_args_list[-1]
                 assert last_call_args != mock.call('\n')

@@ -2,7 +2,7 @@ from datapackage_pipelines.wrapper import ingest, spew
 from datapackage_pipelines.utilities.resources import PROP_STREAMING
 import datetime
 
-parameters, datapackage, resources, stats = ingest() + ({},)
+parameters, datapackage, resources, stats = tuple(ingest()) + ({},)
 
 
 if parameters.get('test-package'):

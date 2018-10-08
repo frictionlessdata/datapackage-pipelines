@@ -16,6 +16,7 @@ add_metadata
 {
     "name": "test",
     "title": "Moshe",
+    "profile": "data-package",
     "sources": {
         "web": "http://google.com"
     },
