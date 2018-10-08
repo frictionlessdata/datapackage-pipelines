@@ -95,3 +95,6 @@ tests/env/dummy/type-tests-output2
 tests/cli/.code
 .dpp
 .coverage.*
+.code/
+.vscode/
+

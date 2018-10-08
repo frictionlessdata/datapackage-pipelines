@@ -28,7 +28,7 @@ def get_dependency_datapackage_url(pipeline_id):
     return dependency_datapackage_urls.get(pipeline_id)
 
 
-### LOW LEVEL INTERFACE
+# ## LOW LEVEL INTERFACE
 
 def _ingest(debug=False):
     global cache
@@ -185,7 +185,7 @@ def ingest(debug=False):
     return ProcessorContext(params, datapackage, resource_iterator)
 
 
-### HIGH LEVEL INTERFACE
+# ## HIGH LEVEL INTERFACE
 
 def generic_process_resource(rows,
                              spec,
@@ -231,5 +231,3 @@ def process(modify_datapackage=None,
         spew(datapackage, new_iter, stats)
     else:
         spew(datapackage, resource_iterator, stats)
-
-

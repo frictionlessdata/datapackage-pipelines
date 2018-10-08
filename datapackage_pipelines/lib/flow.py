@@ -1,4 +1,3 @@
-import logging
 import sys
 from importlib import import_module
 from datapackage_pipelines.wrapper import ingest

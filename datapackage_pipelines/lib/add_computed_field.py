@@ -6,7 +6,7 @@ from datapackage_pipelines.utilities.flow_utils import spew_flow
 def flow(parameters):
     return Flow(
         add_computed_field(
-            parameters.get('fields', []), 
+            parameters.get('fields', []),
             parameters.get('resources')
         ),
     )
