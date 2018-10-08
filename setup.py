@@ -31,7 +31,7 @@ INSTALL_REQUIRES = [
     'mistune',
     'redis',
     'sqlalchemy',
-    'click',
+    'click<7.0',
     'awesome-slugify',
     'flask<1.0.0',
     'flask-cors',
@@ -40,6 +40,7 @@ INSTALL_REQUIRES = [
     'cachetools',
     'tabulator>=1.14.0',
     'globster>=0.1.0',
+    'dataflows',
 ]
 SPEEDUP_REQUIRES = [
     'plyvel<1',

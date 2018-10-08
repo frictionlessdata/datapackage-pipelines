@@ -153,6 +153,20 @@ This name is, in fact, the name of a Python script containing the processing cod
 - If no processor was found until this point, it will try to search for this processor in the processor search path. The processor search path is taken from the environment variable `DPP_PROCESSOR_PATH`. Each of the `:` separated paths in the path is considered as a possible starting point for resolving the processor.
 - Finally, it will try to find that processor in the Standard Processor Library which is bundled with this package.
 
+### Excluding directories form scanning for pipeline specs
+
+By default `.*` directories are excluded from scanning, you can add additional directory patterns for
+exclusion by creating a `.dpp_spec_ignore` file at the project root. This file has similar syntax
+to .gitignore and will exclude directories from scanning based on glob pattern matching.
+
+For example, the following file will ignore `test*` directories including inside subdirectories
+and `/docs` directory will only be ignored at the project root directory
+
+```
+test*
+/docs
+```
+
 ### Caching
 
 By setting the `cached` property on a specific pipeline step to `True`, this step's output will be stored on disk (in the `.cache` directory, in the same location as the `pipeline-spec.yaml` file).
@@ -211,19 +225,43 @@ Each processor's input is automatically validated for correctness:
 
   In any case, when using the `set_types` standard processor, it will validate and transform the input data with the new types..
 
-### Excluding directories form scanning for pipeline specs
+### Dataflows integration
 
-By default `.*` directories are excluded from scanning, you can add additional directory patterns for
-exclusion by creating a `.dpp_spec_ignore` file at the project root. This file has similar syntax
-to .gitignore and will exclude directories from scanning based on glob pattern matching.
-
-For example, the following file will ignore `test*` directories including inside subdirectories
-and `/docs` directory will only be ignored at the project root directory
+[Dataflows](https://github.com/datahq/dataflows) is the successor of datapackage-pipelines and provides a more
+Pythonic interface to running pipelines. You can integrate dataflows within pipeline specs using the `flow` attribute
+instead of `run`. For example, given the following flow file, saved under `my-flow.py`:
 
 ```
-test*
-/docs
+from dataflows import Flow, dump_to_path, load, add_metadata
+
+def flow(parameters, datapackage, resources, stats):
+    stats['multiplied_fields'] = 0
+
+    def multiply(field, n):
+        def step(row):
+            row[field] = row[field] * n
+            stats['multiplied_fields'] += 1
+        return step
+
+    return Flow(add_metadata(name='my-datapackage'),
+                load((datapackage, resources),
+                multiply('my-field', 2))
 ```
+
+And a `pipeline-spec.yaml` in the same directory:
+
+```
+my-flow:
+  pipeline:
+  - run: load_resource
+    parameters:
+      url: http://example.com/my-datapackage/datapackage.json
+      resource: my-resource
+  - flow: my-flow
+  - run: dump.to_path
+```
+
+You can run the pipeline using `dpp run my-flow`.
 
 ## The Standard Processor Library
 
