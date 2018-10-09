@@ -1,6 +1,6 @@
 from dataflows import Flow, filter_rows
 from datapackage_pipelines.wrapper import ingest
-from datapackage_pipelines.utilities.flow_utils import spew_flow, load_lazy_json
+from datapackage_pipelines.utilities.flow_utils import spew_flow
 
 
 def flow(parameters):

@@ -66,11 +66,13 @@ find_replace
 --
 {
     "name": "test",
+    "profile": "data-package",
     "resources": [
         {
             "name": "dates",
             "dpp:streaming": true,
             "path": "dates.csv",
+            "profile": "data-resource",
             "schema": {
                 "fields": [
                     {"name": "year", "type": "string"},
