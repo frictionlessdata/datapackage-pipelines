@@ -1,11 +1,11 @@
-from dataflows import Flow, load, add_metadata
+from dataflows import Flow, load, update_package
 
 from datapackage_pipelines.wrapper import ProcessorContext
 
 
 def spew_flow(flow, ctx: ProcessorContext):
     flow = Flow(
-        add_metadata(**ctx.datapackage),
+        update_package(**ctx.datapackage),
         load((ctx.datapackage, ctx.resource_iterator)),
         flow,
     )

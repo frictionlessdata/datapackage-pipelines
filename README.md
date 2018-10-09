@@ -218,7 +218,7 @@ Pythonic interface to running pipelines. You can integrate dataflows within pipe
 instead of `run`. For example, given the following flow file, saved under `my-flow.py`:
 
 ```
-from dataflows import Flow, dump_to_path, load, add_metadata
+from dataflows import Flow, dump_to_path, load, update_package
 
 def flow(parameters, datapackage, resources, stats):
     stats['multiplied_fields'] = 0
@@ -229,7 +229,7 @@ def flow(parameters, datapackage, resources, stats):
             stats['multiplied_fields'] += 1
         return step
 
-    return Flow(add_metadata(name='my-datapackage'),
+    return Flow(update_package(name='my-datapackage'),
                 load((datapackage, resources),
                 multiply('my-field', 2))
 ```

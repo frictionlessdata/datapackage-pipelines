@@ -1,4 +1,4 @@
-from dataflows import Flow, dump_to_path, PackageWrapper, load, add_metadata
+from dataflows import Flow, dump_to_path, PackageWrapper, load, update_package
 
 
 def hello_dataflows(package: PackageWrapper):
@@ -20,7 +20,7 @@ def flow(parameters, datapackage, resources, stats):
         row[parameters['attr']] = 'foo'
         stats['foo_values'] += 1
 
-    return Flow(add_metadata(name='_'),
+    return Flow(update_package(name='_'),
                 hello_dataflows,
                 add_foo_field,
                 add_foo_value)

@@ -1,11 +1,11 @@
-from dataflows import Flow, add_metadata
+from dataflows import Flow, update_package
 from datapackage_pipelines.wrapper import ingest
 from datapackage_pipelines.utilities.flow_utils import spew_flow
 
 
 def flow(parameters):
     return Flow(
-        add_metadata(**parameters)
+        update_package(**parameters)
     )
 
 

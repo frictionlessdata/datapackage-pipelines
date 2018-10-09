@@ -62,12 +62,14 @@ concatenate
 --
 {
     "name": "test",
-    "resources": [
+    "profile": "data-package",
+     "resources": [
         {
             "name": "target",
             "dpp:streaming": true,
             "path": "data/target.csv",
             "mediatype": "text/csv",
+            "profile": "data-resource",
             "schema": { "fields": [
                 {"name": "t1", "type": "string"},
                 {"name": "t2", "type": "string"},
