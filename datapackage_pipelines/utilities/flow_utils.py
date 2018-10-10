@@ -6,17 +6,20 @@ from datapackage_pipelines.utilities.extended_json import LazyJsonLine
 
 
 def load_lazy_json(resources):
-    resources = ResourceMatcher(resources)
 
-    def func(rows):
-        if resources.match(rows.res.name):
-            for row in rows:
-                if isinstance(row, LazyJsonLine):
-                    yield row.inner
-                else:
-                    yield row
-        else:
-            yield from rows
+    def func(package):
+        matcher = ResourceMatcher(resources, package.pkg)
+        yield package.pkg
+        for rows in package:
+            if matcher.match(rows.res.name):
+                yield (
+                    row.inner
+                    if isinstance(row, LazyJsonLine)
+                    else row
+                    for row in rows
+                )
+            else:
+                yield rows
 
     return func
 

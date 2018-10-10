@@ -6,9 +6,9 @@ from datapackage_pipelines.utilities.flow_utils import spew_flow
 def flow(parameters):
     return Flow(
         filter_rows(
-            equals = parameters.get('in', []),
-            not_equals = parameters.get('out', []),
-            resources = parameters.get('resources'),
+            equals=parameters.get('in', []),
+            not_equals=parameters.get('out', []),
+            resources=parameters.get('resources'),
         )
     )
 

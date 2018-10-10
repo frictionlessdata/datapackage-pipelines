@@ -7,7 +7,7 @@ def flow(parameters):
     return Flow(
         find_replace(
             parameters.get('fields', []),
-            resources = parameters.get('resources')
+            resources=parameters.get('resources')
         )
     )
 
