@@ -39,12 +39,12 @@ worldbank-co2-emissions:
          column-name: the_constant
          value: the value
     -
-      run: dump.to_zip
+      run: dump_to_zip
       parameters:
           out-file: co2-emisonss-wb.zip
           force-format: false
     -
-      run: dump.to_path
+      run: dump_to_path
       parameters:
           out-path: co2-emisonss-wb
           force-format: false
@@ -76,7 +76,7 @@ worldbank-co2-emissions-isr:
         in:
           - {'Country Code': 'ISR'}
    -
-      run: dump.to_path
+      run: dump_to_path
       parameters:
           out-path: co2-emisonss-wb-israel
           force-format: false

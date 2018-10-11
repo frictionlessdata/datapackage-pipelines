@@ -57,7 +57,7 @@ worldbank-co2-emissions:
            "[12][0-9]{3}":
               type: number
     -
-      run: dump.to_zip
+      run: dump_to_zip
       parameters:
           out-file: co2-emissions-wb.zip     
 ```
@@ -69,7 +69,7 @@ In this example we see one pipeline called `worldbank-co2-emissions`. Its pipeli
   This resource has a `name` and a `url`, pointing to the remote location of the data.
 - `stream_remote_resources`: This processor will stream data from resources (like the one we defined in the 1st step) into the pipeline, on to processors further down the pipeline (see more about streaming below).
 - `set_types`: This processor assigns data types to fields in the data. In this example, field headers looking like years will be assigned the `number` type.
-- `dump.to_zip`: Create a zipped and validated datapackage with the provided file name.
+- `dump_to_zip`: Create a zipped and validated datapackage with the provided file name.
 
 ### Mechanics
 
@@ -106,7 +106,7 @@ INFO :Main:stream_remote_resources: OPENING http://api.worldbank.org/v2/en/indic
 INFO :Main:stream_remote_resources: TOTAL 264 rows
 INFO :Main:stream_remote_resources: Processed 264 rows
 INFO :Main:DONE lib/stream_remote_resources.py
-INFO :Main:dump.to_zip: INFO :Main:Processed 264 rows
+INFO :Main:dump_to_zip: INFO :Main:Processed 264 rows
 INFO :Main:DONE lib/dump/to_zip.py
 INFO :Main:RESULTS:
 INFO :Main:SUCCESS: ./worldbank-co2-emissions
@@ -244,7 +244,7 @@ my-flow:
       url: http://example.com/my-datapackage/datapackage.json
       resource: my-resource
   - flow: my-flow
-  - run: dump.to_path
+  - run: dump_to_path
 ```
 
 You can run the pipeline using `dpp run my-flow`.
@@ -1015,7 +1015,7 @@ parameters:
         direction: \\2  # Second member of group from above
 ```
 
-### ***`dump.to_sql`***
+### ***`dump_to_sql`***
 
 Saves the datapackage to an SQL database.
 
@@ -1042,7 +1042,7 @@ _Parameters_:
   - `false` - row was inserted
 - `updated_id_column` - Optional name of a column that will be added to the spewed data and contain the id of the updated row in DB.
 
-### ***`dump.to_path`***
+### ***`dump_to_path`***
 
 Saves the datapackage to a filesystem path.
 
@@ -1080,23 +1080,23 @@ _Parameters_:
     - Note that such changes may make the resulting datapackage incompatible with the frictionlessdata specs and may cause interoperability problems.
     - Example usage: [pipeline-spec.yaml](tests/cli/pipeline-spec.yaml) (under the `custom-formatters` pipeline), [XLSXFormat class](tests/cli/custom_formatters/xlsx_format.py)
 
-### ***`dump.to_zip`***
+### ***`dump_to_zip`***
 
 Saves the datapackage to a zipped archive.
 
 _Parameters_:
 
 - `out-file` - Name of the output file where the zipped data will be stored
-- `force-format` and `format` - Same as in `dump.to_path`
-- `handle-non-tabular` - Same as in `dump.to_path`
-- `add-filehash-to-path` - Same as in `dump.to_path`
-- `counters` - Same as in `dump.to_path`
-- `pretty-descriptor` - Same as in `dump.to_path`
-- `file-formatters` - Same as in `dump.to_path`
+- `force-format` and `format` - Same as in `dump_to_path`
+- `handle-non-tabular` - Same as in `dump_to_path`
+- `add-filehash-to-path` - Same as in `dump_to_path`
+- `counters` - Same as in `dump_to_path`
+- `pretty-descriptor` - Same as in `dump_to_path`
+- `file-formatters` - Same as in `dump_to_path`
 
 #### *Note*
 
-`dump.to_path` and `dump.to_zip` processors will handle non-tabular resources as well.
+`dump_to_path` and `dump_to_zip` processors will handle non-tabular resources as well.
 These resources must have both a `url` and `path` properties, and _must not_ contain a `schema` property.
 In such cases, the file will be downloaded from the `url` and placed in the provided `path`.
 
@@ -1431,7 +1431,7 @@ class Generator(GeneratorBase):
                 ('metadata', {
                   'name': dataset_name
                 }),
-                ('dump.to_zip', {
+                ('dump_to_zip', {
                    'out-file': 'ckan-datapackage.zip'
                 })])
             pipeline_details = {
@@ -1451,7 +1451,7 @@ data-kind: package-list
 
 Then when running `dpp` we will see an available pipeline named `./example-com-list-of-packages`
 
-This pipeline would internally be composed of 3 steps: `ckan.scraper`, `metadata` and `dump.to_zip`.
+This pipeline would internally be composed of 3 steps: `ckan.scraper`, `metadata` and `dump_to_zip`.
 
 #### Validating Source Descriptors
 

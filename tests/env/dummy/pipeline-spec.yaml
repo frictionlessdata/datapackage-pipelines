@@ -31,7 +31,7 @@ pipeline-test-stream-remote-resources-nones:
           constraints:
             required: true
     -
-      run: dump.to_path
+      run: dump_to_path
       parameters:
         out-path: nulls-test
 
@@ -93,7 +93,7 @@ pipeline-test-basic:
     -
       run: ..common.pipeline-common
     -
-      run: dump.to_zip
+      run: dump_to_zip
       parameters:
           out-file: dump.zip
 
@@ -116,7 +116,7 @@ pipeline-test-hooks:
         name: "treasury"
         url: "https://raw.githubusercontent.com/openspending/fiscal-data-package-demos/master/al-treasury-spending/data/treasury.csv"
     -
-      run: dump.to_path
+      run: dump_to_path
       parameters:
           out-path: hooks-outputs
 
@@ -169,7 +169,7 @@ pipeline-test-datatypes:
           geojson:
             type: geojson
     -
-      run: dump.to_path
+      run: dump_to_path
       parameters:
           out-path: type-tests-output
 
@@ -187,7 +187,7 @@ pipeline-test-datatypes2:
         url: dependency://./tests/env/dummy/pipeline-test-datatypes
         resource: types
     -
-      run: dump.to_path
+      run: dump_to_path
       parameters:
           out-path: type-tests-output2
 
@@ -211,6 +211,6 @@ pipeline-test-code:
             yield row
       spew(datapackage, [get_resource()], stats)
   -
-    run: dump.to_path
+    run: dump_to_path
     parameters:
       out-path: code-test-output

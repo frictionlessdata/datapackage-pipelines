@@ -64,7 +64,7 @@ custom-formatters:
       source: my-spiffy-resource
       target-name: my-spiffy-xlsx-resource
       target-path: my-spiffy-resource.xlsx
-  - run: dump.to_path
+  - run: dump_to_path
     parameters:
       out-path: custom_formatters
       force-format: false
@@ -72,7 +72,7 @@ custom-formatters:
         resource-hash: ''
       file-formatters:
         xlsx: custom_formatters.xlsx_format.XLSXFormat
-  - run: dump.to_zip
+  - run: dump_to_zip
     parameters:
       out-file: custom_formatters/datapackage.zip
       force-format: false
@@ -90,6 +90,6 @@ dataflows:
   - flow: test_flow
     parameters:
       attr: foo
-  - run: dump.to_path
+  - run: dump_to_path
     parameters:
       out-path: test_flow_data

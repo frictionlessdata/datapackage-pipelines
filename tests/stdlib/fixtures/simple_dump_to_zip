@@ -1,4 +1,4 @@
-dump.to_zip
+dump_to_zip
 --
 {
     "out-file": "my-spiffy-resource.zip"

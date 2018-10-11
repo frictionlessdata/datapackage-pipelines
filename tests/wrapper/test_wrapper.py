@@ -10,7 +10,7 @@ class TestWrapper(object):
         to STDOUT. The finalizer parameter to spew() must be executed before that,
         as there can be processors that depend on us finishing our processing
         before they're able to run. For example, a processor that depends on
-        `dump.to_zip` must wait until it has finished writing to the local
+        `dump_to_zip` must wait until it has finished writing to the local
         filesystem.
         '''
         datapackage = {}
