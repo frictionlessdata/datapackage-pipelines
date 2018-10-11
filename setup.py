@@ -30,7 +30,7 @@ INSTALL_REQUIRES = [
     'ujson',
     'mistune',
     'redis',
-    'click<7.0',
+    'click<8.0',
     'awesome-slugify',
     'flask<1.0.0',
     'flask-cors',
