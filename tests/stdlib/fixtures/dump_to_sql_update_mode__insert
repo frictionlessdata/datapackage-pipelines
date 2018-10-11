@@ -1,4 +1,4 @@
-dump.to_sql
+dump_to_sql
 --
 {
     "tables": {

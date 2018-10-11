@@ -1,19 +1,15 @@
-from dataflows import Flow, dump_to_sql
+import warnings
+
 from datapackage_pipelines.wrapper import ingest
 from datapackage_pipelines.utilities.flow_utils import spew_flow
 
-
-def flow(parameters):
-    return Flow(
-        dump_to_sql(
-            parameters['tables'],
-            engine=parameters.get('engine', 'env://DPP_DB_ENGINE'),
-            updated_column=parameters.get("updated_column"),
-            updated_id_column=parameters.get("updated_id_column")
-        )
-    )
+from ..dump_to_sql import flow
 
 
 if __name__ == '__main__':
+    warnings.warn(
+        'dump.to_sql will be removed in the future, use "dump_to_sql" instead',
+        DeprecationWarning
+    )
     with ingest() as ctx:
         spew_flow(flow(ctx.parameters), ctx)

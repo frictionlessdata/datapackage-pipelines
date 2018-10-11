@@ -49,7 +49,7 @@ worldbank-co2-emissions:
           out-path: co2-emisonss-wb
           force-format: false
     -
-      run: dump.to_sql
+      run: dump_to_sql
       parameters:
           tables:
             co2_emisonss_wb:
