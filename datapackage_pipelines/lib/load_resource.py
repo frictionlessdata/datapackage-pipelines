@@ -4,8 +4,9 @@ import logging
 
 import datapackage
 
+from dataflows.helpers.resource_matcher import ResourceMatcher
+
 from datapackage_pipelines.wrapper import ingest, spew, get_dependency_datapackage_url
-from datapackage_pipelines.utilities.resource_matcher import ResourceMatcher
 from datapackage_pipelines.utilities.resources import tabular, PROP_STREAMING, \
     PROP_STREAMED_FROM
 
@@ -42,7 +43,9 @@ class ResourceLoader(object):
             assert resources
             resource_index = None
             resource = list(resources.keys())
-        name_matcher = ResourceMatcher(resource) if isinstance(resource, (str, list)) else None
+        name_matcher = ResourceMatcher(resource, self.dp) \
+                       if isinstance(resource, (str, list)) \
+                       else None
 
         selected_resources = []
         found = False
