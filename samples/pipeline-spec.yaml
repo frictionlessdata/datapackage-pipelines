@@ -3,7 +3,7 @@ worldbank-co2-emissions:
     crontab: '0 * * * *'
   pipeline:
     -
-      run: add_metadata
+      run: update_package
       parameters:
         name: 'co2-emissions'
         title: 'CO2 emissions [metric tons per capita]'
@@ -60,7 +60,7 @@ worldbank-co2-emissions-isr:
     - pipeline: ./worldbank-co2-emissions
   pipeline:
    -
-      run: add_metadata
+      run: update_package
       parameters:
         name: 'co2-emissions-israel'
         title: 'CO2 emissions for Israel'

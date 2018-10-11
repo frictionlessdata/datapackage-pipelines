@@ -34,7 +34,7 @@ worldbank-co2-emissions:
   description: Data per year, provided in metric tons per capita.
   pipeline:
     -
-      run: add_metadata
+      run: update_package
       parameters:
         name: 'co2-emissions'
         title: 'CO2 emissions (metric tons per capita)'
@@ -96,11 +96,11 @@ Available Pipelines:
 
 $ dpp run ./worldbank-co2-emissions
 INFO :Main:RUNNING ./worldbank-co2-emissions
-INFO :Main:- lib/add_metadata.py
+INFO :Main:- lib/update_package.py
 INFO :Main:- lib/add_resource.py
 INFO :Main:- lib/stream_remote_resources.py
 INFO :Main:- lib/dump/to_zip.py
-INFO :Main:DONE lib/add_metadata.py
+INFO :Main:DONE lib/update_package.py
 INFO :Main:DONE lib/add_resource.py
 INFO :Main:stream_remote_resources: OPENING http://api.worldbank.org/v2/en/indicator/EN.ATM.CO2E.PC?downloadformat=excel
 INFO :Main:stream_remote_resources: TOTAL 264 rows
@@ -253,7 +253,7 @@ You can run the pipeline using `dpp run my-flow`.
 
 A few built in processors are provided with the library.
 
-### ***`add_metadata`***
+### ***`update_package`***
 
 Adds meta-data to the data-package.
 
@@ -264,7 +264,7 @@ Any allowed property (according to the [spec]([http://specs.frictionlessdata.io/
 *Example*:
 
 ```yaml
-- run: add_metadata
+- run: update_package
   parameters:
     name: routes-to-mordor
     license: CC-BY-SA-4

@@ -1,15 +1,14 @@
-import warnings
-
+from dataflows import Flow, update_package
 from datapackage_pipelines.wrapper import ingest
 from datapackage_pipelines.utilities.flow_utils import spew_flow
 
-from .update_package import flow
+
+def flow(parameters):
+    return Flow(
+        update_package(**parameters)
+    )
 
 
 if __name__ == '__main__':
-    warnings.warn(
-        'add_metadata will be removed in the future, use "update_package" instead',
-        DeprecationWarning
-    )
     with ingest() as ctx:
         spew_flow(flow(ctx.parameters), ctx)

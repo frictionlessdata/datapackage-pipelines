@@ -1,7 +1,7 @@
 pipeline-test-stream-remote-resources-nones:
   pipeline:
     -
-      run: add_metadata
+      run: update_package
       parameters:
         name: test_nulls
     - 
@@ -38,7 +38,7 @@ pipeline-test-stream-remote-resources-nones:
 pipeline-test-basic:
   pipeline:
     -
-      run: add_metadata
+      run: update_package
       parameters:
         name: 'al-treasury-spending'
         title: 'Albania Treasury Service'
@@ -107,7 +107,7 @@ pipeline-test-big-outputs:
 pipeline-test-hooks:
   pipeline:
     -
-      run: add_metadata
+      run: update_package
       parameters:
         name: 'hook-tests'
     -
@@ -126,7 +126,7 @@ pipeline-test-hooks:
 pipeline-test-datatypes:
   pipeline:
     -
-      run: add_metadata
+      run: update_package
       parameters:
         name: 'type-tests'
     -
@@ -178,7 +178,7 @@ pipeline-test-datatypes2:
     - pipeline: ./tests/env/dummy/pipeline-test-datatypes
   pipeline:
     -
-      run: add_metadata
+      run: update_package
       parameters:
         name: 'type-tests'
     -
