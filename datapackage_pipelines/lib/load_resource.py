@@ -43,9 +43,11 @@ class ResourceLoader(object):
             assert resources
             resource_index = None
             resource = list(resources.keys())
-        name_matcher = ResourceMatcher(resource, self.dp) \
-                       if isinstance(resource, (str, list)) \
-                       else None
+        name_matcher = (
+            ResourceMatcher(resource, self.dp)
+            if isinstance(resource, (str, list))
+            else None
+        )
 
         selected_resources = []
         found = False
