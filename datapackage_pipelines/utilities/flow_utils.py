@@ -24,6 +24,16 @@ def load_lazy_json(resources):
     return func
 
 
+class MergeableStats():
+    def __init__(self, stats):
+        self.stats = stats
+
+    def __iter__(self):
+        if self.stats is not None:
+            for x in self.stats:
+                yield from x.items()
+
+
 def spew_flow(flow, ctx: ProcessorContext):
     flow = Flow(
         update_package(**ctx.datapackage),
@@ -33,3 +43,4 @@ def spew_flow(flow, ctx: ProcessorContext):
     datastream = flow.datastream()
     ctx.datapackage = datastream.dp.descriptor
     ctx.resource_iterator = datastream.res_iter
+    ctx.stats = MergeableStats(datastream.stats)

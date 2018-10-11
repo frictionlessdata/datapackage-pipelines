@@ -76,10 +76,10 @@ class ProcessorFixtureTestsBase(object):
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE,
                                  env=env)
+        print('\nProcessor output:\n')
+        for line in process.stderr.decode('utf8').split('\n'):
+            print(f'OUT> {line}')
         if process.returncode != 0:
-            print('\nProcessor output:\n')
-            for line in process.stderr.decode('utf8').split('\n'):
-                print(f'E> {line}')
             raise Exception(f'processor execution failed with {process.returncode}')
         return process.stdout.decode('utf8')
 

@@ -36,11 +36,13 @@ dump.to_sql
 --
 {
     "name": "test",
+    "profile": "data-package",
     "resources": [
         {
             "name": "my-spiffy-resource",
             "dpp:streaming": true,
             "path": "data/my-data.csv",
+            "profile": "data-resource",
             "schema": {
                 "fields": [
                     {"name": "myarray", "type": "array"},
@@ -55,4 +57,4 @@ dump.to_sql
 --
 {"myarray": "[\"2016-12-31\", \"2016-11-10T12:34:56\"]", "mydate": {"type{date}": "2016-12-31"}, "mynumber": {"type{decimal}": "2"}, "myobject": "{\"n1\": {\"n2\": 78.99}}"}
 
-{"bytes": null, "count_of_rows": 1, "dataset_name": "test", "hash": "06a152f7eaf28a2d12e1cba3b0675a46"}
+{"bytes": null, "count_of_rows": 1, "dataset_name": "test", "hash": "bed26992ae39b43e8b58c0190e8a52e5"}

@@ -30,7 +30,6 @@ INSTALL_REQUIRES = [
     'ujson',
     'mistune',
     'redis',
-    'sqlalchemy',
     'click<7.0',
     'awesome-slugify',
     'flask<1.0.0',
@@ -42,13 +41,14 @@ INSTALL_REQUIRES = [
     'dataflows',
 ]
 SPEEDUP_REQUIRES = [
-    'plyvel<1',
+    'dataflows[speedup]',
 ]
 LINT_REQUIRES = [
     'pylama',
 ]
 TESTS_REQUIRE = [
     'tox',
+    'sqlalchemy',
 ]
 README = read('README.md')
 VERSION = read(PACKAGE, 'VERSION')

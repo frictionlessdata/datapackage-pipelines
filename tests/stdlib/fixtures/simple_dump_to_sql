@@ -31,11 +31,13 @@ dump.to_sql
 --
 {
     "name": "test",
+    "profile": "data-package",
     "resources": [
         {
             "name": "my-spiffy-resource",
             "dpp:streaming": true,
             "path": "data/my-data.csv",
+            "profile": "data-resource",
             "schema": {
                 "fields": [
                     {"name": "mystring", "type": "string"},
@@ -48,6 +50,6 @@ dump.to_sql
     ]
 }
 --
-{"mystring":"a", "mynumber": {"type{decimal}": "2"}, "mydate": {"type{date}": "2016-12-31"}}
+{"mystring":"a", "mynumber": {"type{decimal}": "2"}, "mydate": {"type{date}": "2016-12-31"}, "myinteger": null}
 
-{"bytes": null, "count_of_rows": 1, "dataset_name": "test", "hash": "1ae286a22a1dd3c17aa78a047dd778ef"}
+{"bytes": null, "count_of_rows": 1, "dataset_name": "test", "hash": "c1c867cd9711aedd5c94a16ce4590ece"}
