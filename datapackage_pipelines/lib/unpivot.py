@@ -9,7 +9,7 @@ def flow(parameters):
             parameters.get('unpivot'),
             parameters.get('extraKeyFields'),
             parameters.get('extraValueField'),
-            resources = parameters.get('resources')
+            resources=parameters.get('resources')
         )
     )
 
