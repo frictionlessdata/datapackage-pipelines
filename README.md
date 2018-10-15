@@ -1108,8 +1108,6 @@ For that you might need to write your own processor - here's how it's done.
 
 There are two APIs for writing processors - the high level API and the low level API.
 
-**Important**: due to the way that pipeline execution is implemented, you **cannot** `print` from within a processor. In case you need to debug, _only_ use the `logging` module to print out anything you need.
-
 ### High Level Processor API
 
 The high-level API is quite useful for most processor kinds:
