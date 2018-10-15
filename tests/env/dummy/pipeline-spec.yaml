@@ -96,6 +96,8 @@ pipeline-test-basic:
       run: dump_to_zip
       parameters:
           out-file: dump.zip
+    -
+      run: printer
 
 
 pipeline-test-big-outputs:
