@@ -1,0 +1,25 @@
+load
+--
+{
+    "from": "env://EXISTENT_ENV",
+    "name": "my-env-resource"
+}
+--
+{
+    "name": "test",
+    "resources": []
+}
+--
+--
+{
+    "name": "test",
+    "resources": [
+        {
+            "name": "my-env-resource",
+            "dpp:streamedFrom": "file://tests/data/sample.csv",
+            "path": "_"
+        }
+    ]
+}
+--
+{}
