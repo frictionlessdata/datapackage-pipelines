@@ -113,10 +113,10 @@ pipeline-test-hooks:
       parameters:
         name: 'hook-tests'
     -
-      run: add_resource
+      run: load
       parameters:
+        from: "https://raw.githubusercontent.com/openspending/fiscal-data-package-demos/master/al-treasury-spending/data/treasury.csv"
         name: "treasury"
-        url: "https://raw.githubusercontent.com/openspending/fiscal-data-package-demos/master/al-treasury-spending/data/treasury.csv"
     -
       run: dump_to_path
       parameters:

@@ -37,4 +37,14 @@ load
     ]
 }
 --
+{"age": 27, "first_name": "Tyrion", "house": "Lannister", "last_name": "Lannister"}
+{"age": 34, "first_name": "Jaime", "house": "Lannister", "last_name": "Lannister"}
+{"age": 34, "first_name": "Cersei", "house": "Lannister", "last_name": "Lannister"}
+{"age": 17, "first_name": "Jon", "house": "Stark", "last_name": "Snow"}
+{"age": 14, "first_name": "Sansa", "house": "Stark", "last_name": "Stark"}
+{"age": 11, "first_name": "Arya", "house": "Stark", "last_name": "Stark"}
+{"age": 10, "first_name": "Bran", "house": "Stark", "last_name": "Stark"}
+{"age": 5, "first_name": "Rickon", "house": "Stark", "last_name": "Stark"}
+{"age": 16, "first_name": "Daenerys", "house": "Targaryen", "last_name": "Targaryen"}
+
 {}
