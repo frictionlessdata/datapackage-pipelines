@@ -230,7 +230,6 @@ def flow(parameters, datapackage, resources, stats):
         return step
 
     return Flow(update_package(name='my-datapackage'),
-                load((datapackage, resources),
                 multiply('my-field', 2))
 ```
 
@@ -1209,32 +1208,35 @@ In some cases, the high-level API might be too restricting. In these cases you s
 ```python
 from datapackage_pipelines.wrapper import ingest, spew
 
-parameters, datapackage, resource_iterator = ingest()
+if __name__ == '__main__':
+  with ingest() as ctx:
 
-# Initialisation code, if needed
+    # Initialisation code, if needed
 
-# Do stuff with datapackage
-# ...
+    # Do stuff with datapackage
+    # ...
 
-stats = {}
+    stats = {}
 
-# and resources:
-def new_resource_iterator(resource_iterator_):
-    def resource_processor(resource_):
-        # resource_.spec is the resource descriptor
-        for row in resource_:
-            # Do something with row
-            # Perhaps collect some stats here as well
-            yield row
-    for resource in resource_iterator_:
-        yield resource_processor(resource)
+    # and resources:
+    def new_resource_iterator(resource_iterator_):
+        def resource_processor(resource_):
+            # resource_.spec is the resource descriptor
+            for row in resource_:
+                # Do something with row
+                # Perhaps collect some stats here as well
+                yield row
+        for resource in resource_iterator_:
+            yield resource_processor(resource)
 
-spew(datapackage, new_resource_iterator(resource_iterator), stats)
+    spew(ctx.datapackage, 
+         new_resource_iterator(ctx.resource_iterator), 
+         ctx.stats)
 ```
 
 The above code snippet shows the structure of most low-level processors.
 
-We always start with calling `ingest()` - this method gives us the execution parameters, the data-package descriptor (as outputed from the previous step) and an iterator on all streamed resources' rows.
+We always start with calling `ingest()` - this method gives us the context, containing the execution parameters, the data-package descriptor (as outputed from the previous step) and an iterator on all streamed resources' rows.
 
 We finish the processing by calling `spew()`, which sends the processed data to the next processor in the pipeline. `spew` receives:
 * A modified data-package descriptor;
@@ -1263,9 +1265,10 @@ We'll start with the same processors from above, now implemented with the low le
 # Add license information
 from datapackage_pipelines.wrapper import ingest, spew
 
-_, datapackage, resource_iterator = ingest()
-datapackage['license'] = 'MIT'
-spew(datapackage, resource_iterator)
+if __name__ == '__main__':
+  with ingest() as ctx:
+    ctx.datapackage['license'] = 'MIT'
+    spew(ctx.datapackage, ctx.resource_iterator)
 ```
 
 ```python
