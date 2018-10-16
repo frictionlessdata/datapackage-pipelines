@@ -4,7 +4,6 @@ from datapackage_pipelines.utilities.flow_utils import spew_flow
 
 
 def flow(parameters: dict):
-    out_file = parameters.get()
     out_file = parameters.pop('out-file')
     return Flow(
         dump_to_zip(
