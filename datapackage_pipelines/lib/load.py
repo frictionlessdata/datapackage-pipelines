@@ -3,19 +3,19 @@ from datapackage_pipelines.wrapper import ingest
 from datapackage_pipelines.utilities.flow_utils import spew_flow
 from datapackage_pipelines.utilities.resources import PROP_STREAMING, PROP_STREAMED_FROM
 
+
 def flow(parameters):
     _from = parameters.pop('from')
 
     num_resources = 0
 
-
     def count_resources():
         def func(package):
+            global num_resources
             num_resources = len(package.pkg.resources)
             yield package.pkg
             yield from package
         return func
-
 
     def mark_streaming(_from):
         def func(package):
