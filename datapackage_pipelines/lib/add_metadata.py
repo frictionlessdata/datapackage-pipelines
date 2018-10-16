@@ -3,7 +3,7 @@ import warnings
 from datapackage_pipelines.wrapper import ingest
 from datapackage_pipelines.utilities.flow_utils import spew_flow
 
-from .update_package import flow
+from datapackage_pipelines.lib.update_package import flow
 
 
 if __name__ == '__main__':

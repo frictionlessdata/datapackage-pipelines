@@ -3,7 +3,7 @@ import warnings
 from datapackage_pipelines.wrapper import ingest
 from datapackage_pipelines.utilities.flow_utils import spew_flow
 
-from ..dump_to_sql import flow
+from datapackage_pipelines.lib.dump_to_sql import flow
 
 
 if __name__ == '__main__':
