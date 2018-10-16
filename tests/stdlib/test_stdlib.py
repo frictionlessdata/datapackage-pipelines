@@ -7,7 +7,7 @@ ROOT_PATH = os.path.join(os.path.dirname(__file__), '..', '..')
 ENV = os.environ.copy()
 ENV['PYTHONPATH'] = ROOT_PATH
 
-ENV['EXISTENT_ENV'] = 'file://tests/data/sample.csv'
+ENV['EXISTENT_ENV'] = 'tests/data/sample.csv'
 
 DEFAULT_TEST_DB = "sqlite://"
 ENV['DPP_DB_ENGINE'] = os.environ.get("OVERRIDE_TEST_DB", DEFAULT_TEST_DB)

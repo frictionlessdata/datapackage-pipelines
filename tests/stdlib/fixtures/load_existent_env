@@ -12,12 +12,27 @@ load
 --
 --
 {
-    "name": "test",
+    "name": "test", 
+    "profile": "data-package", 
     "resources": [
         {
-            "name": "my-env-resource",
-            "dpp:streamedFrom": "file://tests/data/sample.csv",
-            "path": "_"
+            "dpp:streamedFrom": "env://EXISTENT_ENV", 
+            "dpp:streaming": true, 
+            "encoding": "utf-8", 
+            "format": "csv", 
+            "mediatype": "text/csv", 
+            "name": "my-env-resource", 
+            "path": "my-env-resource.csv", 
+            "profile": "tabular-data-resource", 
+            "schema": {
+                "fields": [
+                    {"format": "default", "name": "first_name", "type": "string"}, 
+                    {"format": "default", "name": "last_name", "type": "string"}, 
+                    {"format": "default", "name": "house", "type": "string"}, 
+                    {"format": "default", "name": "age", "type": "integer"}
+                ], 
+                "missingValues": [""]
+            }
         }
     ]
 }
