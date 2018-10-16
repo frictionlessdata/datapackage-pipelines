@@ -117,6 +117,7 @@ pipeline-test-hooks:
       parameters:
         from: "https://raw.githubusercontent.com/openspending/fiscal-data-package-demos/master/al-treasury-spending/data/treasury.csv"
         name: "treasury"
+        quotechar: '"'
     -
       run: dump_to_path
       parameters:
