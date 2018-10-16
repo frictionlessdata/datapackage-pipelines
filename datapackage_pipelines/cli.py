@@ -1,7 +1,9 @@
 import sys
 import json
+import os
 
 import click
+import requests
 
 from .utilities.stat_utils import user_facing_stats
 
@@ -119,6 +121,21 @@ def run(pipeline_id, verbose, use_cache, dirty, force, concurrency, slave):
 def init():
     """Reset the status of all pipelines"""
     status_mgr().initialize()
+
+
+@cli.command()
+def version():
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'VERSION')) as f:
+        installed = f.read().strip()
+    latest = requests.get('https://pypi.org/pypi/datapackage-pipelines/json').json()['info']['version']
+    print(f'Installed version: {installed}')
+    print(f'Latest version: {latest}\n')
+    if installed != latest:
+        print('Datapackage Pipelines upgrade is available, upgrade using pip:\n')
+        print('    python3 -m pip install -U datapackage-pipelines\n')
+        exit(1)
+    else:
+        exit(0)
 
 
 if __name__ == "__main__":
