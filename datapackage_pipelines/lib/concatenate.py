@@ -9,7 +9,7 @@ def flow(parameters):
         concatenate(
             parameters.get('fields', {}),
             parameters.get('target', {}),
-            parameters.get('resources')
+            parameters.get('sources')
         ),
         update_resource(
             parameters.get('target', {}).get('name', 'concat'),
