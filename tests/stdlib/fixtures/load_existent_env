@@ -2,7 +2,8 @@ load
 --
 {
     "from": "env://EXISTENT_ENV",
-    "name": "my-env-resource"
+    "name": "my-env-resource",
+    "validate": true
 }
 --
 {
