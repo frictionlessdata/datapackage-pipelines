@@ -219,15 +219,15 @@ def generic_process_resources(resource_iterator,
 def process(modify_datapackage=None,
             process_row=None, debug=False):
     stats = {}
-    parameters, datapackage, resource_iterator = ingest(debug=debug)
-    if modify_datapackage is not None:
-        datapackage = modify_datapackage(datapackage, parameters, stats)
+    with ingest(debug=debug) as ctx:
+        if modify_datapackage is not None:
+            datapackage = modify_datapackage(ctx.datapackage, ctx.parameters, stats)
 
-    if process_row is not None:
-        new_iter = generic_process_resources(resource_iterator,
-                                             parameters,
-                                             stats,
-                                             process_row)
-        spew(datapackage, new_iter, stats)
-    else:
-        spew(datapackage, resource_iterator, stats)
+        if process_row is not None:
+            new_iter = generic_process_resources(ctx.resource_iterator,
+                                                 ctx.parameters,
+                                                 stats,
+                                                 process_row)
+            spew(datapackage, new_iter, stats)
+        else:
+            spew(datapackage, ctx.resource_iterator, stats)
