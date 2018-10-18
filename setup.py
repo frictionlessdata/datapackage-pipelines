@@ -38,7 +38,7 @@ INSTALL_REQUIRES = [
     'flask-basicauth',
     'cachetools',
     'tabulator>=1.14.0',
-    'dataflows>=0.0.25',
+    'dataflows>=0.0.29',
 ]
 SPEEDUP_REQUIRES = [
     'dataflows[speedup]',
