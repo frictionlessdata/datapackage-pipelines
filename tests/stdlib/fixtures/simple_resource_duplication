@@ -36,11 +36,13 @@ duplicate
 --
 {
     "name": "test",
+    "profile": "data-package",
     "resources": [
         {
             "name": "original",
             "dpp:streaming": true,
             "path": "data.csv",
+            "profile": "data-resource",
             "schema": { "fields": [
                 {"name": "year", "type": "integer"},
                 {"name": "data", "type": "string"}
@@ -50,6 +52,7 @@ duplicate
             "name": "the-dup",
             "dpp:streaming": true,
             "path": "the-dup.csv",
+            "profile": "data-resource",
             "schema": { "fields": [
                 {"name": "year", "type": "integer"},
                 {"name": "data", "type": "string"}

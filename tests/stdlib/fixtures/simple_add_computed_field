@@ -77,11 +77,13 @@ add_computed_field
 --
 {
     "name": "test",
+    "profile": "data-package", 
     "resources": [
         {
             "name": "salaries",
             "dpp:streaming": true,
             "path": "salaries.csv",
+            "profile": "data-resource",
             "schema": { "fields": [
               {"name": "first_name", "type": "string"},
               {"name": "last_name", "type": "string"},

@@ -74,7 +74,13 @@ class ProcessorFixtureTestsBase(object):
                                   parameters, 'False', ''],
                                  input=data_in,
                                  stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE,
                                  env=env)
+        print('\nProcessor output:\n')
+        for line in process.stderr.decode('utf8').split('\n'):
+            print(f'OUT> {line}')
+        if process.returncode != 0:
+            raise Exception(f'processor execution failed with {process.returncode}')
         return process.stdout.decode('utf8')
 
     def _test_single_fixture(self, processor, parameters, data_in,

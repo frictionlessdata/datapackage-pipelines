@@ -51,11 +51,13 @@ delete_fields
 --
 {
     "name": "test",
+    "profile": "data-package",
     "resources": [
         {
             "name": "got-characters",
             "dpp:streaming": true,
             "path": "characters.csv",
+            "profile": "data-resource",
             "schema": { "fields": [
                 {"name": "first_name", "type": "string"},
                 {"name": "house", "type": "string"}
@@ -65,6 +67,7 @@ delete_fields
             "name": "got-houses",
             "dpp:streaming": true,
             "path": "houses.csv",
+            "profile": "data-resource",
             "schema": { "fields": [
                 {"name": "house", "type": "string"}
             ]}

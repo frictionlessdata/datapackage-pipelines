@@ -58,11 +58,13 @@ sort
 --
 {
     "name": "test",
+    "profile": "data-package",
     "resources": [
         {
             "name": "concat-a1",
             "dpp:streaming": true,
             "path": "concat-a1.csv",
+            "profile": "data-resource",
             "schema": { "fields": [
                 {"name": "a1", "type": "string"},
                 {"name": "a2", "type": "string"},
@@ -73,6 +75,7 @@ sort
             "name": "concat-a2",
             "dpp:streaming": true,
             "path": "concat-a2.csv",
+            "profile": "data-resource",
             "schema": { "fields": [
                 {"name": "a1", "type": "string"},
                 {"name": "a2", "type": "string"},
@@ -83,6 +86,7 @@ sort
             "name": "concat-c",
             "dpp:streaming": true,
             "path": "concat-c.csv",
+            "profile": "data-resource",
             "schema": { "fields": [
                 {"name": "c1", "type": "string"},
                 {"name": "c2", "type": "string"},

@@ -3,7 +3,7 @@ worldbank-co2-emissions:
     crontab: '0 * * * *'
   pipeline:
     -
-      run: add_metadata
+      run: update_package
       parameters:
         name: 'co2-emissions'
         title: 'CO2 emissions [metric tons per capita]'
@@ -39,17 +39,17 @@ worldbank-co2-emissions:
          column-name: the_constant
          value: the value
     -
-      run: dump.to_zip
+      run: dump_to_zip
       parameters:
           out-file: co2-emisonss-wb.zip
           force-format: false
     -
-      run: dump.to_path
+      run: dump_to_path
       parameters:
           out-path: co2-emisonss-wb
           force-format: false
     -
-      run: dump.to_sql
+      run: dump_to_sql
       parameters:
           tables:
             co2_emisonss_wb:
@@ -60,7 +60,7 @@ worldbank-co2-emissions-isr:
     - pipeline: ./worldbank-co2-emissions
   pipeline:
    -
-      run: add_metadata
+      run: update_package
       parameters:
         name: 'co2-emissions-israel'
         title: 'CO2 emissions for Israel'
@@ -76,7 +76,7 @@ worldbank-co2-emissions-isr:
         in:
           - {'Country Code': 'ISR'}
    -
-      run: dump.to_path
+      run: dump_to_path
       parameters:
           out-path: co2-emisonss-wb-israel
           force-format: false

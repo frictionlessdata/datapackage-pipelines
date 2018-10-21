@@ -1,7 +1,7 @@
 pipeline-test-stream-remote-resources-nones:
   pipeline:
     -
-      run: add_metadata
+      run: update_package
       parameters:
         name: test_nulls
     - 
@@ -31,14 +31,14 @@ pipeline-test-stream-remote-resources-nones:
           constraints:
             required: true
     -
-      run: dump.to_path
+      run: dump_to_path
       parameters:
         out-path: nulls-test
 
 pipeline-test-basic:
   pipeline:
     -
-      run: add_metadata
+      run: update_package
       parameters:
         name: 'al-treasury-spending'
         title: 'Albania Treasury Service'
@@ -93,9 +93,11 @@ pipeline-test-basic:
     -
       run: ..common.pipeline-common
     -
-      run: dump.to_zip
+      run: dump_to_zip
       parameters:
           out-file: dump.zip
+    -
+      run: printer
 
 
 pipeline-test-big-outputs:
@@ -107,16 +109,17 @@ pipeline-test-big-outputs:
 pipeline-test-hooks:
   pipeline:
     -
-      run: add_metadata
+      run: update_package
       parameters:
         name: 'hook-tests'
     -
-      run: add_resource
+      run: load
       parameters:
+        from: "https://raw.githubusercontent.com/openspending/fiscal-data-package-demos/master/al-treasury-spending/data/treasury.csv"
         name: "treasury"
-        url: "https://raw.githubusercontent.com/openspending/fiscal-data-package-demos/master/al-treasury-spending/data/treasury.csv"
+        quotechar: '"'
     -
-      run: dump.to_path
+      run: dump_to_path
       parameters:
           out-path: hooks-outputs
 
@@ -126,7 +129,7 @@ pipeline-test-hooks:
 pipeline-test-datatypes:
   pipeline:
     -
-      run: add_metadata
+      run: update_package
       parameters:
         name: 'type-tests'
     -
@@ -169,7 +172,7 @@ pipeline-test-datatypes:
           geojson:
             type: geojson
     -
-      run: dump.to_path
+      run: dump_to_path
       parameters:
           out-path: type-tests-output
 
@@ -178,7 +181,7 @@ pipeline-test-datatypes2:
     - pipeline: ./tests/env/dummy/pipeline-test-datatypes
   pipeline:
     -
-      run: add_metadata
+      run: update_package
       parameters:
         name: 'type-tests'
     -
@@ -187,7 +190,7 @@ pipeline-test-datatypes2:
         url: dependency://./tests/env/dummy/pipeline-test-datatypes
         resource: types
     -
-      run: dump.to_path
+      run: dump_to_path
       parameters:
           out-path: type-tests-output2
 
@@ -204,13 +207,13 @@ pipeline-test-code:
     run: code
     code: |
       from datapackage_pipelines.wrapper import ingest, spew
-      parameters, datapackage, resources, stats = ingest() + ({},)
+      parameters, datapackage, resources, stats = tuple(ingest()) + ({},)
       def get_resource():
         for descriptor, resource in zip(datapackage["resources"], resources):
           for row in resource:
             yield row
       spew(datapackage, [get_resource()], stats)
   -
-    run: dump.to_path
+    run: dump_to_path
     parameters:
       out-path: code-test-output

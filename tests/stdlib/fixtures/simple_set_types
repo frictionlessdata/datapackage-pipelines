@@ -27,11 +27,13 @@ set_types
 --
 {
     "name": "test",
+    "profile": "data-package",
     "resources": [
         {
             "name": "concat-a",
             "dpp:streaming": true,
             "path": "concat-a.csv",
+            "profile": "data-resource",
             "schema": { "fields": [
                 {"name": "t1", "type": "number", "groupChar": ","}
             ]}

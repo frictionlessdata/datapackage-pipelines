@@ -90,6 +90,6 @@ dataflows:
   - flow: test_flow
     parameters:
       attr: foo
-  - run: dump.to_path
+  - run: dump_to_path
     parameters:
       out-path: test_flow_data
