@@ -23,23 +23,6 @@ worldbank-co2-emissions:
            "[12][0-9]{3}":
               type: number
     -
-      run: add_constant
-      parameters:
-         column-name: the_constant
-         value: the value
-    -
       run: dump_to_zip
       parameters:
-          out-file: co2-emisonss-wb.zip
-          force-format: false
-    -
-      run: dump_to_path
-      parameters:
-          out-path: co2-emisonss-wb
-          force-format: false
-    -
-      run: dump_to_sql
-      parameters:
-          tables:
-            co2_emisonss_wb:
-              resource-name: global-data
+          out-file: co2-emissions-wb.zip
