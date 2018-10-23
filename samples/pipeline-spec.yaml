@@ -9,23 +9,12 @@ worldbank-co2-emissions:
         title: 'CO2 emissions [metric tons per capita]'
         homepage: 'http://worldbank.org/'
     -
-      run: add_resource
+      run: load
       parameters:
+        from: "http://api.worldbank.org/v2/en/indicator/EN.ATM.CO2E.PC?downloadformat=excel"
         name: 'global-data'
-#        url: /Users/adam/Downloads/API_EN.ATM.CO2E.KT_DS2_en_csv_v2.csv
-#        headers: 5
         headers: 4
-        url: "http://api.worldbank.org/v2/en/indicator/EN.ATM.CO2E.PC?downloadformat=excel"
         format: xls
-    -
-      run: add_resource
-      parameters:
-        name: 'global-data-json'
-        headers: 4
-        url: "http://api.worldbank.org/v2/en/indicator/EN.ATM.CO2E.PC?downloadformat=excel"
-        format: xls
-    -
-      run: stream_remote_resources
     -
       run: set_types
       parameters:
@@ -54,29 +43,3 @@ worldbank-co2-emissions:
           tables:
             co2_emisonss_wb:
               resource-name: global-data
-
-worldbank-co2-emissions-isr:
-  dependencies:
-    - pipeline: ./worldbank-co2-emissions
-  pipeline:
-   -
-      run: update_package
-      parameters:
-        name: 'co2-emissions-israel'
-        title: 'CO2 emissions for Israel'
-        homepage: 'http://worldbank.org/'
-   -
-      run: load_resource
-      parameters:
-        url: dependency://./worldbank-co2-emissions
-        resource: 0
-   -
-      run: filter
-      parameters:
-        in:
-          - {'Country Code': 'ISR'}
-   -
-      run: dump_to_path
-      parameters:
-          out-path: co2-emisonss-wb-israel
-          force-format: false
