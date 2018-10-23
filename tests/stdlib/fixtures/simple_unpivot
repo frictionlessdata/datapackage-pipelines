@@ -74,11 +74,13 @@ unpivot
 --
 {
     "name": "test",
+    "profile": "data-package",
     "resources": [
         {
             "name": "balance",
             "dpp:streaming": true,
             "path": "balance.csv",
+            "profile": "data-resource",
             "schema": { "fields": [
                 {"name": "company", "type": "string"},
                 {"name": "year", "type": "integer"},

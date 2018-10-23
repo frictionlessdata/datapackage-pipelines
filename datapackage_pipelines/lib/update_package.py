@@ -1,14 +1,11 @@
-from dataflows import Flow, add_computed_field
+from dataflows import Flow, update_package
 from datapackage_pipelines.wrapper import ingest
 from datapackage_pipelines.utilities.flow_utils import spew_flow
 
 
 def flow(parameters):
     return Flow(
-        add_computed_field(
-            parameters.get('fields', []),
-            parameters.get('resources')
-        ),
+        update_package(**parameters)
     )
 
 

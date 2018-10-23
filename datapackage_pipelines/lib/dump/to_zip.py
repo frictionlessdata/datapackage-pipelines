@@ -1,3 +1,4 @@
+import warnings
 import zipfile
 
 from datapackage_pipelines.lib.dump.dumper_base import FileDumper
@@ -19,4 +20,9 @@ class ZipDumper(FileDumper):
         super(ZipDumper, self).finalize()
 
 
-ZipDumper()()
+if __name__ == '__main__':
+    warnings.warn(
+        'dump.to_zip will be removed in the future, use "dump_to_zip" instead',
+        DeprecationWarning
+    )
+    ZipDumper()()

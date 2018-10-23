@@ -1,5 +1,6 @@
 import os
 import shutil
+import warnings
 
 from datapackage_pipelines.lib.dump.dumper_base import FileDumper
 
@@ -29,4 +30,8 @@ class PathDumper(FileDumper):
 
 
 if __name__ == '__main__':
+    warnings.warn(
+        'dump.to_path will be removed in the future, use "dump_to_path" instead',
+        DeprecationWarning
+    )
     PathDumper()()

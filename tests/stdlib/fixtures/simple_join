@@ -83,11 +83,13 @@ join
 --
 {
     "name": "test",
+    "profile": "data-package",
     "resources": [
         {
             "name": "got-houses",
             "dpp:streaming": true,
             "path": "houses.csv",
+            "profile": "data-resource",
             "schema": { "fields": [
                 {"name": "house", "type": "string"},
                 {"name": "avg_age", "type": "number"},

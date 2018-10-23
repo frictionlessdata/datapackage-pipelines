@@ -1,9 +1,15 @@
-from datapackage_pipelines.wrapper import ingest, spew
+import warnings
 
-parameters, datapackage, res_iter = ingest()
-if datapackage is None:
-    datapackage = parameters
-else:
-    datapackage.update(parameters)
+from datapackage_pipelines.wrapper import ingest
+from datapackage_pipelines.utilities.flow_utils import spew_flow
 
-spew(datapackage, res_iter)
+from datapackage_pipelines.lib.update_package import flow
+
+
+if __name__ == '__main__':
+    warnings.warn(
+        'add_metadata will be removed in the future, use "update_package" instead',
+        DeprecationWarning
+    )
+    with ingest() as ctx:
+        spew_flow(flow(ctx.parameters), ctx)

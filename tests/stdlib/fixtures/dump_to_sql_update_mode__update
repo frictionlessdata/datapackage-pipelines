@@ -1,4 +1,4 @@
-dump.to_sql
+dump_to_sql
 --
 {
     "tables": {
@@ -33,11 +33,13 @@ dump.to_sql
 --
 {
     "name": "test",
+    "profile": "data-package",
     "resources": [
         {
             "name": "my-spiffy-resource",
             "dpp:streaming": true,
             "path": "data/my-data.csv",
+            "profile": "data-resource",
             "schema": {
                 "fields": [
                     {"name": "id", "type": "integer"},
@@ -53,4 +55,4 @@ dump.to_sql
 --
 {"id": 1, "mystring":"a", "mynumber": {"type{decimal}": "2"}, "mydate": {"type{date}": "2016-12-31"}}
 
-{"bytes": null, "count_of_rows": 1, "dataset_name": "test", "hash": "f9bb6e9b25d2c3e2d1764a8287107bb4"}
+{"bytes": null, "count_of_rows": 1, "dataset_name": "test", "hash": "5dad5b7c7fb3fecb7478b4f34fabbd23"}

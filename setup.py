@@ -23,15 +23,14 @@ NAME = PACKAGE.replace('_', '-')
 INSTALL_REQUIRES = [
     'celery',
     'requests',
-    'datapackage>=1.2.2',
-    'tableschema>=1.0.12',
+    'datapackage>=1.5.1',
+    'tableschema>=1.2.5',
     'tableschema-sql>=0.10.0',
     'pyyaml',
     'ujson',
     'mistune',
     'redis',
-    'sqlalchemy',
-    'click<7.0',
+    'click<8.0',
     'awesome-slugify',
     'flask<1.0.0',
     'flask-cors',
@@ -39,16 +38,17 @@ INSTALL_REQUIRES = [
     'flask-basicauth',
     'cachetools',
     'tabulator>=1.14.0',
-    'dataflows',
+    'dataflows>=0.0.29',
 ]
 SPEEDUP_REQUIRES = [
-    'plyvel<1',
+    'dataflows[speedup]',
 ]
 LINT_REQUIRES = [
     'pylama',
 ]
 TESTS_REQUIRE = [
     'tox',
+    'sqlalchemy',
 ]
 README = read('README.md')
 VERSION = read(PACKAGE, 'VERSION')

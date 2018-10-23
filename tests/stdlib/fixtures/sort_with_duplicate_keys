@@ -35,11 +35,13 @@ sort
 --
 {
     "name": "test",
+    "profile": "data-package",
     "resources": [
         {
             "name": "data",
             "dpp:streaming": true,
             "path": "data.csv",
+            "profile": "data-resource",
             "schema": { "fields": [
                 {"name": "year", "type": "integer"},
                 {"name": "data", "type": "string"}

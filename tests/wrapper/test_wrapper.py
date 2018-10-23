@@ -10,13 +10,13 @@ class TestWrapper(object):
         to STDOUT. The finalizer parameter to spew() must be executed before that,
         as there can be processors that depend on us finishing our processing
         before they're able to run. For example, a processor that depends on
-        `dump.to_zip` must wait until it has finished writing to the local
+        `dump_to_zip` must wait until it has finished writing to the local
         filesystem.
         '''
         datapackage = {}
         resources_iterator = iter([])
 
-        with mock.patch('sys.stdout') as stdout_mock:
+        with mock.patch('datapackage_pipelines.wrapper.wrapper.stdout') as stdout_mock:
             def finalizer():
                 last_call_args = stdout_mock.write.call_args_list[-1]
                 assert last_call_args != mock.call('\n')

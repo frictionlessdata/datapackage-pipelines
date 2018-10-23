@@ -1,14 +1,15 @@
-from dataflows import Flow, add_computed_field
+from dataflows import Flow, dump_to_zip
 from datapackage_pipelines.wrapper import ingest
 from datapackage_pipelines.utilities.flow_utils import spew_flow
 
 
-def flow(parameters):
+def flow(parameters: dict):
+    out_file = parameters.pop('out-file')
     return Flow(
-        add_computed_field(
-            parameters.get('fields', []),
-            parameters.get('resources')
-        ),
+        dump_to_zip(
+            out_file,
+            **parameters
+        )
     )
 
 
