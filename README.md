@@ -258,6 +258,27 @@ my-flow:
 
 You can run the pipeline using `dpp run my-flow`.
 
+### Executing a subprocess
+
+You can integrate system executables or shell scripts into the pipeline using `exec`.
+This can be used for example to set permissions / run external binaries / install system dependencies.
+The execution output is logged in real-time to standard logging at `info` logging level.
+
+Exec commands must be placed before the pipeline steps
+
+```
+process-data:
+  pipeline:
+  - exec: [sh, set_permissions.sh]
+  - exec: [ls, -lah]
+  - exec: |
+      curl http://example.com/data.zip > my-data.zip
+      unzip my-data.zip
+  - flow: ..
+  - run: ..
+  ..
+```
+
 ## The Standard Processor Library
 
 A few built in processors are provided with the library.
