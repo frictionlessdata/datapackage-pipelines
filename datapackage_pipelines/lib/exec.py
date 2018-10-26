@@ -12,3 +12,5 @@ with ingest() as ctx:
     with subprocess.Popen(cmd, shell=isinstance(cmd, str), stdout=subprocess.PIPE) as p:
         for line in p.stdout:
             logging.info(line.decode())
+        p.wait()
+        assert p.returncode == 0, f'exec failed, returncode = {p.returncode}'
