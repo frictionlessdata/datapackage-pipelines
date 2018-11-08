@@ -2,7 +2,8 @@ load
 --
 {
     "from": "https://raw.githubusercontent.com/frictionlessdata/datapackage-pipelines/master/tests/data/sample.csv",
-    "name": "my-spiffy-resource"
+    "name": "my-spiffy-resource",
+    "validate": true
 }
 --
 {

@@ -23,8 +23,8 @@ NAME = PACKAGE.replace('_', '-')
 INSTALL_REQUIRES = [
     'celery',
     'requests',
-    'datapackage>=1.5.0',
-    'tableschema>=1.2.4',
+    'datapackage>=1.5.1',
+    'tableschema>=1.2.5',
     'tableschema-sql>=0.10.4',
     'pyyaml',
     'ujson',
@@ -38,7 +38,7 @@ INSTALL_REQUIRES = [
     'flask-basicauth',
     'cachetools',
     'tabulator>=1.17.0',
-    'dataflows>=0.0.23',
+    'dataflows>=0.0.29',
 ]
 SPEEDUP_REQUIRES = [
     'dataflows[speedup]',
