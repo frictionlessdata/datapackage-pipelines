@@ -3,6 +3,7 @@ from typing import Iterator  #noqa
 
 import yaml
 from datapackage_pipelines.status import status_mgr
+from datapackage_pipelines.utilities import dirtools
 
 from .resolver import resolve_executor
 from .errors import SpecError
@@ -37,7 +38,11 @@ def process_schedules(spec: PipelineSpec):
 
 
 def find_specs(root_dir='.') -> PipelineSpec:
-    for dirpath, _, filenames in os.walk(root_dir):
+    for dirpath, dirnames, filenames in dirtools.Dir(root_dir,
+                                                     exclude_file='.dpp_spec_ignore',
+                                                     excludes=['.*']).walk():
+        relpath = os.path.relpath(dirpath, root_dir)
+        dirpath = os.path.join(root_dir, relpath) if relpath != '.' else '.'
         if dirpath.startswith(os.path.join(root_dir, '.')):
             continue
         for filename in filenames:
