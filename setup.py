@@ -38,6 +38,7 @@ INSTALL_REQUIRES = [
     'flask-basicauth',
     'cachetools',
     'tabulator>=1.14.0',
+    'globster>=0.1.0',
     'dataflows>=0.0.29',
 ]
 SPEEDUP_REQUIRES = [

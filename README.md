@@ -163,6 +163,20 @@ This name is, in fact, the name of a Python script containing the processing cod
 - If no processor was found until this point, it will try to search for this processor in the processor search path. The processor search path is taken from the environment variable `DPP_PROCESSOR_PATH`. Each of the `:` separated paths in the path is considered as a possible starting point for resolving the processor.
 - Finally, it will try to find that processor in the Standard Processor Library which is bundled with this package.
 
+### Excluding directories form scanning for pipeline specs
+
+By default `.*` directories are excluded from scanning, you can add additional directory patterns for
+exclusion by creating a `.dpp_spec_ignore` file at the project root. This file has similar syntax
+to .gitignore and will exclude directories from scanning based on glob pattern matching.
+
+For example, the following file will ignore `test*` directories including inside subdirectories
+and `/docs` directory will only be ignored at the project root directory
+
+```
+test*
+/docs
+```
+
 ### Caching
 
 By setting the `cached` property on a specific pipeline step to `True`, this step's output will be stored on disk (in the `.cache` directory, in the same location as the `pipeline-spec.yaml` file).
@@ -1025,7 +1039,6 @@ _Parameters_:
 - `updated_id_column` - Optional name of a column that will be added to the spewed data and contain the id of the updated row in DB.
 
 ### ***`dump_to_path`***
-
 Saves the datapackage to a filesystem path.
 
 _Parameters_:
