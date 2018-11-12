@@ -40,15 +40,12 @@ worldbank-co2-emissions:
         title: 'CO2 emissions (metric tons per capita)'
         homepage: 'http://worldbank.org/'
     -
-      run: add_resource
+      run: load
       parameters:
+        from: "http://api.worldbank.org/v2/en/indicator/EN.ATM.CO2E.PC?downloadformat=excel"
         name: 'global-data'
-        url: "http://api.worldbank.org/v2/en/indicator/EN.ATM.CO2E.PC?downloadformat=excel"
         format: xls
         headers: 4
-    -
-      run: stream_remote_resources
-      cache: True
     -
       run: set_types
       parameters:
@@ -65,9 +62,8 @@ worldbank-co2-emissions:
 In this example we see one pipeline called `worldbank-co2-emissions`. Its pipeline consists of 4 steps:
 
 - `metadata`: This is a library processor  (see below), which modifies the data-package's descriptor (in our case: the initial, empty descriptor) - adding `name`, `title` and other properties to the datapackage.
-- `add_resource`: This is another library processor, which adds a single resource to the data-package.
-  This resource has a `name` and a `url`, pointing to the remote location of the data.
-- `stream_remote_resources`: This processor will stream data from resources (like the one we defined in the 1st step) into the pipeline, on to processors further down the pipeline (see more about streaming below).
+- `load`: This is another library processor, which loads data into the data-package.
+  This resource has a `name` and a `from` property, pointing to the remote location of the data.
 - `set_types`: This processor assigns data types to fields in the data. In this example, field headers looking like years will be assigned the `number` type.
 - `dump_to_zip`: Create a zipped and validated datapackage with the provided file name.
 
@@ -94,23 +90,37 @@ $ dpp
 Available Pipelines:
 - ./worldbank-co2-emissions (*)
 
-$ dpp run ./worldbank-co2-emissions
-INFO :Main:RUNNING ./worldbank-co2-emissions
-INFO :Main:- lib/update_package.py
-INFO :Main:- lib/add_resource.py
-INFO :Main:- lib/stream_remote_resources.py
-INFO :Main:- lib/dump/to_zip.py
-INFO :Main:DONE lib/update_package.py
-INFO :Main:DONE lib/add_resource.py
-INFO :Main:stream_remote_resources: OPENING http://api.worldbank.org/v2/en/indicator/EN.ATM.CO2E.PC?downloadformat=excel
-INFO :Main:stream_remote_resources: TOTAL 264 rows
-INFO :Main:stream_remote_resources: Processed 264 rows
-INFO :Main:DONE lib/stream_remote_resources.py
-INFO :Main:dump_to_zip: INFO :Main:Processed 264 rows
-INFO :Main:DONE lib/dump/to_zip.py
-INFO :Main:RESULTS:
-INFO :Main:SUCCESS: ./worldbank-co2-emissions
-                    {'dataset-name': 'co2-emissions', 'total_row_count': 264}
+$ $ dpp run --verbose ./worldbank-co2-emissions
+RUNNING ./worldbank-co2-emissions
+Collecting dependencies
+Running async task
+Waiting for completion
+Async task starting
+Searching for existing caches
+Building process chain:
+- update_package
+- load
+- set_types
+- dump_to_zip
+- (sink)
+DONE /Users/adam/code/dhq/specstore/dpp_repo/datapackage_pipelines/specs/../lib/update_package.py
+load: DEBUG   :Starting new HTTP connection (1): api.worldbank.org:80
+load: DEBUG   :http://api.worldbank.org:80 "GET /v2/en/indicator/EN.ATM.CO2E.PC?downloadformat=excel HTTP/1.1" 200 308736
+load: DEBUG   :http://api.worldbank.org:80 "GET /v2/en/indicator/EN.ATM.CO2E.PC?downloadformat=excel HTTP/1.1" 200 308736
+load: DEBUG   :Starting new HTTP connection (1): api.worldbank.org:80
+load: DEBUG   :http://api.worldbank.org:80 "GET /v2/en/indicator/EN.ATM.CO2E.PC?downloadformat=excel HTTP/1.1" 200 308736
+load: DEBUG   :http://api.worldbank.org:80 "GET /v2/en/indicator/EN.ATM.CO2E.PC?downloadformat=excel HTTP/1.1" 200 308736
+set_types: INFO    :(<dataflows.processors.set_type.set_type object at 0x10a5c79b0>,)
+load: INFO    :Processed 264 rows
+set_types: INFO    :Processed 264 rows
+DONE /Users/adam/code/dhq/specstore/dpp_repo/datapackage_pipelines/specs/../lib/load.py
+DONE /Users/adam/code/dhq/specstore/dpp_repo/datapackage_pipelines/specs/../lib/set_types.py
+dump_to_zip: INFO    :Processed 264 rows
+DONE /Users/adam/code/dhq/specstore/dpp_repo/datapackage_pipelines/manager/../lib/internal/sink.py
+DONE /Users/adam/code/dhq/specstore/dpp_repo/datapackage_pipelines/specs/../lib/dump_to_zip.py
+DONE V ./worldbank-co2-emissions {'bytes': 692741, 'count_of_rows': 264, 'dataset_name': 'co2-emissions', 'hash': '4dd18effcdfbf5fc267221b4ffc28fa4'}
+INFO    :RESULTS:
+INFO    :SUCCESS: ./worldbank-co2-emissions {'bytes': 692741, 'count_of_rows': 264, 'dataset_name': 'co2-emissions', 'hash': '4dd18effcdfbf5fc267221b4ffc28fa4'}
 ```
 
 Alternatively, you could use our [Docker](https://www.docker.com/) image:
@@ -286,77 +296,36 @@ Any allowed property (according to the [spec]([http://specs.frictionlessdata.io/
       - samwise gamgee <samwise1992@yahoo.com>
 ```
 
-### ***`add_resource`***
+### ***`load`***
 
-Adds a new external tabular resource to the data-package.
-
-_Parameters_:
-
-You should provide a `name` and `url` attributes, and other optional attributes as defined in the [spec]([http://specs.frictionlessdata.io/data-packages/#resource-information).
-
-`url` indicates where the data for this resource resides. Later on, when `stream_remote_resources` runs, it will use the `url` (which is stored in the resource in the `dpp:streamedFrom` property) to read the data rows and push them into the pipeline.   
-
-Note that `url` also supports `env://<environment-variable>`, which indicates that the resource url should be fetched from the indicated environment variable.  This is useful in case you are supplying a string with sensitive information (such as an SQL connection string for streaming from a database table).
-
-Parameters are basically arguments that are passed to a `tabulator.Stream` instance (see the [API](https://github.com/frictionlessdata/tabulator-py#api-reference)).
-Other than those, you can pass a `constants` parameter which should be a mapping of headers to string values.
-When used in conjunction with `stream_remote_resources`, these constant values will be added to each generated row
-(as well as to the default schema).
-
-You may also provide a schema here, or use the default schema generated by the `stream_remote_resources` processor.
-In case `path` is specified, it will be used. If not, the `stream_remote_resources` processor will assign a `path` for you with a `csv` extension.
-
-*Example*:
-
-```yaml
-- run: add_resource
-  parameters:
-    url: http://example.com/my-excel-file.xlsx
-    sheet: 1
-    headers: 2
-- run: add_resource
-  parameters:
-    url: http://example.com/my-csv-file.csv
-    encoding: "iso-8859-2"
-```
-
-### ***`stream_remote_resources`***
-
-Converts external resources to streamed resources.
-
-External resources are ones that link to a remote data source (url or file path), but are not processed by the pipeline and are kept as-is.
-
-Streamed resources are ones that can be processed by the pipeline, and their output is saved as part of the resulting datapackage.
-
-In case a resource has no schema, a default one is generated automatically here by creating a `string` field from each column in the data source.
+Loads data into the package, infers the schema and optionally casts values.
 
 _Parameters_:
+- `from` - location of the data that is to be loaded. This can be either:
+  - a local path (e.g. /path/to/the/data.csv)
+  - a remote URL (e.g. https://path.to/the/data.csv)
+  - Other supported links, based on the current support of schemes and formats in [tabulator](https://github.com/frictionlessdata/tabulator-py#schemes)
+  - a local path or remote URL to a datapackage.json file (e.g. https://path.to/data_package/datapackage.json)
+  - a reference to an environment variable containing the source location, in the form of `env://ENV_VAR`
+  - a tuple containing (datapackage_descriptor, resources_iterator)
+- `resources` - optional, relevant only if source points to a datapackage.json file or datapackage/resource tuple. Value should be one of the following:
+  - Name of a single resource to load
+  - A regular expression matching resource names to load
+  - A list of resource names to load
+  - 'None' indicates to load all resources
+  - The index of the resource in the package
+- `validate` - Should data be casted to the inferred data-types or not. Relevant only when not loading data from datapackage.
+- other options - based on the loaded file, extra options (e.g. sheet for Excel files etc., see the link to tabulator above)
 
-- `resources` - Which resources to stream. Can be:
+### ***`printer`***
 
-  - List of strings, interpreted as resource names to stream
-  - String, interpreted as a regular expression to be used to match resource names
+Just prints whatever it sees. Good for debugging.
 
-  If omitted, all resources in datapackage are streamed.
-
-- `ignore-missing` - if true, then missing resources won't raise an error but will be treated as 'empty' (i.e. with zero rows).
-  Resources with empty URLs will be treated the same (i.e. will generate an 'empty' resource).
-
-- `limit-rows` - if provided, will limit the number of rows fetched from the source. Takes an integer value which specifies how many rows of the source to stream.
-
-*Example*:
-
-```yaml
-- run: stream_remote_resources
-  parameters:
-    resources: ['2014-data', '2015-data']
-- run: stream_remote_resources
-  parameters:
-    resources: '201[67]-data'
-```
-
-This processor also supports loading plain-text resources (e.g. html pages) and handling them as tabular data - split into rows with a single "data" column.
-To enable this behavior, add the following attribute to the resource: `"format": "txt"`.
+_Parameters_:
+- `num_rows` - modify the number of rows to preview, printer will print multiple samples of this number of rows from different places in the stream
+- `last_rows` - how many of the last rows in the stream to print. optional, defaults to the value of num_rows
+- `fields` - optional, list of field names to preview
+- `resources` - optional, allows to limit the printed resources, same semantics as load processor resources argument
 
 ### ***`set_types`***
 
@@ -690,7 +659,7 @@ _Parameters_:
 - `in` - Mapping of keys to values which translate to `row[key] == value` conditions
 - `out` - Mapping of keys to values which translate to `row[key] != value` conditions
 
-Both `in` and `out` should be a list of objects.
+Both `in` and `out` should be a list of objects. However, `out` should only ever have one element.
 
 *Examples*:
 
@@ -707,6 +676,20 @@ Filtering just American and European countries, leaving out countries whose main
     resources: world_population
     out:
       - language: english
+```
+To filter `out` by multiple values, you need multiple filter processors, not multiple `out` elements. Otherwise some condition will always validate and no rows will be discareded:
+
+```
+- run: filter
+  parameters:
+    resources: world_population
+    out:
+      - language: english
+- run: filter
+  parameters:
+    resources: world_population
+    out:
+      - language: swedish
 ```
 
 ### ***`sort`***
@@ -1056,6 +1039,133 @@ _Parameters_:
 - `updated_id_column` - Optional name of a column that will be added to the spewed data and contain the id of the updated row in DB.
 
 ### ***`dump_to_path`***
+Saves the datapackage to a filesystem path.
+
+_Parameters_:
+
+- `out-path` - Name of the output path where `datapackage.json` will be stored.
+
+  This path will be created if it doesn't exist, as well as internal data-package paths.
+
+  If omitted, then `.` (the current directory) will be assumed.
+
+- `force-format` - Specifies whether to force all output files to be generated with the same format
+    - if `True` (the default), all resources will use the same format
+    - if `False`, format will be deduced from the file extension. Resources with unknown extensions will be discarded.
+- `format` - Specifies the type of output files to be generated (if `force-format` is true): `csv` (the default) or `json`
+- `add-filehash-to-path`: Specifies whether to include file md5 hash into the resource path. Defaults to `False`. If `True` Embeds hash in path like so:
+    - If original path is `path/to/the/file.ext`
+    - Modified path will be `path/to/the/HASH/file.ext`
+- `counters` - Specifies whether to count rows, bytes or md5 hash of the data and where it should be stored. An object with the following properties:
+    - `datapackage-rowcount`: Where should a total row count of the datapackage be stored (default: `count_of_rows`)
+    - `datapackage-bytes`: Where should a total byte count of the datapackage be stored (default: `bytes`)
+    - `datapackage-hash`: Where should an md5 hash of the datapackage be stored (default: `hash`)
+    - `resource-rowcount`: Where should a total row count of each resource be stored (default: `count_of_rows`)
+    - `resource-bytes`: Where should a total byte count of each resource be stored (default: `bytes`)
+    - `resource-hash`: Where should an md5 hash of each resource be stored (default: `hash`)
+    Each of these attributes could be set to null in order to prevent the counting.
+    Each property could be a dot-separated string, for storing the data inside a nested object (e.g. `stats.rowcount`)
+- `pretty-descriptor`: Specifies how datapackage descriptor (`datapackage.json`) file will look like:
+    - `False` (default) - descriptor will be written in one line.
+    - `True` - descriptor will have indents and new lines for each key, so it becomes more human-readable.
+
+### ***`dump_to_zip`***
+
+Saves the datapackage to a zipped archive.
+
+_Parameters_:
+
+- `out-file` - Name of the output file where the zipped data will be stored
+- `force-format` and `format` - Same as in `dump_to_path`
+- `add-filehash-to-path` - Same as in `dump_to_path`
+- `counters` - Same as in `dump_to_path`
+- `pretty-descriptor` - Same as in `dump_to_path`
+
+## Deprecated Processors
+
+These processors will be removed in the next major version.
+
+### ***`add_metadata`***
+
+Alias for `update_package`, is kept for backward compatibility reasons.
+
+### ***`add_resource`***
+
+Adds a new external tabular resource to the data-package.
+
+_Parameters_:
+
+You should provide a `name` and `url` attributes, and other optional attributes as defined in the [spec]([http://specs.frictionlessdata.io/data-packages/#resource-information).
+
+`url` indicates where the data for this resource resides. Later on, when `stream_remote_resources` runs, it will use the `url` (which is stored in the resource in the `dpp:streamedFrom` property) to read the data rows and push them into the pipeline.   
+
+Note that `url` also supports `env://<environment-variable>`, which indicates that the resource url should be fetched from the indicated environment variable.  This is useful in case you are supplying a string with sensitive information (such as an SQL connection string for streaming from a database table).
+
+Parameters are basically arguments that are passed to a `tabulator.Stream` instance (see the [API](https://github.com/frictionlessdata/tabulator-py#api-reference)).
+Other than those, you can pass a `constants` parameter which should be a mapping of headers to string values.
+When used in conjunction with `stream_remote_resources`, these constant values will be added to each generated row
+(as well as to the default schema).
+
+You may also provide a schema here, or use the default schema generated by the `stream_remote_resources` processor.
+In case `path` is specified, it will be used. If not, the `stream_remote_resources` processor will assign a `path` for you with a `csv` extension.
+
+*Example*:
+
+```yaml
+- run: add_resource
+  parameters:
+    url: http://example.com/my-excel-file.xlsx
+    sheet: 1
+    headers: 2
+- run: add_resource
+  parameters:
+    url: http://example.com/my-csv-file.csv
+    encoding: "iso-8859-2"
+```
+
+### ***`stream_remote_resources`***
+
+Converts external resources to streamed resources.
+
+External resources are ones that link to a remote data source (url or file path), but are not processed by the pipeline and are kept as-is.
+
+Streamed resources are ones that can be processed by the pipeline, and their output is saved as part of the resulting datapackage.
+
+In case a resource has no schema, a default one is generated automatically here by creating a `string` field from each column in the data source.
+
+_Parameters_:
+
+- `resources` - Which resources to stream. Can be:
+
+  - List of strings, interpreted as resource names to stream
+  - String, interpreted as a regular expression to be used to match resource names
+
+  If omitted, all resources in datapackage are streamed.
+
+- `ignore-missing` - if true, then missing resources won't raise an error but will be treated as 'empty' (i.e. with zero rows).
+  Resources with empty URLs will be treated the same (i.e. will generate an 'empty' resource).
+
+- `limit-rows` - if provided, will limit the number of rows fetched from the source. Takes an integer value which specifies how many rows of the source to stream.
+
+*Example*:
+
+```yaml
+- run: stream_remote_resources
+  parameters:
+    resources: ['2014-data', '2015-data']
+- run: stream_remote_resources
+  parameters:
+    resources: '201[67]-data'
+```
+
+This processor also supports loading plain-text resources (e.g. html pages) and handling them as tabular data - split into rows with a single "data" column.
+To enable this behavior, add the following attribute to the resource: `"format": "txt"`.
+
+### ***`dump.to_sql`***
+
+Alias for `dump_to_sql`, is kept for backward compatibility reasons.
+
+### ***`dump.to_path`***
 
 Saves the datapackage to a filesystem path.
 
