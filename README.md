@@ -645,7 +645,7 @@ _Parameters_:
 - `in` - Mapping of keys to values which translate to `row[key] == value` conditions
 - `out` - Mapping of keys to values which translate to `row[key] != value` conditions
 
-Both `in` and `out` should be a list of objects.
+Both `in` and `out` should be a list of objects. However, `out` should only ever have one element.
 
 *Examples*:
 
@@ -662,6 +662,20 @@ Filtering just American and European countries, leaving out countries whose main
     resources: world_population
     out:
       - language: english
+```
+To filter `out` by multiple values, you need multiple filter processors, not multiple `out` elements. Otherwise some condition will always validate and no rows will be discareded:
+
+```
+- run: filter
+  parameters:
+    resources: world_population
+    out:
+      - language: english
+- run: filter
+  parameters:
+    resources: world_population
+    out:
+      - language: swedish
 ```
 
 ### ***`sort`***
