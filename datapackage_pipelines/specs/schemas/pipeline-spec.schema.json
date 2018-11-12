@@ -34,6 +34,11 @@
             "required": [
               "flow"
             ]
+          },
+          {
+            "required": [
+              "exec"
+            ]
           }
         ],
         "properties": {

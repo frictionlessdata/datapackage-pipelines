@@ -81,6 +81,10 @@ def resolve_executor(step, path, errors):
         step['run'] = 'flow'
         step.setdefault('parameters', {}).update(__flow=step.pop('flow'),
                                                  __path=path)
+    elif 'exec' in step:
+        step['run'] = 'exec'
+        step.setdefault('parameters', {}).update(__exec=step.pop('exec'),
+                                                 __path=path)
 
     executor = step['run']
     back_up, parts = convert_dot_notation(executor)

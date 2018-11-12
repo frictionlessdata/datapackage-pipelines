@@ -93,3 +93,19 @@ dataflows:
   - run: dump_to_path
     parameters:
       out-path: test_flow_data
+
+exec:
+  pipeline:
+  - exec: [ls, -lah]
+  - exec: [bash, -c, 'echo __EXEC_PROCESSOR_PATH = $__EXEC_PROCESSOR_PATH']
+  - run: load_resource
+    parameters:
+      url: ../data/datapackage.json
+      resource: my-spiffy-resource
+
+exec_shell:
+  pipeline:
+  - exec: |
+      TEMPFILE=`mktemp`
+      echo test > $TEMPFILE
+      echo $TEMPFILE > test_exec_shell_tempfile

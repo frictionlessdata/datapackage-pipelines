@@ -29,7 +29,8 @@ test:
 	tests/cli/test_cli_exit_codes.sh &&\
 	tests/cli/test_cli_logs.sh &&\
 	tests/cli/test_custom_formatters.sh &&\
-	tests/cli/test_flow.sh
+	tests/cli/test_flow.sh &&\
+	tests/cli/test_exec.sh
 
 version:
 	@echo $(VERSION)
