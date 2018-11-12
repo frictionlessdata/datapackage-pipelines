@@ -1203,7 +1203,7 @@ _Parameters_:
     - Note that such changes may make the resulting datapackage incompatible with the frictionlessdata specs and may cause interoperability problems.
     - Example usage: [pipeline-spec.yaml](tests/cli/pipeline-spec.yaml) (under the `custom-formatters` pipeline), [XLSXFormat class](tests/cli/custom_formatters/xlsx_format.py)
 
-### ***`dump_to_zip`***
+### ***`dump.to_zip`***
 
 Saves the datapackage to a zipped archive.
 
@@ -1219,7 +1219,7 @@ _Parameters_:
 
 #### *Note*
 
-`dump_to_path` and `dump_to_zip` processors will handle non-tabular resources as well.
+`dump.to_path` and `dump.to_zip` processors will handle non-tabular resources as well.
 These resources must have both a `url` and `path` properties, and _must not_ contain a `schema` property.
 In such cases, the file will be downloaded from the `url` and placed in the provided `path`.
 
