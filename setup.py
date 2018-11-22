@@ -25,7 +25,7 @@ INSTALL_REQUIRES = [
     'requests',
     'datapackage>=1.5.1',
     'tableschema>=1.2.5',
-    'tableschema-sql>=0.10.0',
+    'tableschema-sql>=0.10.4',
     'pyyaml',
     'ujson',
     'mistune',
@@ -37,7 +37,7 @@ INSTALL_REQUIRES = [
     'flask-jsonpify',
     'flask-basicauth',
     'cachetools',
-    'tabulator>=1.14.0',
+    'tabulator>=1.17.0',
     'globster>=0.1.0',
     'dataflows>=0.0.29',
 ]
