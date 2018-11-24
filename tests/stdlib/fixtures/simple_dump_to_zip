@@ -31,6 +31,15 @@ dump_to_zip
     "resources": [
         {
             "name": "my-spiffy-resource",
+            "dialect": {
+                "delimiter": ",", 
+                "doubleQuote": true, 
+                "lineTerminator": "\r\n", 
+                "quoteChar": "\"", 
+                "skipInitialSpace": false
+            },
+            "encoding": "utf-8",
+            "format": "csv",
             "dpp:streaming": true,
             "path": "data/my-data.csv",
             "profile": "data-resource",
@@ -38,8 +47,8 @@ dump_to_zip
                 "fields": [
                     {"name": "mystring", "type": "string"},
                     {"name": "myinteger", "type": "integer"},
-                    {"name": "mynumber", "type": "number"},
-                    {"name": "mydate", "type": "date"}
+                    {"name": "mynumber", "type": "number", "decimalChar": ".", "groupChar": ""},
+                    {"name": "mydate", "type": "date", "format": "%Y-%m-%d"}
                 ]
             }
         }
@@ -48,4 +57,4 @@ dump_to_zip
 --
 {"mystring":"a", "myinteger": null, "mynumber": {"type{decimal}": "2"}, "mydate": {"type{date}": "2016-12-31"}}
 
-{"bytes": 749, "count_of_rows": 1, "dataset_name": "test", "hash": "6dac7a946f31150cc099f7463c233dfc"}
+{"bytes": 1072, "count_of_rows": 1, "dataset_name": "test", "hash": "bb11d400da82f61f135bd6cadb43b467"}

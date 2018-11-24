@@ -53,7 +53,7 @@ def test_pipeline():
         {"pipeline_id": "./tests/env/dummy/pipeline-test-hooks", "event": "start"},
         {"pipeline_id": "./tests/env/dummy/pipeline-test-hooks", "event": "finish", "success": True,
          'stats': {'.dpp': {'out-datapackage-url': 'hooks-outputs/datapackage.json'},
-                   'bytes': 15504, 'count_of_rows': 40,
-                   'dataset_name': 'hook-tests', 'hash': '273045aa562baa25ce28085745e34865'}}
+                   'bytes': 15746, 'count_of_rows': 40,
+                   'dataset_name': 'hook-tests', 'hash': '622c70e2253462fb328c1752df7090e1'}}
     ]
     assert progresses >= 1
