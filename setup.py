@@ -32,7 +32,7 @@ INSTALL_REQUIRES = [
     'redis<3',
     'click<8.0',
     'awesome-slugify',
-    'flask<1.0.0',
+    'flask<2.0.0',
     'flask-cors',
     'flask-jsonpify',
     'flask-basicauth',
