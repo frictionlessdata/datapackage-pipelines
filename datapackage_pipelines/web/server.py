@@ -1,14 +1,15 @@
 import datetime
 import os
-
+from io import BytesIO
 import logging
+from copy import deepcopy
+
 import slugify
 import yaml
 import mistune
-from copy import deepcopy
-from flask import Blueprint
+import requests
 
-from flask import Flask, render_template, abort, redirect
+from flask import Blueprint, Flask, render_template, abort, send_file
 from flask_cors import CORS
 from flask_jsonpify import jsonify
 from flask_basicauth import BasicAuth
@@ -114,7 +115,8 @@ def main():
                       }[pipeline_status.state()],
             'ended': datestr(ex.finish_time) if ex else None,
             'started': datestr(ex.start_time) if ex else None,
-            'last_success': datestr(success_ex.finish_time) if success_ex else None,
+            'last_success':
+                datestr(success_ex.finish_time) if success_ex else None,
         }
         statuses.append(pipeline_obj)
 
@@ -181,7 +183,9 @@ def pipeline_raw_api(pipeline_id):
         "error_log": pipeline_status.errors(),
         "stats": last_execution.stats if last_execution else None,
         "success": last_execution.success if last_execution else None,
-        "last_success": last_successful_execution.finish_time if last_successful_execution else None,
+        "last_success":
+            last_successful_execution.finish_time
+            if last_successful_execution else None,
         "trigger": last_execution.trigger if last_execution else None,
 
         "pipeline": pipeline_status.pipeline_details,
@@ -222,15 +226,18 @@ def pipeline_api(field, pipeline_id):
 
 @blueprint.route("badge/<path:pipeline_id>")
 def badge(pipeline_id):
+    '''An individual pipeline status'''
     if not pipeline_id.startswith('./'):
         pipeline_id = './' + pipeline_id
-    pipeline_status = status.get_status(pipeline_id)
+    pipeline_status = status.get(pipeline_id)
     if pipeline_status is None:
         abort(404)
-    status_text = pipeline_status.get('message')
-    success = pipeline_status.get('success')
+    status_text = pipeline_status.state().capitalize()
+    last_execution = pipeline_status.get_last_execution()
+    success = last_execution.success if last_execution else None
     if success is True:
-        record_count = pipeline_status.get('stats', {}).get('total_row_count')
+        stats = last_execution.stats if last_execution else None
+        record_count = stats.get('count_of_rows')
         if record_count is not None:
             status_text += ' (%d records)' % record_count
         status_color = 'brightgreen'
@@ -238,9 +245,12 @@ def badge(pipeline_id):
         status_color = 'red'
     else:
         status_color = 'lightgray'
-    return redirect('https://img.shields.io/badge/{}-{}-{}.svg'.format(
-        'pipeline', status_text, status_color
-    ))
+    image_url = 'https://img.shields.io/badge/{}-{}-{}.svg' \
+        .format('pipeline', status_text, status_color)
+    r = requests.get(image_url)
+    buffer_image = BytesIO(r.content)
+    buffer_image.seek(0)
+    return send_file(buffer_image, mimetype='image/svg+xml')
 
 
 app = Flask(__name__)
