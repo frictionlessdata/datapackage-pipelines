@@ -243,7 +243,7 @@ def badge(pipeline_id):
 
     status_color = 'lightgray'
     if pipeline_status.pipeline_details:
-        status_text = pipeline_status.state().capitalize()
+        status_text = pipeline_status.state().lower()
         last_execution = pipeline_status.get_last_execution()
         success = last_execution.success if last_execution else None
         if success is True:
