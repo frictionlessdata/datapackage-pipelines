@@ -2,6 +2,7 @@ import datetime
 import os
 from io import BytesIO
 import logging
+from functools import wraps
 from copy import deepcopy
 from collections import Counter
 
@@ -84,10 +85,29 @@ def make_hierarchies(statuses):
     return groups
 
 
+def basic_auth_required(view_func):
+    """
+    A decorator that can be used to protect specific views with HTTP basic
+    access authentication. Conditional on having BASIC_AUTH_USERNAME and
+    BASIC_AUTH_PASSWORD set as env vars.
+    """
+    @wraps(view_func)
+    def wrapper(*args, **kwargs):
+        if app.config.get('BASIC_AUTH_ACTIVE', False):
+            if basic_auth.authenticate():
+                return view_func(*args, **kwargs)
+            else:
+                return basic_auth.challenge()
+        else:
+            return view_func(*args, **kwargs)
+    return wrapper
+
+
 blueprint = Blueprint('dpp', 'dpp')
 
 
 @blueprint.route("")
+@basic_auth_required
 def main():
     all_pipeline_ids = sorted(status.all_pipeline_ids())
     statuses = []
@@ -153,6 +173,7 @@ def refresh():
 
 
 @blueprint.route("api/raw/status")
+@basic_auth_required
 def pipeline_raw_api_status():
     pipelines = sorted(status.all_statuses(), key=lambda x: x.get('id'))
     for pipeline in pipelines:
@@ -164,6 +185,7 @@ def pipeline_raw_api_status():
 
 
 @blueprint.route("api/raw/<path:pipeline_id>")
+@basic_auth_required
 def pipeline_raw_api(pipeline_id):
     if not pipeline_id.startswith('./'):
         pipeline_id = './' + pipeline_id
@@ -199,6 +221,7 @@ def pipeline_raw_api(pipeline_id):
 
 
 @blueprint.route("api/<field>/<path:pipeline_id>")
+@basic_auth_required
 def pipeline_api(field, pipeline_id):
 
     if not pipeline_id.startswith('./'):
@@ -304,10 +327,10 @@ if os.environ.get('DPP_BASIC_AUTH_USERNAME', False) \
    and os.environ.get('DPP_BASIC_AUTH_PASSWORD', False):
     app.config['BASIC_AUTH_USERNAME'] = os.environ['DPP_BASIC_AUTH_USERNAME']
     app.config['BASIC_AUTH_PASSWORD'] = os.environ['DPP_BASIC_AUTH_PASSWORD']
+    app.config['BASIC_AUTH_ACTIVE'] = True
 
-    basic_auth = BasicAuth(app)
+basic_auth = BasicAuth(app)
 
-    app.config['BASIC_AUTH_FORCE'] = True
 
 CORS(app)
 
