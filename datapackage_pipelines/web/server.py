@@ -3,6 +3,7 @@ import os
 from io import BytesIO
 import logging
 from copy import deepcopy
+from collections import Counter
 
 import slugify
 import yaml
@@ -224,7 +225,7 @@ def pipeline_api(field, pipeline_id):
     return jsonify(ret)
 
 
-def make_badge_response(subject, text, colour):
+def _make_badge_response(subject, text, colour):
     image_url = 'https://img.shields.io/badge/{}-{}-{}.svg'.format(
         subject, text, colour)
     r = requests.get(image_url)
@@ -255,7 +256,45 @@ def badge(pipeline_id):
             status_color = 'red'
     else:
         status_text = "not found"
-    return make_badge_response('pipeline', status_text, status_color)
+    return _make_badge_response('pipeline', status_text, status_color)
+
+
+@blueprint.route("badge/collection/<path:pipeline_path>")
+def badge_collection(pipeline_path):
+    '''Status badge for a collection of pipelines.'''
+    all_pipeline_ids = sorted(status.all_pipeline_ids())
+
+    if not pipeline_path.startswith('./'):
+        pipeline_path = './' + pipeline_path
+
+    # Filter pipeline ids to only include those that start with pipeline_path.
+    path_pipeline_ids = \
+        [p for p in all_pipeline_ids if p.startswith(pipeline_path)]
+
+    statuses = []
+    for pipeline_id in path_pipeline_ids:
+        pipeline_status = status.get(pipeline_id)
+        if pipeline_status is None:
+            abort(404)
+        status_text = pipeline_status.state().lower()
+        statuses.append(status_text)
+
+    status_color = 'lightgray'
+    status_counter = Counter(statuses)
+    if status_counter:
+        if len(status_counter) == 1 and status_counter['succeeded'] > 0:
+            status_color = 'brightgreen'
+        elif status_counter['failed'] > 0:
+            status_color = 'red'
+        elif status_counter['failed'] == 0:
+            status_color = 'yellow'
+        status_text = \
+            ', '.join(['{} {}'.format(v, k)
+                       for k, v in status_counter.items()])
+    else:
+        status_text = "not found"
+
+    return _make_badge_response('pipelines', status_text, status_color)
 
 
 app = Flask(__name__)
