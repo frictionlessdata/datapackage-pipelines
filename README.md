@@ -1677,6 +1677,8 @@ http://localhost:5000/badge/collection/path_to/pipelines/
 
 ![](https://img.shields.io/badge/pipelines-not%20found-lightgray.svg)
 
+Note that these badge endpoints will always be exposed regardless of `DPP_BASIC_AUTH_PASSWORD` and `DPP_BASIC_AUTH_USERNAME` settings.
+
 ## Integrating with other services
 
 Datapackage-pipelines can call a predefined webhook on any pipeline event. This might allow for potential integrations with other applications.
