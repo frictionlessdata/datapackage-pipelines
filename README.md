@@ -56,7 +56,7 @@ worldbank-co2-emissions:
     -
       run: dump_to_zip
       parameters:
-          out-file: co2-emissions-wb.zip     
+          out-file: co2-emissions-wb.zip
 ```
 
 In this example we see one pipeline called `worldbank-co2-emissions`. Its pipeline consists of 4 steps:
@@ -530,7 +530,7 @@ _Parameters_:
 
     - `count` - count the number of occurrences of a specific key
       For this method, specifying `name` is not required. In case it is specified, `count` will count the number of non-null values for that source field.
-    
+
     - `counters` - count the number of occurrences of distinct values
       Will return an array of 2-tuples of the form `[value, count-of-value]`.
 
@@ -563,7 +563,7 @@ _Important: the "source" resource **must** appear before the "target" resource i
       key: ["CC"]
     fields:
       population:
-        name: "census_2015"        
+        name: "census_2015"
     full: true
 ```
 
@@ -719,7 +719,7 @@ Filtering just American and European countries, leaving out countries whose main
 
 Duplicate a resource.
 
-`duplicate` accepts the name of a single resource in the datapackage. 
+`duplicate` accepts the name of a single resource in the datapackage.
 It will then duplicate it in the output datapackage, with a different name and path.
 The duplicated resource will appear immediately after its original.
 
@@ -1097,7 +1097,7 @@ _Parameters_:
 
 You should provide a `name` and `url` attributes, and other optional attributes as defined in the [spec]([http://specs.frictionlessdata.io/data-packages/#resource-information).
 
-`url` indicates where the data for this resource resides. Later on, when `stream_remote_resources` runs, it will use the `url` (which is stored in the resource in the `dpp:streamedFrom` property) to read the data rows and push them into the pipeline.   
+`url` indicates where the data for this resource resides. Later on, when `stream_remote_resources` runs, it will use the `url` (which is stored in the resource in the `dpp:streamedFrom` property) to read the data rows and push them into the pipeline.
 
 Note that `url` also supports `env://<environment-variable>`, which indicates that the resource url should be fetched from the indicated environment variable.  This is useful in case you are supplying a string with sensitive information (such as an SQL connection string for streaming from a database table).
 
@@ -1353,8 +1353,8 @@ if __name__ == '__main__':
         for resource in resource_iterator_:
             yield resource_processor(resource)
 
-    spew(ctx.datapackage, 
-         new_resource_iterator(ctx.resource_iterator), 
+    spew(ctx.datapackage,
+         new_resource_iterator(ctx.resource_iterator),
          ctx.stats)
 ```
 
@@ -1637,17 +1637,45 @@ $ docker run -v `pwd`:/pipelines:rw -p 5000:5000 \
 
 And then browse to `http://<docker machine's IP address>:5000/` to see the current execution status dashboard.
 
-## Pipeline Dashboard
+## Pipeline Dashboard & Status Badges
 
-When installed on a server or running using the task scheduler, it's often very hard to know exactly what's running and what's the status of each pipeline.
+When installed on a server or running using the task scheduler, it's often very hard to know exactly what's running and what the status is of each pipeline.
 
-To make things easier, you can spin up the web dashboard which provides an overview of each pipeline's status, its basic info and the result of it latest execution.
+To make things easier, you can spin up the web dashboard to provide an overview of each pipeline's status, its basic info and the result of it latest execution.
 
 To start the web server run `dpp serve` from the command line and browse to http://localhost:5000
 
 The environment variable `DPP_BASE_PATH` will determine whether dashboard will be served from root or from another base path (example value: `/pipelines/`).
 
 The dashboard endpoints can be made to require authentication by adding a username and password with the environment variables `DPP_BASIC_AUTH_USERNAME` and `DPP_BASIC_AUTH_PASSWORD`.
+
+Even simpler pipeline status is available with a status badge, both for individual pipelines, and for pipeline collections. For a single pipeline, add the full pipeline id to the badge endpoint:
+
+```
+http://localhost:5000/badge/path_to/pipelines/my-pipeline-id
+```
+
+![](https://img.shields.io/badge/pipeline-succeeded%20(30756%20records)-brightgreen.svg)
+
+![](https://img.shields.io/badge/pipeline-invalid-lightgrey.svg)
+
+![](https://img.shields.io/badge/pipeline-failed-red.svg)
+
+![](https://img.shields.io/badge/pipeline-not%20found-lightgray.svg)
+
+Or for a collection of pipelines:
+
+```
+http://localhost:5000/badge/collection/path_to/pipelines/
+```
+
+![](https://img.shields.io/badge/pipelines-22%20succeeded-brightgreen.svg)
+
+![](https://img.shields.io/badge/pipelines-4%20running%2C%20%201%20succeeded%2C%205%20queued-yellow.svg)
+
+![](https://img.shields.io/badge/pipelines-11%20succeeded%2C%207%20failed%2C%201%20invalid-red.svg)
+
+![](https://img.shields.io/badge/pipelines-not%20found-lightgray.svg)
 
 ## Integrating with other services
 
