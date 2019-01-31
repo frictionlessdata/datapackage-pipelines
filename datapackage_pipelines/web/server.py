@@ -224,33 +224,38 @@ def pipeline_api(field, pipeline_id):
     return jsonify(ret)
 
 
+def make_badge_response(subject, text, colour):
+    image_url = 'https://img.shields.io/badge/{}-{}-{}.svg'.format(
+        subject, text, colour)
+    r = requests.get(image_url)
+    buffer_image = BytesIO(r.content)
+    buffer_image.seek(0)
+    return send_file(buffer_image, mimetype='image/svg+xml')
+
+
 @blueprint.route("badge/<path:pipeline_id>")
 def badge(pipeline_id):
     '''An individual pipeline status'''
     if not pipeline_id.startswith('./'):
         pipeline_id = './' + pipeline_id
     pipeline_status = status.get(pipeline_id)
-    if pipeline_status is None:
-        abort(404)
-    status_text = pipeline_status.state().capitalize()
-    last_execution = pipeline_status.get_last_execution()
-    success = last_execution.success if last_execution else None
-    if success is True:
-        stats = last_execution.stats if last_execution else None
-        record_count = stats.get('count_of_rows')
-        if record_count is not None:
-            status_text += ' (%d records)' % record_count
-        status_color = 'brightgreen'
-    elif success is False:
-        status_color = 'red'
+
+    status_color = 'lightgray'
+    if pipeline_status.pipeline_details:
+        status_text = pipeline_status.state().capitalize()
+        last_execution = pipeline_status.get_last_execution()
+        success = last_execution.success if last_execution else None
+        if success is True:
+            stats = last_execution.stats if last_execution else None
+            record_count = stats.get('count_of_rows')
+            if record_count is not None:
+                status_text += ' (%d records)' % record_count
+            status_color = 'brightgreen'
+        elif success is False:
+            status_color = 'red'
     else:
-        status_color = 'lightgray'
-    image_url = 'https://img.shields.io/badge/{}-{}-{}.svg' \
-        .format('pipeline', status_text, status_color)
-    r = requests.get(image_url)
-    buffer_image = BytesIO(r.content)
-    buffer_image.seek(0)
-    return send_file(buffer_image, mimetype='image/svg+xml')
+        status_text = "not found"
+    return make_badge_response('pipeline', status_text, status_color)
 
 
 app = Flask(__name__)
