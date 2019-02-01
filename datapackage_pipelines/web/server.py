@@ -86,10 +86,19 @@ blueprint = Blueprint('dpp', 'dpp')
 
 
 @blueprint.route("")
-def main():
-    all_pipeline_ids = sorted(status.all_pipeline_ids())
+@blueprint.route("<path:pipeline_path>")
+def main(pipeline_path=None):
+    pipeline_ids = sorted(status.all_pipeline_ids())
+
+    # If we have a pipeline_path, filter the pipeline ids.
+    if pipeline_path is not None:
+        if not pipeline_path.startswith('./'):
+            pipeline_path = './' + pipeline_path
+
+        pipeline_ids = [p for p in pipeline_ids if p.startswith(pipeline_path)]
+
     statuses = []
-    for pipeline_id in all_pipeline_ids:
+    for pipeline_id in pipeline_ids:
         pipeline_status = status.get(pipeline_id)
         ex = pipeline_status.get_last_execution()
         success_ex = pipeline_status.get_last_successful_execution()
@@ -114,7 +123,8 @@ def main():
                       }[pipeline_status.state()],
             'ended': datestr(ex.finish_time) if ex else None,
             'started': datestr(ex.start_time) if ex else None,
-            'last_success': datestr(success_ex.finish_time) if success_ex else None,
+            'last_success':
+                datestr(success_ex.finish_time) if success_ex else None,
         }
         statuses.append(pipeline_obj)
 
