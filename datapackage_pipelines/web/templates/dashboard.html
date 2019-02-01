@@ -121,17 +121,22 @@
             <div class="row">
                 <div class="col-md-3 hidden-xs hidden-sm">
                     <div data-spy="affix" >
-                        {% macro nested_pipelines(statuses) %}
+                        {% macro nested_pipelines(statuses, parent='') %}
                         {% for k, children in statuses.children.items() %}
                         <div class="row">
                             <div class="col-xs-12">
                                 <div class="nesting open">
                                     <div class="nesting-title">
                                         <span class="glyphicon glyphicon-menu-right"></span>
-                                        <span>{{ k }}</span>
+                                        {% if parent %}
+                                          {% set pipeline_path = parent + '/' + k %}
+                                        {% else %}
+                                          {% set pipeline_path = k %}
+                                        {% endif %}
+                                        <span><a href="{{ url_for('dpp.main', pipeline_path=pipeline_path) }}">{{ k }}</a></span>
                                     </div>
                                     <div class="nesting-contents">
-                                        {{ nested_pipelines(children) }}
+                                        {{ nested_pipelines(children, k) }}
                                     </div>
                                 </div>
                             </div>
@@ -283,14 +288,15 @@
       var field = target.attr('data-field');
       if (!field) return;
       var pipeline_id = target.attr('data-pipeline');
-      $.get('api/'+field+'/'+pipeline_id, function(data) {
-        text = data.text;
-        contents = '<pre>';
-        for (i = 0 ; i < text.length ; i++) contents += text[i] + '\n';
-        contents = contents + '</pre>';
-        target.html(contents);
-        target.attr('data-full', true);
-      }, 'json');
+      $.get("{{ url_for('dpp.main') }}" + "api/" + field + "/" + pipeline_id,
+        function(data) {
+          text = data.text;
+          contents = '<pre>';
+          for (i = 0 ; i < text.length ; i++) contents += text[i] + '\n';
+          contents = contents + '</pre>';
+          target.html(contents);
+          target.attr('data-full', true);
+        }, 'json');
     }
 
     $('[role=tabpanel]').on('shown.bs.tab', function(e) {
