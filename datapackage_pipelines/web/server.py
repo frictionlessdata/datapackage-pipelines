@@ -1,20 +1,21 @@
 import datetime
 import os
-
+from io import BytesIO
 import logging
+from functools import wraps
+from copy import deepcopy
+from collections import Counter
+
 import slugify
 import yaml
 import mistune
-from copy import deepcopy
-from flask import Blueprint
+import requests
 
-from flask import Flask, render_template, abort, redirect
+from flask import Blueprint, Flask, render_template, abort, send_file
 from flask_cors import CORS
 from flask_jsonpify import jsonify
 from flask_basicauth import BasicAuth
 
-from datapackage_pipelines.celery_tasks.celery_tasks import \
-    execute_update_pipelines
 from datapackage_pipelines.status import status_mgr
 from datapackage_pipelines.utilities.stat_utils import user_facing_stats
 
@@ -82,11 +83,30 @@ def make_hierarchies(statuses):
     return groups
 
 
+def basic_auth_required(view_func):
+    """
+    A decorator that can be used to protect specific views with HTTP basic
+    access authentication. Conditional on having BASIC_AUTH_USERNAME and
+    BASIC_AUTH_PASSWORD set as env vars.
+    """
+    @wraps(view_func)
+    def wrapper(*args, **kwargs):
+        if app.config.get('BASIC_AUTH_ACTIVE', False):
+            if basic_auth.authenticate():
+                return view_func(*args, **kwargs)
+            else:
+                return basic_auth.challenge()
+        else:
+            return view_func(*args, **kwargs)
+    return wrapper
+
+
 blueprint = Blueprint('dpp', 'dpp')
 
 
 @blueprint.route("")
 @blueprint.route("<path:pipeline_path>")
+@basic_auth_required
 def main(pipeline_path=None):
     pipeline_ids = sorted(status.all_pipeline_ids())
 
@@ -153,13 +173,8 @@ def main(pipeline_path=None):
                            markdown=markdown)
 
 
-@blueprint.route("api/refresh")
-def refresh():
-    execute_update_pipelines()
-    return jsonify({'ok': True})
-
-
 @blueprint.route("api/raw/status")
+@basic_auth_required
 def pipeline_raw_api_status():
     pipelines = sorted(status.all_statuses(), key=lambda x: x.get('id'))
     for pipeline in pipelines:
@@ -171,6 +186,7 @@ def pipeline_raw_api_status():
 
 
 @blueprint.route("api/raw/<path:pipeline_id>")
+@basic_auth_required
 def pipeline_raw_api(pipeline_id):
     if not pipeline_id.startswith('./'):
         pipeline_id = './' + pipeline_id
@@ -191,7 +207,9 @@ def pipeline_raw_api(pipeline_id):
         "error_log": pipeline_status.errors(),
         "stats": last_execution.stats if last_execution else None,
         "success": last_execution.success if last_execution else None,
-        "last_success": last_successful_execution.finish_time if last_successful_execution else None,
+        "last_success":
+            last_successful_execution.finish_time
+            if last_successful_execution else None,
         "trigger": last_execution.trigger if last_execution else None,
 
         "pipeline": pipeline_status.pipeline_details,
@@ -204,6 +222,7 @@ def pipeline_raw_api(pipeline_id):
 
 
 @blueprint.route("api/<field>/<path:pipeline_id>")
+@basic_auth_required
 def pipeline_api(field, pipeline_id):
 
     if not pipeline_id.startswith('./'):
@@ -230,27 +249,76 @@ def pipeline_api(field, pipeline_id):
     return jsonify(ret)
 
 
+def _make_badge_response(subject, text, colour):
+    image_url = 'https://img.shields.io/badge/{}-{}-{}.svg'.format(
+        subject, text, colour)
+    r = requests.get(image_url)
+    buffer_image = BytesIO(r.content)
+    buffer_image.seek(0)
+    return send_file(buffer_image, mimetype='image/svg+xml')
+
+
 @blueprint.route("badge/<path:pipeline_id>")
 def badge(pipeline_id):
+    '''An individual pipeline status'''
     if not pipeline_id.startswith('./'):
         pipeline_id = './' + pipeline_id
-    pipeline_status = status.get_status(pipeline_id)
-    if pipeline_status is None:
-        abort(404)
-    status_text = pipeline_status.get('message')
-    success = pipeline_status.get('success')
-    if success is True:
-        record_count = pipeline_status.get('stats', {}).get('total_row_count')
-        if record_count is not None:
-            status_text += ' (%d records)' % record_count
-        status_color = 'brightgreen'
-    elif success is False:
-        status_color = 'red'
+    pipeline_status = status.get(pipeline_id)
+
+    status_color = 'lightgray'
+    if pipeline_status.pipeline_details:
+        status_text = pipeline_status.state().lower()
+        last_execution = pipeline_status.get_last_execution()
+        success = last_execution.success if last_execution else None
+        if success is True:
+            stats = last_execution.stats if last_execution else None
+            record_count = stats.get('count_of_rows')
+            if record_count is not None:
+                status_text += ' (%d records)' % record_count
+            status_color = 'brightgreen'
+        elif success is False:
+            status_color = 'red'
     else:
-        status_color = 'lightgray'
-    return redirect('https://img.shields.io/badge/{}-{}-{}.svg'.format(
-        'pipeline', status_text, status_color
-    ))
+        status_text = "not found"
+    return _make_badge_response('pipeline', status_text, status_color)
+
+
+@blueprint.route("badge/collection/<path:pipeline_path>")
+def badge_collection(pipeline_path):
+    '''Status badge for a collection of pipelines.'''
+    all_pipeline_ids = sorted(status.all_pipeline_ids())
+
+    if not pipeline_path.startswith('./'):
+        pipeline_path = './' + pipeline_path
+
+    # Filter pipeline ids to only include those that start with pipeline_path.
+    path_pipeline_ids = \
+        [p for p in all_pipeline_ids if p.startswith(pipeline_path)]
+
+    statuses = []
+    for pipeline_id in path_pipeline_ids:
+        pipeline_status = status.get(pipeline_id)
+        if pipeline_status is None:
+            abort(404)
+        status_text = pipeline_status.state().lower()
+        statuses.append(status_text)
+
+    status_color = 'lightgray'
+    status_counter = Counter(statuses)
+    if status_counter:
+        if len(status_counter) == 1 and status_counter['succeeded'] > 0:
+            status_color = 'brightgreen'
+        elif status_counter['failed'] > 0:
+            status_color = 'red'
+        elif status_counter['failed'] == 0:
+            status_color = 'yellow'
+        status_text = \
+            ', '.join(['{} {}'.format(v, k)
+                       for k, v in status_counter.items()])
+    else:
+        status_text = "not found"
+
+    return _make_badge_response('pipelines', status_text, status_color)
 
 
 app = Flask(__name__)
@@ -260,10 +328,10 @@ if os.environ.get('DPP_BASIC_AUTH_USERNAME', False) \
    and os.environ.get('DPP_BASIC_AUTH_PASSWORD', False):
     app.config['BASIC_AUTH_USERNAME'] = os.environ['DPP_BASIC_AUTH_USERNAME']
     app.config['BASIC_AUTH_PASSWORD'] = os.environ['DPP_BASIC_AUTH_PASSWORD']
+    app.config['BASIC_AUTH_ACTIVE'] = True
 
-    basic_auth = BasicAuth(app)
+basic_auth = BasicAuth(app)
 
-    app.config['BASIC_AUTH_FORCE'] = True
 
 CORS(app)
 
