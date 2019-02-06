@@ -11,7 +11,8 @@ import yaml
 import mistune
 import requests
 
-from flask import Blueprint, Flask, render_template, abort, send_file
+from flask import \
+    Blueprint, Flask, render_template, abort, send_file, make_response
 from flask_cors import CORS
 from flask_jsonpify import jsonify
 from flask_basicauth import BasicAuth
@@ -255,7 +256,11 @@ def _make_badge_response(subject, text, colour):
     r = requests.get(image_url)
     buffer_image = BytesIO(r.content)
     buffer_image.seek(0)
-    return send_file(buffer_image, mimetype='image/svg+xml')
+    res = make_response(send_file(buffer_image, mimetype='image/svg+xml'))
+    res.headers['Cache-Control'] = \
+        'max-age=0, no-cache, no-store, must-revalidate'
+    res.headers['Expires'] = '0'
+    return res
 
 
 @blueprint.route("badge/<path:pipeline_id>")
