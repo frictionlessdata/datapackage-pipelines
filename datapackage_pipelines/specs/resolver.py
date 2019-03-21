@@ -79,8 +79,15 @@ def resolve_executor(step, path, errors):
 
     if 'flow' in step:
         step['run'] = 'flow'
-        step.setdefault('parameters', {}).update(__flow=step.pop('flow'),
-                                                 __path=path)
+        parameters = step.setdefault('parameters', {})
+        flow = step.pop('flow')
+        parameters.update(__flow=flow, __path=path)
+        try:
+            flow_py_file = os.path.join(path, flow + '.py')
+            if os.path.exists(flow_py_file):
+                parameters['__flow_hash'] = hashlib.md5(open(flow_py_file, 'rb').read()).hexdigest()
+        except Exception:
+            pass
 
     executor = step['run']
     back_up, parts = convert_dot_notation(executor)
