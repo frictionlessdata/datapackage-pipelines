@@ -29,7 +29,7 @@ INSTALL_REQUIRES = [
     'pyyaml',
     'ujson',
     'mistune',
-    'redis<4',
+    'redis>=3,<4',
     'click<8.0',
     'awesome-slugify',
     'flask<2.0.0',
