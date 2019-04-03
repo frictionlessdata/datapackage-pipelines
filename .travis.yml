@@ -7,8 +7,8 @@ services:
 - docker
 env:
   matrix:
-  - TOXENV="py36-sqlite" SPEEDUP=no DEPLOY=yes
-  - TOXENV="py36-plyvel" SPEEDUP=yes DEPLOY=no
+  - TOXENV="py36-sqlite" SPEEDUP=no DEPLOY=no
+  - TOXENV="py36-plyvel" SPEEDUP=yes DEPLOY=yes
   global:
   - LANG=en_US.UTF-8
 install:
