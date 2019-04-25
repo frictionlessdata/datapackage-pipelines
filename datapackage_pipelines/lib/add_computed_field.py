@@ -7,7 +7,7 @@ def flow(parameters):
     return Flow(
         add_computed_field(
             parameters.get('fields', []),
-            parameters.get('resources')
+            resources=parameters.get('resources')
         ),
     )
 
