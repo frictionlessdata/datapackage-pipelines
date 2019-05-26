@@ -5,10 +5,11 @@ from datapackage_pipelines.utilities.flow_utils import spew_flow
 
 def flow(parameters):
     resources = parameters.get('resources')
+    regex = parameters.get('regex', True)
     if 'types' in parameters:
         return Flow(
             *[
-                set_type(name, resources=resources, **options)
+                set_type(name, resources=resources, regex=regex, **options)
                 if options is not None else
                 delete_fields([name], resources=resources)
                 for name, options in parameters['types'].items()
