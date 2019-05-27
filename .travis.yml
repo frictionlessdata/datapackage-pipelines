@@ -12,7 +12,7 @@ env:
   global:
   - LANG=en_US.UTF-8
 install:
-- sudo apt-get install libleveldb-dev libleveldb1
+- sudo apt-get install libleveldb-dev libleveldb
 - if [ "${SPEEDUP}" == yes ]; then make install-speedup; else make install; fi
 - pip install coveralls
 script:
