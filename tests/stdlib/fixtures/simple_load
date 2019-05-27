@@ -18,9 +18,7 @@ load
     "resources": [
         {
             "dpp:streaming": true, 
-            "encoding": "utf-8", 
             "format": "csv", 
-            "mediatype": "text/csv", 
             "name": "my-spiffy-resource", 
             "path": "my-spiffy-resource.csv", 
             "profile": "tabular-data-resource", 
