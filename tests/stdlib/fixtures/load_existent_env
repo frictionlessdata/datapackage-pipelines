@@ -19,9 +19,7 @@ load
         {
             "dpp:streamedFrom": "env://EXISTENT_ENV", 
             "dpp:streaming": true, 
-            "encoding": "utf-8", 
             "format": "csv", 
-            "mediatype": "text/csv", 
             "name": "my-env-resource", 
             "path": "my-env-resource.csv", 
             "profile": "tabular-data-resource", 

@@ -1,18 +1,18 @@
-dist: trusty
+dist: xenial
 sudo: required
 language: python
 python:
-- 3.6
+- '3.7'
 services:
 - docker
 env:
   matrix:
-  - TOXENV="py36-sqlite" SPEEDUP=no DEPLOY=no
-  - TOXENV="py36-plyvel" SPEEDUP=yes DEPLOY=yes
+  - TOXENV="py37-sqlite" SPEEDUP=no DEPLOY=no
+  - TOXENV="py37-plyvel" SPEEDUP=yes DEPLOY=yes
   global:
   - LANG=en_US.UTF-8
 install:
-- sudo apt-get install libleveldb-dev libleveldb1
+- sudo apt-get install libleveldb-dev libleveldb1v5
 - if [ "${SPEEDUP}" == yes ]; then make install-speedup; else make install; fi
 - pip install coveralls
 script:
