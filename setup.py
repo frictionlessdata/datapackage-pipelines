@@ -69,6 +69,7 @@ setup(
     },
     zip_safe=False,
     long_description=README,
+    long_description_content_type='text/markdown',
     description='{{ DESCRIPTION }}',
     author='Open Knowledge Foundation',
     author_email='info@okfn.org',
