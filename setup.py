@@ -39,7 +39,7 @@ INSTALL_REQUIRES = [
     'cachetools',
     'tabulator>=1.17.0',
     'globster>=0.1.0',
-    'dataflows>=0.0.34',
+    'dataflows>=0.0.55',
 ]
 SPEEDUP_REQUIRES = [
     'dataflows[speedup]',

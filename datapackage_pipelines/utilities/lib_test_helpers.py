@@ -104,7 +104,7 @@ class ProcessorFixtureTestsBase(object):
         for ares, eres in zip(actual_dp.get('resources', []), dp_out.get('resources', [])):
             assert ares.get('schema', {}).get('fields') == eres.get('schema', {}).get('fields')
             assert ares.get('schema', {}) == eres.get('schema', {})
-            assert ares == eres
+            assert ares == eres, 'error comparing actual:\n%r\nto expected:\n%r\n...' % (ares, eres)
         assert actual_dp == dp_out
 
         if len(actual_data) > 0:
