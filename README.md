@@ -342,6 +342,7 @@ _Parameters_:
 
    If omitted, all resources in datapackage are streamed.
 
+- `regex` - if set to `False` field names will be interpreted as strings not as regular expressions (`True` by default)
 -  `types` - A map between field names and field definitions.
    - _field name_ is either simply the name of a field, or a regular expression matching multiple fields.
    - _field definition_ is an object adhering to the [JSON Table Schema spec](http://specs.frictionlessdata.io/table-schema/). You can use `null` instead of an object to remove a field from the schema.
