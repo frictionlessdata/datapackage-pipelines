@@ -16,6 +16,7 @@ def flow(parameters):
             target['key'],
             parameters['fields'],
             parameters.get('full', True),
+            parameters.get('mode', None),
             source.get('delete', False)
         ),
         update_resource(
