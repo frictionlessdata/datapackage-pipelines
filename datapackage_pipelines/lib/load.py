@@ -20,8 +20,8 @@ def flow(parameters):
     def mark_streaming(_from):
         def func(package):
             for i in range(num_resources, len(package.pkg.resources)):
-                package.pkg.descriptor['resources'][i][PROP_STREAMING] = True
-                package.pkg.descriptor['resources'][i][PROP_STREAMED_FROM] = _from
+                package.pkg.descriptor['resources'][i].setdefault(PROP_STREAMING, True)
+                package.pkg.descriptor['resources'][i].setdefault(PROP_STREAMED_FROM,  _from)
             yield package.pkg
             yield from package
         return func
