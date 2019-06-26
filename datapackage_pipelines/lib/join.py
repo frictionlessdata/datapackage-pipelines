@@ -15,8 +15,8 @@ def flow(parameters):
             target['name'],
             target['key'],
             parameters['fields'],
-            parameters.get('full', True),
-            parameters.get('mode', None),
+            parameters.get('full', None),
+            parameters.get('mode', 'half-outer'),
             source.get('delete', False)
         ),
         update_resource(
