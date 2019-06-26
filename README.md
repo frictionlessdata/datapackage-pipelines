@@ -296,6 +296,30 @@ Any allowed property (according to the [spec]([http://specs.frictionlessdata.io/
       - samwise gamgee <samwise1992@yahoo.com>
 ```
 
+### ***`update_resource`***
+
+Adds meta-data to the resource.
+
+_Parameters_:
+
+- `resources`
+  - A name of a resource to operate on
+  - A regular expression matching resource names
+  - A list of resource names
+  - `None` indicates operation should be done on all resources
+  - The index of the resource in the package
+- `metadata` - Any allowed property (according to the [spec]([https://frictionlessdata.io/specs/data-resource/#metadata)) can be provided here.
+
+*Example*:
+
+```yaml
+- run: update_resource
+  parameters:
+    resources: ['resource1']
+    metadata:
+      path: 'new-path.csv'
+```
+
 ### ***`load`***
 
 Loads data into the package, infers the schema and optionally casts values.
