@@ -306,8 +306,8 @@ _Parameters_:
   - A name of a resource to operate on
   - A regular expression matching resource names
   - A list of resource names
-  - `None` indicates operation should be done on all resources
   - The index of the resource in the package
+  - if omitted indicates operation should be done on all resources
 - `metadata` - A dictionary containing any allowed property (according to the [spec]([https://frictionlessdata.io/specs/data-resource/#metadata)).
 
 *Example*:
