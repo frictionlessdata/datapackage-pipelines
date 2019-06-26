@@ -1,0 +1,27 @@
+update_resource
+--
+{
+    "resources": ["name1"],
+    "metadata": {
+        "path": "path1-new"
+    }
+}
+--
+{
+    "title": "Test",
+    "resources": [
+        {"name": "name1", "path": "path1"},
+        {"name": "name2", "path": "path2"}
+    ]
+}
+--
+--
+{
+    "title": "Test",
+    "resources": [
+        {"name": "name1", "path": "path1-new"},
+        {"name": "name2", "path": "path2"}
+    ]
+}
+--
+{}

@@ -4,8 +4,10 @@ from datapackage_pipelines.utilities.flow_utils import spew_flow
 
 
 def flow(parameters):
+    resources = parameters.get('resources', [])
+    metadata = parameters.pop('metadata', {})
     return Flow(
-        update_resource(**parameters),
+        update_resource(resources, **metadata),
     )
 
 
