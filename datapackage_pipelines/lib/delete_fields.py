@@ -4,10 +4,13 @@ from datapackage_pipelines.utilities.flow_utils import spew_flow
 
 
 def flow(parameters):
+    resources = parameters.get('resources')
+    regex=parameters.get('regex', True)
     return Flow(
         delete_fields(
             parameters.get('fields', []),
-            parameters.get('resources')
+            resources=resources,
+            regex=regex,
         )
     )
 
