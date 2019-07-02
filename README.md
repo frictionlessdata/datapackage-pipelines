@@ -777,7 +777,8 @@ _Note: if multiple resources provided, all of them should contain all fields to 
 _Parameters_:
 
 - `resources` - Which resources to delete columns from. Same semantics as `resources` in `stream_remote_resources`.
-- `fields` - List of field (column) names to be removed
+- `fields` - List of field (column) names to be removed (exact names or regular expressions for matching field names)
+- `regex` - if set to `False` field names will be interpreted as strings not as regular expressions (`True` by default)
 
 *Examples*:
 
