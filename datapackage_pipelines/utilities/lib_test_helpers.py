@@ -126,7 +126,8 @@ class ProcessorFixtureTestsBase(object):
                     if rj_actual != rejsonize(expected):
                         print("{}: unexpected data: {} (expected {})".format(line_msg, rj_actual, expected),
                               file=sys.stderr)
-                    assert json.loads(actual) == json.loads(expected)
+                    assert json.loads(actual) == json.loads(expected), \
+                        "a: %r, e: %r" % (json.loads(actual), json.loads(expected))
 
 
 def rejsonize(s):

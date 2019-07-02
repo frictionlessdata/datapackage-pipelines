@@ -55,6 +55,6 @@ dump_to_zip
     ]
 }
 --
-{"mystring":"a", "myinteger": null, "mynumber": {"type{decimal}": "2"}, "mydate": {"type{date}": "2016-12-31"}}
+{"mystring":"a", "myinteger": null, "mynumber": {"type{decimal}": "2.0"}, "mydate": {"type{date}": "2016-12-31"}}
 
-{"bytes": 1072, "count_of_rows": 1, "dataset_name": "test", "hash": "bb11d400da82f61f135bd6cadb43b467"}
+{"bytes": 1074, "count_of_rows": 1, "dataset_name": "test", "hash": "1f3b5abdd2cf11345c8883f1c129eb99"}

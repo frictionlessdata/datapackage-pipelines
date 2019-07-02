@@ -66,6 +66,8 @@ def spew(dp, resources_iterator, stats=None, finalizer=None):
             f.flush()
         num_resources = 0
         for res in resources_iterator:
+            if hasattr(res, 'it') and res.it is None:
+                continue
             num_resources += 1
             for f in files:
                 f.write('\n')

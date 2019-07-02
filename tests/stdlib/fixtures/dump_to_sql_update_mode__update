@@ -53,6 +53,6 @@ dump_to_sql
     ]
 }
 --
-{"id": 1, "mystring":"a", "mynumber": {"type{decimal}": "2"}, "mydate": {"type{date}": "2016-12-31"}}
+{"id": 1, "mystring":"a", "mynumber": {"type{decimal}": "2.0"}, "mydate": {"type{date}": "2016-12-31"}}
 
 {"bytes": null, "count_of_rows": 1, "dataset_name": "test", "hash": "5dad5b7c7fb3fecb7478b4f34fabbd23"}

@@ -19,9 +19,10 @@ update_resource
 {
     "title": "Test",
     "resources": [
-        {"name": "name1", "path": "path1-new"},
-        {"name": "name2", "path": "path2"}
-    ]
+        {"name": "name1", "path": "path1-new", "profile": "data-resource"},
+        {"name": "name2", "path": "path2", "profile": "data-resource"}
+    ],
+    "profile": "data-package"
 }
 --
 {}
