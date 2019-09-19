@@ -48,12 +48,15 @@ class FilesystemBackend(object):
             self.del_status(p)
 
     def all_pipeline_ids(self):
-        all_ids = sorted(os.listdir(self.base_dir))
-        all_ids = [
-            codecs.decode(_id.encode('utf8'), 'base64').decode('utf8')
-            for _id in all_ids
-        ]
-        return all_ids
+        # Decoding encoded identifiers
+        dec_ids = []
+        enc_ids = sorted(os.listdir(self.base_dir))
+        for enc_id in enc_ids:
+            dec_id = codecs.decode(enc_id.encode('utf8'), 'base64').decode('utf8')
+            if dec_id.startswith('PipelineStatus:'):
+                dec_id = dec_id.replace('PipelineStatus:', '')
+                dec_ids.append(dec_id)
+        return dec_ids
 
     def all_statuses(self):
         return [self.get_status(_id)
