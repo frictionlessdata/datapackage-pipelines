@@ -1,5 +1,4 @@
 FROM python:3.6-alpine
-#FROM rcarmo/alpine-python:3.6.1
 
 RUN apk --update --no-cache --virtual=build-dependencies add \
         build-base python3-dev \libxml2-dev libxslt-dev postgresql-dev  && \
@@ -12,8 +11,10 @@ ADD . /dpp/
 
 RUN pip install -U /dpp/[speedup] && \
     mkdir -p /var/redis && chmod 775 /var/redis && chown redis.redis /var/redis
-#    apk del build-dependencies && \
-#    rm -rf /var/cache/apk/*  && \
+
+ENV DPP_NUM_WORKERS=4
+ENV DPP_REDIS_HOST=127.0.0.1
+ENV DPP_CELERY_BROKER=redis://localhost:6379/6
 
 EXPOSE 5000
 WORKDIR /pipelines/
