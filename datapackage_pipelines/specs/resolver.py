@@ -1,6 +1,7 @@
 import logging
 import os
 import hashlib
+import sys
 from importlib.util import find_spec
 from importlib import import_module
 
@@ -82,12 +83,11 @@ def resolve_executor(step, path, errors):
         parameters = step.setdefault('parameters', {})
         flow = step.pop('flow')
         parameters.update(__flow=flow, __path=path)
-        try:
-            m = import_module(flow)
-            flow_py_file = m.__file__
-            parameters['__flow_hash'] = hashlib.md5(open(flow_py_file, 'rb').read()).hexdigest()
-        except Exception:
-            pass
+        if path not in sys.path:
+            sys.path.append(path)
+        m = import_module(flow)
+        flow_py_file = m.__file__
+        parameters['__flow_hash'] = hashlib.md5(open(flow_py_file, 'rb').read()).hexdigest()
 
     executor = step['run']
     back_up, parts = convert_dot_notation(executor)
