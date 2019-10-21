@@ -83,9 +83,9 @@ def resolve_executor(step, path, errors):
         flow = step.pop('flow')
         parameters.update(__flow=flow, __path=path)
         try:
-            flow_py_file = os.path.join(path, flow.replace('.', '/') + '.py')
-            if os.path.exists(flow_py_file):
-                parameters['__flow_hash'] = hashlib.md5(open(flow_py_file, 'rb').read()).hexdigest()
+            m = import_module(flow)
+            flow_py_file = m.__file__
+            parameters['__flow_hash'] = hashlib.md5(open(flow_py_file, 'rb').read()).hexdigest()
         except Exception:
             pass
 
