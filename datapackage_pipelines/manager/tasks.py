@@ -36,7 +36,10 @@ async def enqueue_errors(step, process, queue, debug):
                 errors.append(line)
                 if len(errors) > 1000:
                     errors.pop(1)
-            line = "{}: {}".format(step['run'], line)
+            if '__flow' in step:
+                line = "(F) {}: {}".format(step['__flow'], line)
+            else:
+                line = "{}: {}".format(step['run'], line)
             if debug:
                 logging.info(line)
             await queue.put(line)
