@@ -39,7 +39,7 @@ INSTALL_REQUIRES = [
     'cachetools',
     'tabulator>=1.17.0',
     'globster>=0.1.0',
-    'dataflows>=0.0.57',
+    'dataflows>=0.0.65',
     'python-dateutil<2.8.1',
 ]
 SPEEDUP_REQUIRES = [

@@ -740,6 +740,27 @@ Filtering just American and European countries, leaving out countries whose main
     sort-by: "{country_name}"
 ```
 
+### ***`deduplicate`***
+
+Deduplicates rows in resources based on the resources' primary key
+
+`deduplicate` accepts a resource specifier - for each resource, it will output only unique rows (based on the values in the primary key fields). Rows with duplicate primary keys will be ignored.
+
+_Parameters_:
+
+- `resources` - Which resources to sort. Same semantics as `resources` in `stream_remote_resources`.
+
+*Examples*:
+
+Deduplicating rows in the `world-population` resource.
+
+```yaml
+- run: deduplicate
+  parameters:
+    resources: world_population
+```
+
+
 ### ***`duplicate`***
 
 Duplicate a resource.
