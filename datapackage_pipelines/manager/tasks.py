@@ -211,7 +211,8 @@ async def async_execute_pipeline(pipeline_id,
                                  execution_id,
                                  use_cache,
                                  dependencies,
-                                 debug):
+                                 debug,
+                                 pipeline_title=None):
 
     if debug:
         logging.info("%s Async task starting", execution_id[:8])
@@ -233,8 +234,9 @@ async def async_execute_pipeline(pipeline_id,
     processes, stop_error_collecting = \
         await construct_process_pipeline(pipeline_steps, pipeline_cwd, execution_log, debug)
 
+    name = pipeline_title or os.path.basename(pipeline_id) or "_"
     processes[0].stdin.write(json.dumps(dependencies).encode('utf8') + b'\n')
-    processes[0].stdin.write(b'{"name": "_", "resources": []}\n')
+    processes[0].stdin.write(b'{"name": "%s", "resources": []}\n' % name.encode('utf8'))
     processes[0].stdin.close()
 
     def kill_all_processes():
@@ -327,7 +329,8 @@ def execute_pipeline(spec,
                                                      execution_id,
                                                      use_cache,
                                                      dependencies,
-                                                     debug))
+                                                     debug,
+                                                     pipeline_title=spec.pipeline_details.get('title')))
     try:
         if debug:
             logging.info("%s Waiting for completion", execution_id[:8])
