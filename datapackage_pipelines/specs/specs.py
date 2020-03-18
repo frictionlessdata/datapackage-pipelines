@@ -37,6 +37,12 @@ def process_schedules(spec: PipelineSpec):
             spec.schedule = schedule
 
 
+def process_environment(spec: PipelineSpec):
+    if spec.environment is None:
+        environment = spec.pipeline_details.get('environment', {})
+        spec.environment = environment
+
+
 def find_specs(root_dir='.') -> PipelineSpec:
     for dirpath, dirnames, filenames in dirtools.Dir(root_dir,
                                                      exclude_file='.dpp_spec_ignore',
@@ -83,6 +89,7 @@ def pipelines(prefixes=None, ignore_missing_deps=False, root_dir='.', status_man
 
                 resolve_processors(spec)
                 process_schedules(spec)
+                process_environment(spec)
 
                 try:
                     hasher.calculate_hash(spec, status_manager, ignore_missing_deps)
