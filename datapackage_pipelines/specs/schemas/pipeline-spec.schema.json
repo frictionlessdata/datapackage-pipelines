@@ -11,6 +11,9 @@
     "description": {
       "type": "string"
     },
+    "environment": {
+      "type": "object"
+    },
     "schedule": {
       "type": "object",
       "properties": {
