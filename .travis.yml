@@ -19,7 +19,8 @@ script:
 - make lint
 - make test
 - make build
-- tests/docker/test.sh
+- tests/docker/test.sh datapackage-pipelines
+- tests/docker/test.sh datapackage-pipelines-ubuntu
 after_success:
 - coveralls
 deploy:

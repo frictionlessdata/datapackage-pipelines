@@ -44,7 +44,7 @@ docker logs dpp
 
 docker rm --force dpp
 
-sudo rm -rf tests/docker
+sudo rm -rf tests/docker/data
 
 echo Great Success
 exit 0

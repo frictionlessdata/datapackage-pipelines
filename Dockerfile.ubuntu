@@ -1,0 +1,26 @@
+FROM ubuntu:18.04
+
+RUN apt-get update &&\
+    apt-get install -y build-essential python3-dev python3-setuptools python3-pip python3-wheel \
+                       libxml2-dev libxslt-dev redis libpq5 libpq-dev libleveldb1v5 libleveldb-dev &&\
+    mkdir -p /run/redis && mkdir -p /var/run/dpp && \
+    python3 -m pip install \
+         psycopg2 datapackage-pipelines-github datapackage-pipelines-sourcespec-registry datapackage-pipelines-aws
+
+ADD . /dpp/
+
+RUN python3 -m pip install -U /dpp/[speedup] && \
+    mkdir -p /var/redis && chmod 775 /var/redis && chown redis.redis /var/redis
+
+RUN ln -s /usr/bin/{python3,python} && ln -s /usr/bin/{pip3,pip} && sed -i 's:/bin/sh:/bin/bash:' /dpp/docker/run.sh
+
+ENV DPP_NUM_WORKERS=4
+ENV DPP_REDIS_HOST=127.0.0.1
+ENV DPP_CELERY_BROKER=redis://localhost:6379/6
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+ENV REDIS_SERVER_ARGS="/etc/redis/redis.conf --daemonize yes --dir /var/redis --bind 0.0.0.0 --protected-mode no --unixsocket ''"
+
+EXPOSE 5000
+WORKDIR /pipelines/
+ENTRYPOINT ["/dpp/docker/run.sh"]

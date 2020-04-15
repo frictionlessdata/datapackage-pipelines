@@ -15,9 +15,8 @@ RUN pip install -U /dpp/[speedup] && \
 ENV DPP_NUM_WORKERS=4
 ENV DPP_REDIS_HOST=127.0.0.1
 ENV DPP_CELERY_BROKER=redis://localhost:6379/6
+ENV REDIS_SERVER_ARGS="/etc/redis.conf --daemonize yes --dir /var/redis"
 
 EXPOSE 5000
 WORKDIR /pipelines/
 ENTRYPOINT ["/dpp/docker/run.sh"]
-
-

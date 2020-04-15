@@ -9,7 +9,7 @@ list_descendants() {
 
 if [ "$1" = "server" ]; then 
     echo "Starting Server"
-    redis-server /etc/redis.conf --daemonize yes --dir /var/redis
+    redis-server $REDIS_SERVER_ARGS
     until [ `redis-cli ping | grep -c PONG` = 1 ]; do echo "Waiting 1s for Redis to load"; sleep 1; done
     rm -f /var/run/dpp/dpp-celerybeat.pid /var/run/dpp/dpp-celeryd-management.pid /var/run/dpp/dpp-celeryd-worker.pid
     python /dpp/docker/github_config.py

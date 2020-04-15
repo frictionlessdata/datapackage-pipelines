@@ -37,4 +37,5 @@ version:
 
 build:
 	docker pull frictionlessdata/datapackage-pipelines &&\
-	docker build -t datapackage-pipelines --cache-from frictionlessdata/datapackage-pipelines .
+	docker build -t datapackage-pipelines --cache-from frictionlessdata/datapackage-pipelines . &&\
+	docker build -t datapackage-pipelines-ubuntu -f Dockerfile.ubuntu .
