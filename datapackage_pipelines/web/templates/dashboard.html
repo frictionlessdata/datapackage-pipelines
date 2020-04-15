@@ -291,10 +291,11 @@
       $.get("{{ url_for('dpp.main') }}" + "api/" + field + "/" + pipeline_id,
         function(data) {
           text = data.text;
-          contents = '<pre>';
+          contents = '';
           for (i = 0 ; i < text.length ; i++) contents += text[i] + '\n';
-          contents = contents + '</pre>';
-          target.html(contents);
+          contentsPre = $('<pre>');
+          contentsPre.text(contents);
+          target.html('').append(contentsPre);
           target.attr('data-full', true);
         }, 'json');
     }
