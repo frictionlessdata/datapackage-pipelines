@@ -1,0 +1,3 @@
+html-output:
+  pipeline:
+    - flow: html_output
