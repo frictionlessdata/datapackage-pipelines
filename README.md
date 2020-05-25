@@ -63,11 +63,19 @@ worldbank-co2-emissions:
 
 In this example we see one pipeline called `worldbank-co2-emissions`. Its pipeline consists of 4 steps:
 
-- `metadata`: This is a library processor  (see below), which modifies the data-package's descriptor (in our case: the initial, empty descriptor) - adding `name`, `title` and other properties to the datapackage.
+- `update_package`: This is a library processor  (see below), which modifies the data-package's descriptor (in our case: the initial, empty descriptor) - adding `name`, `title` and other properties to the datapackage.
 - `load`: This is another library processor, which loads data into the data-package.
   This resource has a `name` and a `from` property, pointing to the remote location of the data.
 - `set_types`: This processor assigns data types to fields in the data. In this example, field headers looking like years will be assigned the `number` type.
 - `dump_to_zip`: Create a zipped and validated datapackage with the provided file name.
+
+Also, we have provided some metadata:
+
+- `title`: Title of a pipeline
+- `description`: Description of a pipeline
+- `environment`: Dictionary of environment variables to be set for all the pipeline's steps. For examples, it can be used to change the behaviour of the underlaying `requests` library - https://requests.readthedocs.io/en/master/user/advanced/#ssl-cert-verification
+
+> Full JSONSchema of the `pipeline-spec.yaml` file can be found [here](https://github.com/frictionlessdata/datapackage-pipelines/blob/master/datapackage_pipelines/specs/schemas/pipeline-spec.schema.json)
 
 ### Mechanics
 

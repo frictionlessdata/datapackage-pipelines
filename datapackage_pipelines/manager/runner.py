@@ -224,7 +224,6 @@ def run_pipelines(pipeline_id_pattern,
                     continue
 
                 if slave:
-                    # TODO: is is a correct place for it?
                     # Set environment variables for the pipeline
                     for key, value in spec.environment.items():
                         os.environ[key] = str(value)
