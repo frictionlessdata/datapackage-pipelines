@@ -40,9 +40,9 @@ status = status_mgr()
 
 def make_hierarchies(statuses):
 
-    def group(l):
-        pipelines = list(filter(lambda x: len(x['id']) == 1, l))
-        children_ = list(filter(lambda x: len(x['id']) > 1, l))
+    def group(lvl):
+        pipelines = list(filter(lambda x: len(x['id']) == 1, lvl))
+        children_ = list(filter(lambda x: len(x['id']) > 1, lvl))
         groups_ = {}
         for child in children_:
             child_key = child['id'].pop(0)
