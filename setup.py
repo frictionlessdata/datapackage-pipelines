@@ -23,7 +23,7 @@ NAME = PACKAGE.replace('_', '-')
 INSTALL_REQUIRES = [
     'celery',
     'requests',
-    'datapackage>=1.5.1',
+    'datapackage>=1.14.0',
     'tableschema>=1.2.5',
     'tableschema-sql>=0.10.4',
     'pyyaml',
@@ -37,9 +37,9 @@ INSTALL_REQUIRES = [
     'flask-jsonpify',
     'flask-basicauth',
     'cachetools',
-    'tabulator>=1.17.0',
+    'tabulator>=1.50.0',
     'globster>=0.1.0',
-    'dataflows>=0.0.65',
+    'dataflows>=0.1.0',
     'python-dateutil<2.8.1',
     'werkzeug<1.0'
 ]
