@@ -11,6 +11,8 @@ env:
   - TOXENV="py37-plyvel" SPEEDUP=yes DEPLOY=yes
   global:
   - LANG=en_US.UTF-8
+  - secure: aALDdU5nRkFycaj7ITbI0XoLvuKvTADylylE9eCRIzRyR2ObmwMgCnikA8G+44Q3VSZJxZNu0mpedWKUv3yNqxYj9KFfMmHI4vGDD/ZSwp3rBe//uXUUm2dUoTTDi+NhdeUJfvSkGlPCDg7LYUIoj4LnZhcIN3pHH0UWjEfQOO/tIbpKs3bQB/VVe4H7BobtWxIEHDESBGrTYEEwJWG4DGULmC6tV6czwqLT5xtgQ3A/UrbEdfOdhgt+eZC2dGDgvIanz7S9Bpkj56m1cmgKvVDF8kv32wnKH8BMTssC9VCF2dNPX1QagnIuXF1LYBWGIc3YvIki6n+xEfGpapUZCl3pE1H3xBSX4kmeH2xb/FJwXlCdmSr6s8plFAC/IW+2+uDcNCVBd7HDorSeSqlnWjAgkjkNj7ZUcKrPtQCxm7UYm2uMPM4p+AsYEWBRilawFl1iOc3jxif04j7PdCNV19E2TGpekcZYY7OJS5fz3Ll6t3J3Hb0xVFWr8YH0zWv6SRzsYhwEiIylv/F5cuoYWEgY3xMy5BSpWCsuOhfR5BGqu4UiNKXv0Vk2Pzsewl8z1/cNf+fSvz/zOq9VOzMe/jDMA67wO/pxLa5np+bu7XgwxSljzacyT2QZt72+PDnltUylW2VLp5qW0u1xklYF2LKqynJ6ON1kioHRg25Iawg=
+  - secure: ekU7r/E7OTJqdt+KTO2msPKIdpG+8UYTDw2BkXjn31rP5VFRt603NRrMY21q98e/aB7XbBWWr9P7yEwY+YCGtEvTxjQtHz1KKTMbazPvbOSOrfPgcGJ3zbTCY9uyUeWUFBf1bet5FzjAZ/uS8E8g7Uz7ZQfTWBQWLk+2GWxAMgPOT2WHLtFyMnXqo3DPJ75CoXBD6rsPKAMGtQd0LJ3ptIjw8aTx5d7JTnpTszMTxu2WGbaH9e4NTl3A1IGJmTrcGAiaR5LorHty1mU51A9O8mxZmr1iL+PLaIPEv4UDiMPfp0Hx3u64Xy7Kfi0Jt0VVz2JGOWq/xyIsg0TQGXvpeWoAzVflDHJ0KTv4pJvhpflhVq1ahsmr7VL+09HM9zuPASfJUhvT3d4jq7WSapPTrtb22mP0QorvX4/QY4XXfbwkGQtxbu4Q8p9JuN5vByX0POV5qhk79Q8kgZJYaIG0JyVDhkpOZYdgkavGsN3znJH7u/YQgNRCGQamqOAb02FoQIdJXL1Po0ZU31grazlROdxaKY75x9IrHeHIK+p1+b85Sj+QW3bVLgFCk3OiZ71Xt8lJeSfmZGqINwr4IZ1BTijgPbpnydYNw9Bul8u4pvJaNAYg/OJsg/oPXPL302LFpCXUXP/4t/WN9QDERbltdMRpTCS2mIZfFBDCZ5Wjd5s=
 install:
 - sudo apt-get install libleveldb-dev libleveldb1v5
 - if [ "${SPEEDUP}" == yes ]; then make install-speedup; else make install; fi
@@ -23,11 +25,16 @@ script:
 after_success:
 - coveralls
 deploy:
-  provider: pypi
+- provider: pypi
   user: akariv
   distributions: sdist bdist_wheel
   on:
     tags: true
-    condition: $DEPLOY = yes
+    condition: "$DEPLOY = yes"
   password:
     secure: fUK/7GUs1PCMFASOxi/iWY57LfWKUivyT4r+5Gp2GaH8ytG1ux83xnSHO3e1Jrjgdak8VcV4vhwXkhU/Eno6xjHA+1G/jeIBytR9k4FKvH89gFX416/MhCxn1WMAX3AQzKqm3/gp4niI66TK/YUX526ZvCMh3EXQkC2jyctqz2A6pvleGegLNCDmRFKwgQgLNrEtDFbLwdVTqsQ+CSviEn5qFOaG8/Nh5KMYKMgCbIaJ83H1PklG7dKbFGn2aKqdvsC4uYtXbJxVkoW0D2afaM+xh1IEDz02TNzFBdAutC9qEVsbqX4TkyD6+m2x13Q8WnsCQPkEsPbZFpNDwhtUQyWr7rS+j7UxurYPTJQqZrt9AR1SSYbfgSvcmpILC+jnrxzxAa9HpleIMNLb/zgzC4ZFD75LBhWmiChPckU32/mZ7zrFveiNcMom6I+I+JPukbnhlvlOvxHQmRaQoIlkZeTmUAv7Z/Z6xz0h7WB8v/kZ+AhQq2UuXeE6tQaN//mEy5YwVKRHTexRRUnCtN2m50vaTwpvJzcQvdej8kybWtAITOA99e4vgUmoDDk/6rmzIfJP5o4ir+anTaE/kku8ay10ki3d3gr4+hk48aGoUKQFDXuWaAzf4mgu+lDPN9j3/RTIrysjwTtxMbQMAa3Kf15xoevyg2Kh0FdENgQ2u4s=
+- provider: script
+  script: make deploy
+  on:
+    tags: true
+    condition: "$DEPLOY = yes"
