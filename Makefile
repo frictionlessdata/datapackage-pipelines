@@ -46,11 +46,14 @@ build:
 	docker build -t frictionlessdata/datapackage-pipelines:${VERSION}-slim -f Dockerfile.slim --cache-from frictionlessdata/datapackage-pipelines:latest-slim .
 
 
-deploy:
+deploy-latest:
 	docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}" &&\
 	docker push frictionlessdata/datapackage-pipelines:latest &&\
 	docker push frictionlessdata/datapackage-pipelines:latest-alpine &&\
-	docker push frictionlessdata/datapackage-pipelines:latest-slim &&\
+	docker push frictionlessdata/datapackage-pipelines:latest-slim
+
+deploy-tags:
+	docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}" &&\
 	docker push frictionlessdata/datapackage-pipelines:${VERSION} &&\
 	docker push frictionlessdata/datapackage-pipelines:${VERSION}-alpine &&\
 	docker push frictionlessdata/datapackage-pipelines:${VERSION}-slim
