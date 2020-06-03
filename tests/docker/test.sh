@@ -2,7 +2,7 @@
 
 sudo rm -rf tests/docker/data
 
-! docker run -v `pwd`/tests/docker:/pipelines:rw datapackage-pipelines run ./test \
+! docker run -v `pwd`/tests/docker:/pipelines:rw frictionlessdata/datapackage-pipelines run ./test \
     && echo failed to run docker && exit 1
 
 ! ls -lah tests/docker/data/datapackage.json tests/docker/data/test.csv \
@@ -10,7 +10,7 @@ sudo rm -rf tests/docker/data
 
 sudo rm -rf tests/docker/data
 
-! docker run -d --name dpp -v `pwd`/tests/docker:/pipelines:rw datapackage-pipelines server-reload \
+! docker run -d --name dpp -v `pwd`/tests/docker:/pipelines:rw frictionlessdata/datapackage-pipelines server-reload \
     && echo failed to start daemonized docker container && exit 1
 
 for i in 1 2 3 4 5 6 7 8 9; do
