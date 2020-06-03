@@ -42,8 +42,8 @@ build:
 	docker build -t frictionlessdata/datapackage-pipelines:${VERSION} --cache-from frictionlessdata/datapackage-pipelines . &&\
 	docker build -t frictionlessdata/datapackage-pipelines:${VERSION}-alpine --cache-from frictionlessdata/datapackage-pipelines . &&\
 	docker pull frictionlessdata/datapackage-pipelines:latest-slim &&\
-	docker build -t datapackage-pipelines:latest-slim -f Dockerfile.slim --cache-from frictionlessdata/datapackage-pipelines:latest-slim . &&\
-	docker build -t datapackage-pipelines:${VERSION}-slim -f Dockerfile.slim --cache-from frictionlessdata/datapackage-pipelines:latest-slim .
+	docker build -t frictionlessdata/datapackage-pipelines:latest-slim -f Dockerfile.slim --cache-from frictionlessdata/datapackage-pipelines:latest-slim . &&\
+	docker build -t frictionlessdata/datapackage-pipelines:${VERSION}-slim -f Dockerfile.slim --cache-from frictionlessdata/datapackage-pipelines:latest-slim .
 
 
 deploy:
