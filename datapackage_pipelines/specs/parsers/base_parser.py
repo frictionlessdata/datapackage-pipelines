@@ -7,7 +7,8 @@ class PipelineSpec(object):
                  validation_errors=None,
                  dependencies=None,
                  cache_hash='',
-                 schedule=None):
+                 schedule=None,
+                 environment=None):
         self.path = path
         self.pipeline_id = pipeline_id
         self.pipeline_details = pipeline_details
@@ -16,6 +17,7 @@ class PipelineSpec(object):
         self.dependencies = [] if dependencies is None else dependencies
         self.cache_hash = cache_hash
         self.schedule = schedule
+        self.environment = environment
 
     def __str__(self):
         return 'PipelineSpec({}, validation_errors={}, ' \

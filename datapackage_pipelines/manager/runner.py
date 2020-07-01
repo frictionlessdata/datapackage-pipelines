@@ -224,6 +224,9 @@ def run_pipelines(pipeline_id_pattern,
                     continue
 
                 if slave:
+                    # Set environment variables for the pipeline
+                    for key, value in spec.environment.items():
+                        os.environ[key] = str(value)
                     ps = status_manager.get(spec.pipeline_id)
                     ps.init(spec.pipeline_details,
                             spec.source_details,
