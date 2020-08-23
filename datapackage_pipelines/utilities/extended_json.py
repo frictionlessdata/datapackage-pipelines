@@ -6,10 +6,19 @@ import isodate
 
 from .lazy_dict import LazyDict
 
-
-DATE_FORMAT = '%Y-%m-%d'
-DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+if datetime.date(1, 1, 1).strftime('%04Y') == '4Y':
+    DATE_F_FORMAT = '%Y-%m-%d'
+    DATETIME_F_FORMAT = '%Y-%m-%d %H:%M:%S'
+else:
+    DATE_F_FORMAT = '%04Y-%m-%d'
+    DATETIME_F_FORMAT = '%04Y-%m-%d %H:%M:%S'
+DATE_FORMAT = DATE_F_FORMAT
+DATETIME_FORMAT = DATETIME_F_FORMAT
 TIME_FORMAT = '%H:%M:%S'
+
+DATE_P_FORMAT = '%Y-%m-%d'
+DATETIME_P_FORMAT = '%Y-%m-%d %H:%M:%S'
+TIME_P_FORMAT = TIME_F_FORMAT = TIME_FORMAT
 
 
 class LazyJsonLine(LazyDict):
@@ -57,13 +66,13 @@ class CommonJSONDecoder(_json.JSONDecoder):
         if 'type{datetime}' in obj:
             try:
                 return datetime.datetime \
-                    .strptime(obj["type{datetime}"], DATETIME_FORMAT)
+                    .strptime(obj["type{datetime}"], DATETIME_P_FORMAT)
             except ValueError:
                 pass
         if 'type{date}' in obj:
             try:
                 return datetime.datetime \
-                    .strptime(obj["type{date}"], DATE_FORMAT) \
+                    .strptime(obj["type{date}"], DATE_P_FORMAT) \
                     .date()
             except ValueError:
                 pass
@@ -98,9 +107,9 @@ class CommonJSONEncoder(_json.JSONEncoder):
         elif isinstance(obj, datetime.time):
             return {'type{time}': obj.strftime(TIME_FORMAT)}
         elif isinstance(obj, datetime.datetime):
-            return {'type{datetime}': obj.strftime(DATETIME_FORMAT)}
+            return {'type{datetime}': obj.strftime(DATETIME_F_FORMAT)}
         elif isinstance(obj, datetime.date):
-            return {'type{date}': obj.strftime(DATE_FORMAT)}
+            return {'type{date}': obj.strftime(DATE_F_FORMAT)}
         elif isinstance(obj, (isodate.Duration, datetime.timedelta)):
             return {'type{duration}': isodate.duration_isoformat(obj)}
         elif isinstance(obj, set):
