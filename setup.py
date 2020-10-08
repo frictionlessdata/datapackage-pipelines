@@ -21,7 +21,7 @@ def read(*paths):
 PACKAGE = 'datapackage_pipelines'
 NAME = PACKAGE.replace('_', '-')
 INSTALL_REQUIRES = [
-    'celery',
+    'celery<5',
     'requests',
     'datapackage>=1.14.0',
     'tableschema>=1.2.5',
