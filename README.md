@@ -149,7 +149,7 @@ $ docker run -it -v `pwd`:/pipelines:rw \
 
 Running a pipeline from the command line is done using the `dpp` tool.
 
-Running `dpp` without any argument, will show the list of available pipelines. This is done by scanning the current directory and its subdirectories, searching for `pipeline-spec.yaml` files and extracting the list of pipeline specificiations described within.
+Running `dpp` without any argument, will show the list of available pipelines. This is done by scanning the current directory and its subdirectories, searching for `pipeline-spec.yaml` files and extracting the list of pipeline specifications described within.
 
 Each pipeline has an identifier, composed of the path to the `pipeline-spec.yaml` file and the name of the pipeline, as defined within that description file.
 
