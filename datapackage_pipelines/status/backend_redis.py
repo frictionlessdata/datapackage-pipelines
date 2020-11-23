@@ -12,7 +12,7 @@ class RedisBackend(object):
     def __init__(self, host=None, port=6379, username=None, password=None):
         self.redis = None
         if host is not None and len(host) > 0:
-            conn = redis.StrictRedis(host=host, port=port, db=5, 
+            conn = redis.StrictRedis(host=host, port=port, db=5,
                                      username=username, password=password)
             try:
                 conn.ping()

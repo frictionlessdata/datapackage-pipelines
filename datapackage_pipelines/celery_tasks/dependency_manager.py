@@ -10,8 +10,8 @@ class DependencyManager(object):
         self.redis = None
         if host is not None and len(host) > 0:
             params = {
-                'host': host, 
-                'port': port, 
+                'host': host,
+                'port': port,
                 'db': 5,
                 'username': os.environ.get('DPP_REDIS_USERNAME'),
                 'password': os.environ.get('DPP_REDIS_PASSWORD'),
