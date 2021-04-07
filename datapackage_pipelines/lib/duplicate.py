@@ -10,7 +10,8 @@ def flow(parameters):
             parameters.get('source'),
             parameters.get('target-name'),
             parameters.get('target-path'),
-            parameters.get('batch_size', 1000)
+            parameters.get('batch_size', 1000),
+            parameters.get('duplicate_to_end', False)
         )
     )
 
