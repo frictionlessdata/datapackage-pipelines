@@ -36,6 +36,7 @@ version:
 	@echo $(VERSION)
 
 build:
+	docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}"
 	docker pull frictionlessdata/datapackage-pipelines:latest &&\
 	docker build -t frictionlessdata/datapackage-pipelines:latest --cache-from frictionlessdata/datapackage-pipelines . &&\
 	docker build -t frictionlessdata/datapackage-pipelines:latest-alpine --cache-from frictionlessdata/datapackage-pipelines . &&\
