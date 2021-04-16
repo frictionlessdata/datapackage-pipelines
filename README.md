@@ -784,6 +784,7 @@ _Parameters_:
 - `source` - Which resources to duplicate. The name of the resource.
 - `target-name` - Name of the new, duplicated resource.
 - `target-path` - Path for the new, duplicated resource.
+- `duplicate_to_end` - Make the duplicate resource appear at the end, rather than immediately after its original.
 
 *Examples*:
 
