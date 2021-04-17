@@ -9,7 +9,14 @@ class DependencyManager(object):
     def __init__(self, host=os.environ.get('DPP_REDIS_HOST'), port=6379):
         self.redis = None
         if host is not None and len(host) > 0:
-            conn = redis.StrictRedis(host=host, port=port, db=5)
+            params = {
+                'host': host,
+                'port': port,
+                'db': 5,
+                'username': os.environ.get('DPP_REDIS_USERNAME'),
+                'password': os.environ.get('DPP_REDIS_PASSWORD'),
+            }
+            conn = redis.StrictRedis(**params)
             try:
                 conn.ping()
                 self.redis = conn
