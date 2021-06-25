@@ -1,0 +1,40 @@
+name: CI
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+jobs:
+  build-server:
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.7'
+    - name: install
+      run: |
+        sudo apt-get install libleveldb-dev libleveldb1v5
+        make install-speedup
+    - name: build
+      run: |
+        make lint
+        make test
+        make build
+        tests/docker/test.sh
+    - name: version
+      if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+      run: |
+        make deploy-pip
+        make deploy-tags
+    - name: master branch
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      if: github.event_name == 'push' && contains(github.ref, '/heads/master')
+      run: |
+        make deploy-latest
