@@ -25,8 +25,8 @@ done
 ls -lah tests/docker/data/test_package 2>/dev/null \
     && docker logs dpp && echo detected test_package data && exit 1
 
-! docker exec -it dpp sh -c "cd lib; python3 setup.py install" \
-    && docker logs dpp && echo failed to install docker test package && exit 1
+! docker exec dpp sh -c "cd lib; python3 setup.py install" \
+    && echo failed to install docker test package && exit 1
 
 ! docker kill -s HUP dpp \
     && docker logs && echo failed to send HUP to docker && exit 1
