@@ -1,7 +1,7 @@
 import os
 import logging
 import time
-from datetime import date
+from datetime import date, time
 import itertools
 from decimal import Decimal
 import requests
@@ -27,6 +27,8 @@ def _tostr(value):
     elif isinstance(value, (int, float, bool, Decimal)):
         return str(value)
     elif isinstance(value, date):
+        return value.isoformat()
+    elif isinstance(value, time):
         return value.isoformat()
     elif isinstance(value, (list, dict)):
         return json.dumps(value)
