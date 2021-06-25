@@ -61,5 +61,5 @@ deploy-tags:
 
 deploy-pip:
 	rm -rf dist/ || true
-	python3 setup.py sdist bdist_wheel
+	python setup.py sdist bdist_wheel
 	python -m twine upload dist/*
