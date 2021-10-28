@@ -13,7 +13,7 @@ class RunnerConfiguration(object):
 
         config_fn = os.environ.get(self.ENV_VAR, self.DEFAULT_RUNNER_CONFIG)
         if os.path.exists(config_fn):
-            self.config = yaml.load(open(config_fn))
+            self.config = yaml.load(open(config_fn), Loader=yaml.Loader)
         else:
             self.config = {}
 
