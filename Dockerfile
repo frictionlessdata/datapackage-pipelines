@@ -1,4 +1,4 @@
-FROM python:3.6-alpine
+FROM python:3.7-alpine
 
 RUN apk --update --no-cache --virtual=build-dependencies add \
         build-base python3-dev \libxml2-dev libxslt-dev postgresql-dev  && \
