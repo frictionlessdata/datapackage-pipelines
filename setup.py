@@ -28,7 +28,7 @@ INSTALL_REQUIRES = [
     'tableschema-sql>=0.10.4',
     'pyyaml',
     'ujson',
-    'mistune',
+    'mistune<2',
     'redis>=3,<4',
     'click<8.0',
     'awesome-slugify',
