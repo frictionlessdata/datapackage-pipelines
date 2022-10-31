@@ -6,15 +6,15 @@ on:
   workflow_dispatch:
 jobs:
   build-server:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
       with:
-        python-version: '3.7'
+        python-version: '3.9'
     - name: install
       run: |
-        sudo apt-get install libleveldb-dev libleveldb1v5
+        sudo apt-get install libleveldb-dev libleveldb1d
         make install-speedup
     - name: build
       run: |
