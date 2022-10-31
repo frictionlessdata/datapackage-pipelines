@@ -29,6 +29,7 @@ INSTALL_REQUIRES = [
     'pyyaml',
     'ujson',
     'mistune<2',
+    'markupsafe==2.0.1',
     'redis>=3,<4',
     'click<8.0',
     'awesome-slugify',
