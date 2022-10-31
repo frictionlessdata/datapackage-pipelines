@@ -59,14 +59,16 @@ def make_hierarchies(statuses):
         }
 
     def flatten(children_):
+        ret = dict()
         for k, v in children_.items():
             v['children'] = flatten(v['children'])
             child_keys = list(v['children'].keys())
             if len(child_keys) == 1 and len(v['pipelines']) == 0:
                 child_key = child_keys[0]
-                children_['/'.join([k, child_key])] = v['children'][child_key]
-                del children_[k]
-        return children_
+                ret['/'.join([k, child_key])] = v['children'][child_key]
+            else:
+                ret[k] = v
+        return ret
 
     statuses = [
        {
