@@ -69,14 +69,15 @@ concatenate
             "dpp:streaming": true,
             "path": "data/target.csv",
             "mediatype": "text/csv",
-            "profile": "data-resource",
+            "profile": "tabular-data-resource",
             "schema": { "fields": [
-                {"name": "t1", "type": "string"},
-                {"name": "t2", "type": "string"},
-                {"name": "c3", "type": "string"},
-                {"name": "d4", "type": "string"},
-                {"name": "e5", "type": "string"}
-            ]}
+                {"name": "t1", "format": "default", "type": "string"},
+                {"name": "t2", "format": "default", "type": "string"},
+                {"name": "c3", "format": "default", "type": "string"},
+                {"name": "d4", "format": "default", "type": "string"},
+                {"name": "e5", "format": "default", "type": "string"}
+            ],
+            "missingValues": [""]}
         }
     ]
 }
