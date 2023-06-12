@@ -1,7 +1,11 @@
 import collections
 
+try:
+    MutableMapping = collections.MutableMapping
+except:
+    MutableMapping = collections.abc.MutableMapping
 
-class LazyDict(collections.MutableMapping):
+class LazyDict(MutableMapping):
 
     def __init__(self):
         self._inner = None
