@@ -22,6 +22,7 @@ class StdlibfixtureTests(ProcessorFixtureTestsBase):
             conn.execute(text("DROP TABLE IF EXISTS test;"))
         if filename == "dump_to_sql_update_mode__update":
             engine = create_engine(ENV['DPP_DB_ENGINE'])
+            conn = engine.connect()
             conn.execute(text("""
                 CREATE TABLE test (
                   id integer not null primary key,
