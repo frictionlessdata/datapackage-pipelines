@@ -18,10 +18,11 @@ class StdlibfixtureTests(ProcessorFixtureTestsBase):
     def _get_procesor_env(self, filename):
         if ENV['DPP_DB_ENGINE'] != DEFAULT_TEST_DB:
             engine = create_engine(ENV['DPP_DB_ENGINE'])
-            engine.execute(text("DROP TABLE IF EXISTS test;"))
+            conn = engine.connect()
+            conn.execute(text("DROP TABLE IF EXISTS test;"))
         if filename == "dump_to_sql_update_mode__update":
             engine = create_engine(ENV['DPP_DB_ENGINE'])
-            engine.execute(text("""
+            conn.execute(text("""
                 CREATE TABLE test (
                   id integer not null primary key,
                   mystring text,
@@ -29,7 +30,7 @@ class StdlibfixtureTests(ProcessorFixtureTestsBase):
                   mydate date
                 )
             """))
-            engine.execute(text("""
+            conn.execute(text("""
                 INSERT INTO test VALUES (1, 'foo', 5.6, null);
             """))
         return ENV
