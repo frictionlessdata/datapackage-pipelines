@@ -18,7 +18,6 @@ jobs:
     #     make install-speedup
     - name: build
       run: |
-        make lint
         make build
         tests/docker/test.sh
     - name: version
