@@ -42,7 +42,7 @@ INSTALL_REQUIRES = [
     'globster>=0.1.0',
     'dataflows>=0.2.11',
     'python-dateutil<2.8.1',
-    'werkzeug<1.0'
+    'werkzeug<1.0',
 ]
 SPEEDUP_REQUIRES = [
     'dataflows[speedup]',

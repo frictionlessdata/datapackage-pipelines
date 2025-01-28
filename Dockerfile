@@ -4,7 +4,8 @@ RUN apk --update --no-cache --virtual=build-dependencies add \
         build-base python3-dev \libxml2-dev libxslt-dev postgresql-dev leveldb leveldb-dev  && \
     apk --update --no-cache add libstdc++ redis libpq && \
     mkdir -p /run/redis && mkdir -p /var/run/dpp && \
-    pip install psycopg2 datapackage-pipelines-github datapackage-pipelines-sourcespec-registry datapackage-pipelines-aws 
+    pip install -U pip  "setuptools=66" && \
+    pip install psycopg2 datapackage-pipelines-github datapackage-pipelines-sourcespec-registry datapackage-pipelines-aws
 
 ADD . /dpp/
 
