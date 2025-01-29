@@ -15,9 +15,10 @@ def get_celery_app(**kwargs):
     celery_app = Celery('dpp')
 
     broker = os.environ.get('DPP_CELERY_BROKER', 'redis://localhost:6379/6')
+    timezone = os.environ.get('DPP_CELERY_TIMEZONE', 'UTC')
 
     conf = dict(
-        CELERY_TIMEZONE='UTC',
+        CELERY_TIMEZONE=timezone,
         CELERY_REDIRECT_STDOUTS=False,
         BROKER_URL=broker,
         CELERY_RESULT_BACKEND=broker,
