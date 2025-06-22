@@ -1,4 +1,4 @@
-FROM python:3.9-slim
+FROM python:3.11-slim
 
 RUN apt-get update && apt-get install --no-install-recommends -y redis libleveldb1d libleveldb-dev build-essential libpq-dev && \
     update-ca-certificates && mkdir -p /run/redis && mkdir -p /var/run/dpp && \
