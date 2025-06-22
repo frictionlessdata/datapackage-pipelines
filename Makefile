@@ -3,6 +3,7 @@
 
 PACKAGE := $(shell grep '^PACKAGE =' setup.py | cut -d "'" -f2)
 VERSION := $(shell head -n 1 $(PACKAGE)/VERSION)
+DOCKER_IMAGE := ghcr.io/whiletrue-industries/datapackage-pipelines
 
 
 all: list
@@ -37,27 +38,27 @@ version:
 
 build:
 	docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}"
-	docker pull frictionlessdata/datapackage-pipelines:latest &&\
-	docker build -t frictionlessdata/datapackage-pipelines:latest --cache-from frictionlessdata/datapackage-pipelines . &&\
-	docker build -t frictionlessdata/datapackage-pipelines:latest-alpine --cache-from frictionlessdata/datapackage-pipelines . &&\
-	docker build -t frictionlessdata/datapackage-pipelines:${VERSION} --cache-from frictionlessdata/datapackage-pipelines . &&\
-	docker build -t frictionlessdata/datapackage-pipelines:${VERSION}-alpine --cache-from frictionlessdata/datapackage-pipelines . &&\
-	docker pull frictionlessdata/datapackage-pipelines:latest-slim &&\
-	docker build -t frictionlessdata/datapackage-pipelines:latest-slim -f Dockerfile.slim --cache-from frictionlessdata/datapackage-pipelines:latest-slim . &&\
-	docker build -t frictionlessdata/datapackage-pipelines:${VERSION}-slim -f Dockerfile.slim --cache-from frictionlessdata/datapackage-pipelines:latest-slim .
+	docker pull $(DOCKER_IMAGE):latest &&\
+	docker build -t $(DOCKER_IMAGE):latest --cache-from $(DOCKER_IMAGE) . &&\
+	docker build -t $(DOCKER_IMAGE):latest-alpine --cache-from $(DOCKER_IMAGE) . &&\
+	docker build -t $(DOCKER_IMAGE):${VERSION} --cache-from $(DOCKER_IMAGE) . &&\
+	docker build -t $(DOCKER_IMAGE):${VERSION}-alpine --cache-from $(DOCKER_IMAGE) . &&\
+	docker pull $(DOCKER_IMAGE):latest-slim &&\
+	docker build -t $(DOCKER_IMAGE):latest-slim -f Dockerfile.slim --cache-from $(DOCKER_IMAGE):latest-slim . &&\
+	docker build -t $(DOCKER_IMAGE):${VERSION}-slim -f Dockerfile.slim --cache-from $(DOCKER_IMAGE):latest-slim .
 
 
 deploy-latest:
 	docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}" &&\
-	docker push frictionlessdata/datapackage-pipelines:latest &&\
-	docker push frictionlessdata/datapackage-pipelines:latest-alpine &&\
-	docker push frictionlessdata/datapackage-pipelines:latest-slim
+	docker push $(DOCKER_IMAGE):latest &&\
+	docker push $(DOCKER_IMAGE):latest-alpine &&\
+	docker push $(DOCKER_IMAGE):latest-slim
 
 deploy-tags:
 	docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}" &&\
-	docker push frictionlessdata/datapackage-pipelines:${VERSION} &&\
-	docker push frictionlessdata/datapackage-pipelines:${VERSION}-alpine &&\
-	docker push frictionlessdata/datapackage-pipelines:${VERSION}-slim
+	docker push $(DOCKER_IMAGE):${VERSION} &&\
+	docker push $(DOCKER_IMAGE):${VERSION}-alpine &&\
+	docker push $(DOCKER_IMAGE):${VERSION}-slim
 
 deploy-pip:
 	rm -rf dist/ || true

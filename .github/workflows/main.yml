@@ -32,8 +32,8 @@ jobs:
         make deploy-tags
     - name: master branch
       env:
-        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        DOCKER_USERNAME: ${{ secrets.GHCR_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.GHCR_PASSWORD }}
       if: github.event_name == 'push' && contains(github.ref, '/heads/master')
       run: |
         make deploy-latest
