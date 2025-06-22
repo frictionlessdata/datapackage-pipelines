@@ -23,8 +23,8 @@ jobs:
     - name: version
       if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
       env:
-        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        DOCKER_USERNAME: ${{ secrets.GHCR_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.GHCR_PASSWORD }}
         TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
       run: |
