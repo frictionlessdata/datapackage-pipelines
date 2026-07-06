@@ -37,7 +37,7 @@ version:
 	@echo $(VERSION)
 
 build:
-	docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}"
+	docker login ghcr.io -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}"
 	docker pull $(DOCKER_IMAGE):latest &&\
 	docker build -t $(DOCKER_IMAGE):latest --cache-from $(DOCKER_IMAGE) . &&\
 	docker build -t $(DOCKER_IMAGE):latest-alpine --cache-from $(DOCKER_IMAGE) . &&\
@@ -49,13 +49,13 @@ build:
 
 
 deploy-latest:
-	docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}" &&\
+	docker login ghcr.io -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}" &&\
 	docker push $(DOCKER_IMAGE):latest &&\
 	docker push $(DOCKER_IMAGE):latest-alpine &&\
 	docker push $(DOCKER_IMAGE):latest-slim
 
 deploy-tags:
-	docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}" &&\
+	docker login ghcr.io -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}" &&\
 	docker push $(DOCKER_IMAGE):${VERSION} &&\
 	docker push $(DOCKER_IMAGE):${VERSION}-alpine &&\
 	docker push $(DOCKER_IMAGE):${VERSION}-slim
