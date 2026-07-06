@@ -20,8 +20,8 @@ if [ "$1" = "server" ]; then
     echo "Remaining `redis-cli -n 6 KEYS '*' | wc -l` keys"
 
     SCHEDULER=1 python3 -m celery -b $DPP_CELERY_BROKER -A datapackage_pipelines.app -l INFO --pidfile=/var/run/dpp/dpp-celerybeat.pid beat &
-    python3 -m celery -b $DPP_CELERY_BROKER --concurrency=1 -A datapackage_pipelines.app -Q datapackage-pipelines-management -l INFO --pidfile=/var/run/dpp/dpp-celeryd-management.pid worker &
-    python3 -m celery -b $DPP_CELERY_BROKER --concurrency=$DPP_NUM_WORKERS -A datapackage_pipelines.app -Q datapackage-pipelines -l INFO --pidfile=/var/run/dpp/dpp-celeryd-worker.pid worker &
+    python3 -m celery -b $DPP_CELERY_BROKER --concurrency=1 -A datapackage_pipelines.app -Q datapackage-pipelines-management -l INFO --pidfile=/var/run/dpp/dpp-celeryd-management.pid --max-tasks-per-child=${DPP_MANAGEMENT_MAX_TASKS_PER_CHILD:-200} --max-memory-per-child=${DPP_MANAGEMENT_MAX_MEMORY_PER_CHILD:-500000} worker &
+    python3 -m celery -b $DPP_CELERY_BROKER --concurrency=$DPP_NUM_WORKERS -A datapackage_pipelines.app -Q datapackage-pipelines -l INFO --pidfile=/var/run/dpp/dpp-celeryd-worker.pid --max-tasks-per-child=${DPP_MAX_TASKS_PER_CHILD:-100} --max-memory-per-child=${DPP_MAX_MEMORY_PER_CHILD:-750000} worker &
     dpp serve &
     DPP_SERVE_PID=$!
     sleep 5
