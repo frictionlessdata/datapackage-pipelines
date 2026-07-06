@@ -38,12 +38,12 @@ version:
 
 build:
 	docker login ghcr.io -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}"
-	docker pull $(DOCKER_IMAGE):latest &&\
+	(docker pull $(DOCKER_IMAGE):latest || true) &&\
 	docker build -t $(DOCKER_IMAGE):latest --cache-from $(DOCKER_IMAGE) . &&\
 	docker build -t $(DOCKER_IMAGE):latest-alpine --cache-from $(DOCKER_IMAGE) . &&\
 	docker build -t $(DOCKER_IMAGE):${VERSION} --cache-from $(DOCKER_IMAGE) . &&\
 	docker build -t $(DOCKER_IMAGE):${VERSION}-alpine --cache-from $(DOCKER_IMAGE) . &&\
-	docker pull $(DOCKER_IMAGE):latest-slim &&\
+	(docker pull $(DOCKER_IMAGE):latest-slim || true) &&\
 	docker build -t $(DOCKER_IMAGE):latest-slim -f Dockerfile.slim --cache-from $(DOCKER_IMAGE):latest-slim . &&\
 	docker build -t $(DOCKER_IMAGE):${VERSION}-slim -f Dockerfile.slim --cache-from $(DOCKER_IMAGE):latest-slim .
 
