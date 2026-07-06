@@ -94,7 +94,7 @@ class File(object):
             tar_kwargs = {'fileobj': archive}
             _return = archive.name
         else:
-            tar_args = (archive_path)
+            tar_args = (archive_path,)
             tar_kwargs = {}
             _return = archive_path
         tar_kwargs.update({'mode': 'w:gz'})
