@@ -17,6 +17,9 @@ jobs:
     #     sudo apt-get install libleveldb-dev libleveldb1d
     #     make install-speedup
     - name: build
+      env:
+        DOCKER_USERNAME: ${{ secrets.GHCR_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.GHCR_PASSWORD }}
       run: |
         make build
         tests/docker/test.sh
