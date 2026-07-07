@@ -16,7 +16,7 @@ from ...utilities.resources import get_path, PROP_STREAMED_FROM, PROP_STREAMING,
 from ...utilities.extended_json import json
 from ...wrapper import ingest, spew
 
-from .file_formats import CSVFormat, JSONFormat
+from .file_formats import CSVFormat, JSONFormat, GeoJSONFormat
 
 
 class DumperBase(object):
@@ -34,7 +34,8 @@ class DumperBase(object):
         self.add_filehash_to_path = self.__params.get('add-filehash-to-path', False)
         self.file_format_handlers = {
             'csv': CSVFormat,
-            'json': JSONFormat
+            'json': JSONFormat,
+            'geojson': GeoJSONFormat
         }
         self.file_format_handlers.update(**self.__params.get('file-formatters', {}))
 
@@ -253,6 +254,7 @@ class FileDumper(DumperBase):
         raise NotImplementedError()
 
     def rows_processor(self, resource, spec, temp_file, writer, fields, datapackage):
+        print(fields)
         file_formatter = self.file_formatters[spec['name']]
         for row in resource:
             file_formatter.write_row(writer, row, fields)
