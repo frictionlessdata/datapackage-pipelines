@@ -8,15 +8,17 @@ from .pipeline_status import PipelineStatus
 class StatusManager(object):
 
     def __init__(self, *, host=None, port=6379, root_dir='.'):
-        self._host = host
+        self._host = os.environ.get('DPP_REDIS_HOST')
         self._port = port
+        self._username = os.environ.get('DPP_REDIS_USERNAME')
+        self._password = os.environ.get('DPP_REDIS_PASSWORD')
         self._backend = None
         self._root_dir = root_dir
 
     @property
     def backend(self):
         if self._backend is None:
-            redis = RedisBackend(self._host, self._port)
+            redis = RedisBackend(self._host, self._port, self._username, self._password)
             self._backend = redis if redis.is_init() else FilesystemBackend(self._root_dir)
         return self._backend
 
@@ -53,5 +55,5 @@ def status_mgr(root_dir='.') -> StatusManager:
     if _status is not None and _root_dir == root_dir:
         return _status
     _root_dir = root_dir
-    _status = StatusManager(host=os.environ.get('DPP_REDIS_HOST'), root_dir=root_dir)
+    _status = StatusManager(root_dir=root_dir)
     return _status
